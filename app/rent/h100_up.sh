@@ -49,7 +49,7 @@ for i in $(seq 60); do
 import sys,json;d=json.load(sys.stdin);s=d.get('status',{});ip=[n.get('public_ip_address',{}).get('address','').split('/')[0] for n in s.get('network_interfaces',[])]
 print(s.get('state'), (ip or [''])[0] or '-')")
   echo "[$(date +%T)] $STATE $IP"; [ "$STATE" = RUNNING ] && [ "$IP" != - ] && break
-  [ "$STATE" = STOPPED ] && { echo "Nebius couldn't start it (no H100 free?). Run h100_down.sh, try later or another region."; exit 1; }
+  [ "$STATE" = STOPPED ] && [ $i -gt 10 ] && { echo "Nebius couldn't start it (no H100 free?). Run h100_down.sh, try later or another region."; exit 1; }
   sleep 15
 done
 H=srl@$IP; SSH="ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -o BatchMode=yes"
