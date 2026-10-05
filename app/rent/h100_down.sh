@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Stop the rented H100: its worker, the tunnel, then the machine and its disk (billing stops).
-# Afterwards nothing rewrites papers until a GPU is back: the site says "GPU offline", and saved
-# rewrites and the Library still work. To use the home GPUs again: app/rent/home_gpus.sh on
+# The home 9B on GPU 0 keeps taking papers (app/rent/home_gpus.sh status); the 0.8B is offered only
+# while the H100 runs.
 export PATH=$HOME/.nebius/bin:$PATH
 P=project-e00fbrcapr00yr015zfmw3; NAME=smr-h100
 tmux kill-session -t smr-worker-h100 2>/dev/null; tmux kill-session -t h100-tunnel 2>/dev/null

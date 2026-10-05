@@ -98,16 +98,35 @@ async function run(job: { id: string; doi: string; model: string; paper?: any })
 }
 
 const PARALLEL = config.parallel ?? 3;   // papers at once: vLLM batches their requests on the GPU
+const NAME = config.name ?? (process.env.WORKER_CONFIG ?? "config.json").split("/").pop()!.replace(/\.json$/, "");
 let busy = 0;
-log(`worker: models ${Object.keys(config.models).join(", ")}; ${PARALLEL} papers at once; queue ${config.queue}`);
+log(`worker ${NAME}: models ${Object.keys(config.models).join(", ")}; ${PARALLEL} papers at once; queue ${config.queue}`);
+
+// Only models that answer are offered: one restarting, evicted by the model router, or behind a dropped
+// tunnel is left out, so its papers wait in line instead of failing here. Checked every 15 s.
+let live: string[] = [];
+let checked = 0;
+async function liveModels(): Promise<string[]> {
+  if (Date.now() - checked < 15000) return live;
+  checked = Date.now();
+  const now = await Promise.all(Object.entries(config.models as Record<string, string>).map(async ([m, url]) => {
+    try { const r = await fetch(`${url}/models`, { signal: AbortSignal.timeout(4000) }); return r.ok ? m : null; }
+    catch { return null; }
+  }));
+  const next = now.filter((m): m is string => !!m);
+  if (next.join() !== live.join()) log(`models answering: ${next.join(", ") || "none"}`);
+  live = next;
+  return live;
+}
 for (;;) {
   try {
     if (busy >= PARALLEL) {   // all slots taken: just say we're alive
-      await queue("/api/worker/next", { models: Object.keys(config.models), parallel: PARALLEL, busy: true });
+      await queue("/api/worker/next", { name: NAME, models: await liveModels(), parallel: PARALLEL, busy: true });
       await new Promise((r) => setTimeout(r, 5000));
       continue;
     }
-    const job = await queue("/api/worker/next", { models: Object.keys(config.models), parallel: PARALLEL });
+    const models = await liveModels();
+    const job = await queue("/api/worker/next", { name: NAME, models, parallel: PARALLEL });
     if (!job.id) { await new Promise((r) => setTimeout(r, 1500)); continue; }
     log(`${job.id} ${job.model} ${job.doi}: started (${busy + 1} running)`);
     busy++;

@@ -9,8 +9,8 @@
 #      checked by fingerprint, that the home GPU served), and our 0.8B, uploaded from here (2 GB);
 #      vLLM 0.29.0 and the settings of the scored runs (bf16, greedy, MTP for the 9B);
 #   3. opens an SSH tunnel from lambda to it (the machine opens no port to the internet);
-#   4. starts the worker for it on lambda (tmux "smr-worker-h100"), then stops the home worker and
-#      the home models (app/rent/home_gpus.sh off), so every reader gets the H100 and lambda's GPUs are free.
+#   4. starts the worker for it on lambda (tmux "smr-worker-h100"). The home worker (the 9B on GPU 0)
+#      keeps working too: the queue gives each paper to whichever worker has a free place and the model.
 # The queue, the paper service and the public door (Tailscale Funnel) stay on lambda.
 set -euo pipefail
 export PATH=$HOME/.nebius/bin:$PATH
@@ -86,10 +86,8 @@ $SSH -n $H 'for i in $(seq 120); do curl -sf -m 5 localhost:8001/v1/models >/dev
 tmux kill-session -t h100-tunnel 2>/dev/null || true
 tmux new -d -s h100-tunnel "while true; do $SSH -N -o ServerAliveInterval=20 -o ExitOnForwardFailure=yes -L 8016:127.0.0.1:8000 -L 8017:127.0.0.1:8001 $H; sleep 3; done"
 for i in $(seq 30); do curl -sf -m 5 localhost:8016/v1/models >/dev/null && curl -sf -m 5 localhost:8017/v1/models >/dev/null && break; sleep 2; done
-echo '{"queue": "http://127.0.0.1:8795", "papers": "http://127.0.0.1:8795", "models": {"our-9b": "http://127.0.0.1:8016/v1", "our-0.8b": "http://127.0.0.1:8017/v1"}, "parallel": 24}' > "$APP/worker/config-h100.json"
+echo '{"name": "h100", "queue": "http://127.0.0.1:8795", "papers": "http://127.0.0.1:8795", "models": {"our-9b": "http://127.0.0.1:8016/v1", "our-0.8b": "http://127.0.0.1:8017/v1"}, "parallel": 24}' > "$APP/worker/config-h100.json"
 tmux kill-session -t smr-worker-h100 2>/dev/null || true
 tmux new -d -s smr-worker-h100 "cd $APP && WORKER_CONFIG=$APP/worker/config-h100.json node --conditions=functai-source worker/worker.ts 2>&1 | tee -a worker/worker-h100.log"
 sleep 5
-echo "[$(date +%T)] the H100 answers; freeing the home GPUs (papers in progress there go back in line)"
-"$APP/rent/home_gpus.sh" off
 echo "[$(date +%T)] the H100 is taking jobs (up to 24 papers at once). Stop paying: app/rent/h100_down.sh"

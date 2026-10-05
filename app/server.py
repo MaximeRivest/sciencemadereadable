@@ -57,7 +57,19 @@ STORE.mkdir(exist_ok=True)
 JOBS: dict[str, dict] = {}
 QUEUE: list[str] = []
 JOBS_LOCK = threading.Lock()
-WORKER = {"seen": 0.0, "models": []}
+WORKERS: dict[str, dict] = {}   # each worker by name: {seen, models (the ones answering now), parallel}
+
+
+def online_workers() -> list[dict]:
+    return [w for w in WORKERS.values() if time.time() - w["seen"] < 30]
+
+
+def models_online() -> list[str]:
+    return sorted({m for w in online_workers() for m in w["models"]})
+
+
+def worker_online() -> bool:
+    return bool(online_workers())
 TOKEN_FILE = HERE / "worker_token"
 if not TOKEN_FILE.exists():
     TOKEN_FILE.write_text(__import__("secrets").token_urlsafe(32))
@@ -424,7 +436,7 @@ class Handler(SimpleHTTPRequestHandler):
                 recent += [{"doi": x["doi"], "title": x["title"], "plain_title": x["plain_title"]}
                            for x in library() if x["doi"] not in seen and not x["example"]][:4 - len(recent)]
             return self.send_json(200, {"live": live, "recent": recent,
-                                        "worker_online": time.time() - WORKER["seen"] < 30})
+                                        "worker_online": worker_online()})
         if u.path == "/api/library":
             return self.send_json(200, library())
         if u.path == "/api/support":
@@ -432,7 +444,7 @@ class Handler(SimpleHTTPRequestHandler):
         if u.path == "/api/status":
             with JOBS_LOCK:
                 running = sum(1 for j in JOBS.values() if j["status"] == "running")
-            self.send_json(200, {"worker_online": time.time() - WORKER["seen"] < 30, "models": WORKER["models"],
+            self.send_json(200, {"worker_online": worker_online(), "models": models_online(),
                                  "queued": len(QUEUE), "running": running})
             return
         if u.path.startswith("/api/jobs/"):
@@ -486,8 +498,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json(r.status, {"error": str(r)})
         except Exception:   # noqa: BLE001
             return self.send_json(400, {"error": "send {doi, model}"})
-        if model not in WORKER["models"]:
-            return self.send_json(409, {"error": f"{model} isn't running on the home GPU right now."})
+        if model not in models_online():
+            return self.send_json(409, {"error": f"{model} isn't running on our GPU right now."})
         if (store_folder(doi) / f"{model}.json").exists():
             return self.send_json(200, {"saved": True})
         now, who_ = time.time(), self.client()
@@ -529,13 +541,15 @@ class Handler(SimpleHTTPRequestHandler):
             out = {k: j.get(k) for k in ("id", "doi", "model", "status", "parts", "done", "error", "seconds")}
         out["ahead"] = ahead
         out["running_others"] = running - (1 if j["status"] == "running" else 0)
-        out["parallel"] = WORKER.get("parallel", 1)
-        out["worker_online"] = time.time() - WORKER["seen"] < 30
+        out["parallel"] = sum(w["parallel"] for w in online_workers() if j["model"] in w["models"]) or 1
+        out["worker_online"] = worker_online()
         self.send_json(200, out)
 
     def next_job(self):
         d = self.body_json(10_000)
-        WORKER.update(seen=time.time(), models=list(d.get("models") or []), parallel=int(d.get("parallel") or 1))
+        name = str(d.get("name") or "worker")[:60]
+        models = [str(m) for m in d.get("models") or []]
+        WORKERS[name] = {"seen": time.time(), "models": models, "parallel": int(d.get("parallel") or 1)}
         if d.get("busy"):   # a heartbeat from a worker with no free slot: no job handed out
             return self.send_json(200, {})
         with JOBS_LOCK:
@@ -548,20 +562,22 @@ class Handler(SimpleHTTPRequestHandler):
                 del JOBS[jid]
             for jid in list(QUEUE):
                 j = JOBS[jid]
-                if j["model"] in WORKER["models"]:
+                if j["model"] in models:   # only a job this worker's models can write
                     QUEUE.remove(jid)
+                    j["worker"] = name
                     j.update(status="running", started=now, updated=now)
                     return self.send_json(200, {k: j[k] for k in ("id", "doi", "model", "paper")})
         self.send_json(200, {})
 
     def job_update(self, jid: str):
-        WORKER["seen"] = time.time()   # a worker busy with a paper is online too
         d = self.body_json()
         with JOBS_LOCK:
             j = JOBS.get(jid)
             if not j:
                 return self.send_json(404, {"error": "no such job"})
             j.update(parts=d.get("parts") or j["parts"], done=d.get("done") or j["done"], updated=time.time())
+            if j.get("worker") in WORKERS:   # a worker busy with a paper is online too
+                WORKERS[j["worker"]]["seen"] = time.time()
             if d.get("status") in ("done", "failed"):
                 j.update(status=d["status"], error=d.get("error"), seconds=round(time.time() - j["started"]))
                 stats.record({"t": f"job_{d['status']}", "doi": j["doi"], "model": j["model"], "s": j["seconds"],

@@ -13,24 +13,22 @@ rsync -a --delete --exclude .git app/site/ "$SITE"/ && git -C "$SITE" add -A && 
 
 ## Where the models run
 
-Since launch day (2026-10-05), on one rented H100 (Nebius, about $4.50/hour, $108/day):
+Since 2026-10-05 evening, **our 9B on lambda's GPU 0**, in InkType's place, declared in
+`~/Projects/os/machines` so it survives reboots: `model-vllm-smr-9b` (system service, the pinned Hugging
+Face version, vLLM 0.29.0, localhost :8015), and the user services `smr-server` (the queue) and
+`smr-worker-home` (3 papers at once). `app/rent/home_gpus.sh status|on|off` switches them for now; to give
+GPU 0 back for good, set `inktypePaused = false` in `hosts/lambda/ai-services.nix` and remove `smr-9b`.
+The model router never parks it; the big on-demand models refuse to start while it runs.
+
+For launch days, a rented H100 as a second worker (Nebius, about $4.50/hour), with the 0.8B too:
 
 ```
-app/rent/h100_up.sh      # rent it, start the 9B (Hugging Face, fixed version) and the 0.8B, its worker on lambda,
-                         # then free lambda's GPUs (home_gpus.sh off). About 10 minutes.
-app/rent/h100_down.sh    # delete the machine and its disk: billing stops. The site then says "GPU offline".
-app/rent/home_gpus.sh on|off|status   # our models on lambda's 2 x RTX 3090 instead, as before launch
+app/rent/h100_up.sh      # rent it, start the 9B and the 0.8B there, its worker on lambda. About 10 minutes.
+app/rent/h100_down.sh    # delete the machine and its disk: billing stops. The home 9B keeps going.
 ```
 
-Lambda keeps the queue, the paper service and the public door; only the writing moves to the H100.
-The worker runs on lambda and reaches the H100 through an SSH tunnel (ports 8016 for the 9B, 8017 for
-the 0.8B); the rented machine opens no port to the internet.
-
-Search open research papers and read them rewritten in plain words, next to the original, with the
-paper's own figures and tables. Our small models run on our GPU (above); six commercial models run with the
-reader's own API key.
-
-On lambda (tailnet only): https://lambda.tail69222b.ts.net:18795/
+Each worker offers only the models that answer (checked every 15 s), and the queue gives a paper only to
+a worker that has its model: a restarting model makes papers wait in line, not fail.
 
 ## Parts
 
@@ -43,8 +41,8 @@ On lambda (tailnet only): https://lambda.tail69222b.ts.net:18795/
 
 ```
 cd app && npm install && node tools/build.mjs         # postinstall links lm15 to functai's own copy
-.venv/bin/python app/server.py                        # tmux "smr-server" on lambda (port 8795)
-cd app && npm run worker                               # tmux "smr-worker" (home GPUs) or "smr-worker-h100";
+.venv/bin/python app/server.py                        # service smr-server on lambda (port 8795)
+cd app && npm run worker                               # service smr-worker-home, or tmux "smr-worker-h100";
                                                        # settings: worker/config.json (examples: config*.example.json)
 .venv/bin/python app/tools/export_site.py https://QUEUE   # static site for GitHub Pages → app/site/
 ```
