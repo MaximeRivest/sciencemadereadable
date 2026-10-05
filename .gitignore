@@ -28,7 +28,6 @@ app/*.tmp
 app/site/
 app/web/app.js
 app/web/app.js.map
-app/tools/fixtures.json
 app/**/*.log
 app/.shots/
 
