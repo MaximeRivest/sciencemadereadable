@@ -1,0 +1,27 @@
+{
+ "daily_cost": 108,
+ "gpu": "one rented Nvidia H100",
+ "stripe": {
+  "5": "https://buy.stripe.com/...",
+  "10": "...",
+  "25": "...",
+  "50": "...",
+  "custom": "...",
+  "monthly": "...",
+  "day": "..."
+ },
+ "stripe_mode": "live",
+ "sponsors_by_day": {
+  "2026-10-20": {
+   "name": "Example Lab",
+   "url": "https://example.org"
+  }
+ },
+ "support_by_hand": [
+  {
+   "at": 1791200000,
+   "dollars": 20,
+   "note": "a cheque, counted by hand"
+  }
+ ]
+}

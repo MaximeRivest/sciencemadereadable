@@ -81,6 +81,25 @@ copied into the static site too so they work offline. Our models' rewrites made 
 are saved by the queue (only the worker can write them). Rewrites made with a reader's key stay in
 their browser.
 
+## Support
+
+The support window (♥ Support; shareable as `?support`): amounts, what the GPU costs a day, and the
+support of the last 24 hours. Settings in `support.json` (not published; `support.example.json`).
+
+- **Stripe** (card, Apple Pay, Google Pay, no account): one payment link per amount, $3 a month, any
+  amount, and "sponsor a day" ($110, asks the name to show and the day). Made by
+  `STRIPE_SETUP_KEY=rk_... .venv/bin/python app/tools/stripe_setup.py` (a restricted key with write
+  access to Products, Prices, Payment Links; not saved; delete it afterwards). Test links (`rk_test_`)
+  appear only on the private port; the public door and the GitHub Pages copy show live links only.
+  After paying, Stripe sends the supporter to `/?thanks`.
+- **Totals:** the queue reads Stripe every 5 minutes with a read-only restricted key in
+  `stripe_read_key` (Checkout Sessions: read; Subscriptions: read), and GitHub Sponsors with this
+  machine's `gh` login. Only totals leave lambda (plus GitHub sponsors who chose to be public).
+- **Sponsor of the day:** a paid day waits in `sponsors.json` until approved:
+  `.venv/bin/python app/tools/sponsor_day.py` (list), `... approve cs_... [DAY]`, `... refuse cs_...`.
+  Approved names go into `support.json`'s `sponsors_by_day` and show that day only.
+- Rewrite costs: `daily_cost` in `support.json` (108 with the H100).
+
 ## Usage counts
 
 `stats.py`, on our own server: no cookies, no third party. A visitor is an anonymous code made

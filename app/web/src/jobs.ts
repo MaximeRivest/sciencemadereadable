@@ -2,7 +2,7 @@
  * Our models run on our GPU (a worker anywhere): the page puts a job in the queue and follows it.
  * The queue's address comes from config.js (empty: this site's own server).
  */
-declare global { interface Window { SRL_CONFIG?: { api?: string; support?: { github?: string; card?: string } } } }
+declare global { interface Window { SRL_CONFIG?: { api?: string; support?: { github?: string; stripe?: Record<string, string> } } } }
 export const API = (window.SRL_CONFIG?.api ?? "").replace(/\/$/, "");
 
 export interface Status { worker_online: boolean; models: string[]; queued: number; running: number }
@@ -80,6 +80,15 @@ export async function library(): Promise<LibraryItem[]> {
     try { const r = await fetch(url); if (r.ok) return await r.json(); } catch { /* next */ }
   }
   return [];
+}
+
+export interface Support {
+  daily_cost?: number | null; gpu?: string | null; stripe?: Record<string, string>;
+  sponsor_of_the_day?: { name: string; url?: string } | null;
+  day_count?: number; day_dollars?: number; monthly_supporters?: number; recent?: string[];
+}
+export async function supportState(): Promise<Support | null> {
+  try { const r = await fetch(`${API}/api/support`); return r.ok ? await r.json() : null; } catch { return null; }
 }
 
 export async function now(): Promise<{ live: NowItem[]; recent: (NowItem & { seconds: number })[] } | null> {

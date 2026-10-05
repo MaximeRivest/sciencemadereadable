@@ -77,6 +77,13 @@ still preferred the current answers (159 to 40, 41 ties), so the recipe needs mo
 A research project that went live on 2026-10-05. The rewrites read well and keep the papers'
 structure, but they can still contain factual errors: always check the original, shown alongside.
 
+## Support
+
+The site is free, with no ads and no accounts; a rented GPU writes the rewrites, about $108 a day.
+Readers keep it running: [sciencemadereadable.com/?support](https://sciencemadereadable.com/?support)
+(card, Apple Pay or Google Pay through Stripe, or GitHub Sponsors). Organizations can sponsor a whole day
+and be named on the site that day. This is support for an independent project, not a charity donation.
+
 ## Licence
 
 Code and notes: [Apache 2.0](LICENSE). The papers shown and rewritten are open-access articles under

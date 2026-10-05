@@ -69,11 +69,12 @@
   </div>
   <div id="progress" class="progress" hidden></div>
   <article id="paper"></article>
-  <p id="thanks" class="thanks" hidden>✦ This rewrite was free for you, but it ran on a real graphics card. If it helped,
-    <a href="#" id="open-support-3">you can chip in for the next one</a>.</p>
+  <p id="thanks" class="thanks" hidden>✦ <span id="thanks-text">This rewrite was free for you, but it ran on a real graphics card.</span>
+    If it helped, <a href="#" id="open-support-3">you can chip in to keep it running</a>.</p>
   <p id="credit" class="credit"></p>
 </main>
 
+<p id="sotd-bar" class="sotd-bar" hidden></p>
 <footer>A free demo by Maxime Rivest · the small models we trained run on a single GPU · <a href="#" id="open-about-2">How it works</a> · <a href="#" id="open-support-2">♥ Support it</a></footer>
 
 <dialog id="settings">
@@ -91,22 +92,47 @@
 <dialog id="support">
   <form method="dialog">
     <h2>Keep science readable, and free</h2>
-    <p>This site is free, with no ads and no accounts. The rewriting runs on a rented graphics card, so every paper
-      someone reads has a small real cost.</p>
-    <ul class="costs">
-      <li><b>about half a cent</b> rewrites one paper on a rented GPU</li>
-      <li><b>$5</b> rewrites about 1,000 papers</li>
-      <li><b>about $110</b> keeps a fast rented GPU (an H100) running for a whole day, so nobody waits</li>
-    </ul>
-    <p>If this helped you, a student or your kids understand real science, you can help keep it going.</p>
-    <div class="give">
-      <a id="give-github" class="primary-btn" target="_blank" rel="noopener">Give on GitHub Sponsors</a>
-      <a id="give-card" class="primary-btn ghost" target="_blank" rel="noopener" hidden>Give by card</a>
+    <p class="from">Hi, I'm Maxime. I trained these models and built this site on my own, so that anyone, at any age,
+      can read real science in plain words. No ads, no accounts, no paywall. What it does cost is the graphics card
+      that writes the rewrites.</p>
+    <div id="meter" class="meter" hidden>
+      <div class="meter-line"><span id="meter-text"></span><span id="meter-cost" class="quiet"></span></div>
+      <div class="meter-bar"><i id="meter-fill"></i></div>
+      <p id="meter-note" class="quiet small"></p>
     </div>
-    <p class="quiet small">GitHub Sponsors takes one-time or monthly gifts, and GitHub keeps no fee
-      on gifts from personal accounts. Organizations: sponsor a launch
-      day or more GPU time, and your name goes on the About page. Reach me on X, <a href="https://x.com/MaximeRivest" target="_blank" rel="noopener">@MaximeRivest</a>.</p>
+    <p id="sotd" class="sotd" hidden></p>
+    <div class="amounts" role="radiogroup" aria-label="Amount">
+      <button type="button" data-amount="5">$5</button>
+      <button type="button" data-amount="10" class="on">$10</button>
+      <button type="button" data-amount="25">$25</button>
+      <button type="button" data-amount="50">$50</button>
+      <button type="button" data-amount="0">Other</button>
+    </div>
+    <p id="impact" class="impact"></p>
+    <div class="give">
+      <a id="give-card" class="primary-btn" target="_blank" rel="noopener" hidden>Support with $10</a>
+      <a id="give-github" class="primary-btn" target="_blank" rel="noopener">Support with $10 on GitHub</a>
+    </div>
+    <p class="give-alt"><a id="give-monthly" class="ghost-link" target="_blank" rel="noopener">or $3 a month</a><span id="gh-alt"></span></p>
+    <p id="pay-note" class="quiet small"></p>
+    <div class="org">
+      <b>Sponsor a whole day</b> · $110 covers the GPU for a day, and your name or your organization's is shown on
+      this site that day: "Today's rewrites are sponsored by …".
+      <a id="give-day" target="_blank" rel="noopener">Sponsor a day</a><span id="day-note"></span>
+    </div>
+    <p class="quiet small">This is support for an independent project, not a donation to a charity: there is no tax
+      receipt.</p>
     <menu><button value="ok">Close</button></menu>
+  </form>
+</dialog>
+
+<dialog id="thanked">
+  <form method="dialog">
+    <h2>Thank you!</h2>
+    <p class="from">Your support keeps science readable, and free, for the next reader. Stripe has emailed you a
+      receipt.</p>
+    <p class="quiet small">Sponsored a day? I'll put your name on the site and confirm the day by email.</p>
+    <menu><button value="ok" class="primary">Back to reading</button></menu>
   </form>
 </dialog>
 

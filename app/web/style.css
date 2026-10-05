@@ -240,3 +240,25 @@ body.solo .thanks { margin-left: auto; margin-right: auto; }
 .now-bar i.w18 { width: 90%; }
 .now-bar i.w19 { width: 95%; }
 .now-bar i.w20 { width: 100%; }
+
+/* support, 2026-10-05: amounts, the day's meter, sponsor of the day */
+#support .from { font: 17px/1.55 var(--serif); }
+.meter { margin: 18px 0 6px; padding: 14px 16px; border-radius: 12px; background: var(--accent-soft); }
+.meter-line { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-weight: 600; font-size: 15px; }
+.meter-line .quiet { font-weight: 400; }
+.meter-bar { height: 10px; border-radius: 999px; background: var(--line); margin: 10px 0 6px; overflow: hidden; }
+.meter-bar i { display: block; height: 100%; width: 0; border-radius: 999px; background: var(--accent); transition: width .8s ease; }
+.meter .small { margin: 4px 0 0; }
+.amounts { display: flex; gap: 8px; margin: 18px 0 6px; }
+.amounts button { flex: 1; padding: 10px 0; border-radius: 10px; border: 1px solid var(--line); background: transparent;
+                  color: var(--ink); font: 600 17px/1 var(--sans); cursor: pointer; }
+.amounts button.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.impact { color: var(--muted); font-size: 15px; margin: 6px 0 0; min-height: 2.6em; }
+.give { align-items: center; }
+.ghost-link { color: var(--accent); font-weight: 600; }
+.org { margin: 16px 0 6px; padding: 12px 14px; border: 1px dashed var(--line); border-radius: 12px; font-size: 14px; color: var(--muted); }
+.org b { color: var(--ink); }
+.sotd { margin: 14px 0 0; font-weight: 600; }
+.sotd-bar { text-align: center; margin: 32px 0 0; color: var(--muted); }
+.give-alt { margin: 4px 0 10px; font-size: 15px; color: var(--muted); }
+.give { margin-bottom: 4px; }

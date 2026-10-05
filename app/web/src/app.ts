@@ -2,7 +2,7 @@ import { MODELS, type ModelInfo } from "./models.ts";
 import { rewrite, type Keys } from "./pipeline.ts";
 import { open, search, PaperError, type Paper } from "./paper.ts";
 import { Reader } from "./reader.ts";
-import { activeJob, examples, follow, library, now, savedRewrites, status, type LibraryItem, type Status } from "./jobs.ts";
+import { activeJob, examples, follow, library, now, savedRewrites, status, supportState, type LibraryItem, type Status, type Support } from "./jobs.ts";
 import { ProgressPanel } from "./progress.ts";
 import { track } from "./track.ts";
 
@@ -90,6 +90,7 @@ async function openPaper(id: string) {
   }
   document.title = `${paper.title} · made readable`;
   track("open", { doi: paper.doi });
+  $("#thanks").hidden = true;
   reader = new Reader($("#paper"), paper);
   reader.set({}, []);
   $("#credit").innerHTML = `Original: <a href="${esc(paper.url)}" target="_blank" rel="noopener">${esc(paper.title)}</a>, ` +
@@ -211,10 +212,6 @@ async function makeReadable(existing?: string) {
     r.setPending(false);
     showChosen();
     progress.finish((performance.now() - started) / 1000);
-    if (!sessionStorage.getItem("thanked")) {
-      sessionStorage.setItem("thanked", "1");
-      $("#thanks").hidden = false;
-    }
     if (m.provider !== "ours") track("done", { doi: p.doi, model: m.id, s: Math.round((performance.now() - started) / 1000) });   // ours: the queue counts it
     setStatus("");
   } catch (e: any) {
@@ -325,6 +322,7 @@ function go(url: string, load = true) {
 function route() {
   const q = new URLSearchParams(location.search);
   clearInterval(nowTimer);
+  if (q.has("support")) setTimeout(() => openSupport("link"), 300);
   if (q.has("library")) return openLibrary();
   if (q.get("paper")) return openPaper(q.get("paper")!);
   if (q.get("q")) { ($("#search-results") as HTMLInputElement).value = q.get("q")!; return runSearch(q.get("q")!); }
@@ -353,16 +351,110 @@ for (const [btn, dlg] of [["#open-settings", "#settings"], ["#open-about", "#abo
                           ["#open-support", "#support"], ["#open-support-2", "#support"], ["#open-support-3", "#support"]]) {
   $(btn).onclick = (e) => {
     e.preventDefault();
+    if (dlg === "#support") return openSupport(btn.slice(1));
     if (dlg === "#settings") loadKeyForm();
-    if (dlg === "#support") track("support", {});
     ($(dlg) as HTMLDialogElement).showModal();
   };
 }
-// where gifts go (config.js): GitHub Sponsors, and a card option without an account when there is one
-const support = window.SRL_CONFIG?.support ?? {};
-($("#give-github") as HTMLAnchorElement).href = support.github ?? "https://github.com/sponsors/MaximeRivest";
-if (support.card) { ($("#give-card") as HTMLAnchorElement).href = support.card; $("#give-card").hidden = false; }
-for (const a of ["#give-github", "#give-card"]) $(a).addEventListener("click", () => track("give", { src: a.slice(6) }));
+
+// ---------------------------------------------------------------- support
+// Support goes to Stripe (card, Apple Pay, Google Pay; no account; one link per amount, made by
+// tools/stripe_setup.py) or GitHub Sponsors (for developers; no fee). The links come from the queue
+// (support.json) or config.js, when the queue can't be reached. The meter: what the GPU costs a day,
+// and the support of the last 24 hours.
+const SPONSORS = (window.SRL_CONFIG?.support?.github ?? "https://github.com/sponsors/MaximeRivest").replace(/\/$/, "");
+const githubLink = (amount: number, frequency: "one-time" | "recurring") =>
+  `${SPONSORS}/sponsorships?preview=false&frequency=${frequency}` + (amount ? `&amount=${amount}` : "");
+const PAPERS_PER_HOUR = 800;   // the 9B on one H100, many papers at once (training/speed/throughput-h100-9b.json)
+let sup: Support | null = null;
+let amount = 10;               // 0: the supporter chooses
+const usd = (n: number) => `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+const stripeLinks = (): Record<string, string> => ({ ...(window.SRL_CONFIG?.support?.stripe ?? {}), ...(sup?.stripe ?? {}) });
+
+function drawSupport() {
+  const cost = sup?.daily_cost ?? 108;
+  const st = stripeLinks();
+  const hours = (amount || 10) / (cost / 24);
+  $("#impact").textContent = amount === 0 ? "Any amount helps: $4.50 keeps the GPU running for an hour."
+    : `${usd(amount)} keeps the GPU running for about ${hours < 1.5 ? `${Math.round(hours * 60)} minutes` : `${Math.round(hours)} hours`}: ` +
+      `time to make up to ${(Math.round(hours * PAPERS_PER_HOUR / 100) * 100).toLocaleString("en-US")} papers readable.`;
+  const label = amount ? `Support with ${usd(amount)}` : "Support with any amount";
+  const card = st[amount ? String(amount) : "custom"];
+  const gh = $("#give-github") as HTMLAnchorElement;
+  gh.href = githubLink(amount, "one-time");
+  if (card) {
+    Object.assign($("#give-card") as HTMLAnchorElement, { href: card, textContent: label, hidden: false });
+    if (gh.parentElement!.id !== "gh-alt") { $("#gh-alt").append(" · ", gh); }
+    gh.className = "ghost-link";
+    gh.textContent = "Developers: GitHub Sponsors";
+    ($("#give-monthly") as HTMLAnchorElement).href = st.monthly ?? githubLink(3, "recurring");
+    $("#pay-note").textContent = "Card, Apple Pay or Google Pay, through Stripe: no account needed. " +
+      "On GitHub Sponsors (needs a GitHub account), GitHub keeps no fee.";
+  } else {
+    $("#give-card").hidden = true;
+    gh.className = "primary-btn";
+    gh.textContent = `${label} on GitHub`;
+    ($("#give-monthly") as HTMLAnchorElement).href = githubLink(3, "recurring");
+    $("#pay-note").textContent = "GitHub Sponsors needs a GitHub account (free), and GitHub keeps no fee.";
+  }
+  ($("#give-day") as HTMLAnchorElement).href = st.day ?? githubLink(110, "one-time");
+  $("#day-note").innerHTML = st.day ? ": you'll be asked for the name to show and the day."
+    : `, then tell me the name and the day on X, <a href="https://x.com/MaximeRivest" target="_blank" rel="noopener">@MaximeRivest</a>.`;
+  for (const b of document.querySelectorAll<HTMLButtonElement>(".amounts button")) b.classList.toggle("on", +b.dataset.amount! === amount);
+  const meter = sup?.daily_cost && sup.day_dollars !== undefined;
+  $("#meter").hidden = !meter;
+  if (meter) {
+    const got = sup!.day_dollars!, n = sup!.day_count!;
+    $("#meter-text").textContent = got > 0 ? `${usd(got)} from ${n} ${n === 1 ? "supporter" : "supporters"} in the last 24 hours`
+      : "No support yet in the last 24 hours";
+    $("#meter-cost").textContent = `the GPU costs ${usd(cost)} a day`;
+    ($("#meter-fill") as HTMLElement).style.width = `${Math.min(100, Math.max(got > 0 ? 3 : 0, (got / cost) * 100))}%`;
+    const notes: string[] = [];
+    if (sup!.monthly_supporters) notes.push(`${sup!.monthly_supporters} ${sup!.monthly_supporters === 1 ? "person supports" : "people support"} it every month.`);
+    if (sup!.recent?.length) notes.push(`Thank you, ${sup!.recent.slice(0, 5).map((l) => "@" + l).join(", ")}.`);
+    if (got === 0) notes.push("You could be the first today.");
+    $("#meter-note").textContent = notes.join(" ");
+  }
+  drawSponsorOfTheDay();
+}
+
+function drawSponsorOfTheDay() {
+  const d = sup?.sponsor_of_the_day;   // the queue only sends today's, once approved (tools/sponsor_day.py)
+  const html = d?.name ? `Today's rewrites are sponsored by ${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener sponsored">${esc(d.name)}</a>`
+    : `<b>${esc(d.name)}</b>`}. Thank you!` : "";
+  for (const id of ["#sotd", "#sotd-bar"]) { $(id).innerHTML = html; $(id).hidden = !html; }
+}
+
+async function openSupport(src: string) {
+  track("support", { src });
+  drawSupport();
+  ($("#support") as HTMLDialogElement).showModal();
+  sup = (await supportState()) ?? sup;
+  drawSupport();
+}
+
+for (const b of document.querySelectorAll<HTMLButtonElement>(".amounts button"))
+  b.onclick = () => { amount = +b.dataset.amount!; drawSupport(); };
+const clicked: Record<string, () => number> = { "#give-card": () => amount, "#give-github": () => amount, "#give-monthly": () => 3, "#give-day": () => 110 };
+for (const [a, n] of Object.entries(clicked))
+  $(a).addEventListener("click", () => track("give", { src: a.slice(6), amount: n() }));
+supportState().then((s) => { sup = s; drawSponsorOfTheDay(); });
+if (new URLSearchParams(location.search).has("thanks")) {   // back from Stripe
+  track("supported", {});
+  history.replaceState(null, "", location.pathname);
+  ($("#thanked") as HTMLDialogElement).showModal();
+}
+
+// A quiet note at the end of the paper, once per visit, when a reader has read a rewrite to the end.
+new IntersectionObserver((entries) => {
+  if (!entries.some((e) => e.isIntersecting) || sessionStorage.getItem("thanked")) return;
+  if (!paper || !saved[chosen.id] || document.body.dataset.view !== "reader") return;
+  sessionStorage.setItem("thanked", "1");
+  if (sup?.daily_cost) $("#thanks-text").textContent =
+    `This rewrite was free for you. The GPU that writes them costs ${usd(sup.daily_cost)} a day, and readers keep it running.`;
+  $("#thanks").hidden = false;
+  track("thanks_shown", {});
+}, { rootMargin: "0px 0px -20% 0px" }).observe($("#credit"));
 $("#settings form").onsubmit = () => { saveKeyForm(); if (paper) showChosen(); };
 window.onpopstate = route;
 const checkHome = () => status().then((s) => { home = s; $("#gpu").textContent = s?.worker_online ? "GPU online" : "GPU offline"; $("#gpu").classList.toggle("on", !!s?.worker_online); if (paper && !running) showChosen(); });

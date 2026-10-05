@@ -18,8 +18,11 @@ shutil.rmtree(SITE, ignore_errors=True)
 for f in ("index.html", "style.css", "app.js"):
     shutil.copy(DEMO / "web" / f, SITE / f)
 domain = sys.argv[2] if len(sys.argv) > 2 else ""
-(SITE / "config.js").write_text(
-    f'window.SRL_CONFIG = {{ api: "{api}", support: {{ github: "https://github.com/sponsors/MaximeRivest", card: "" }} }};\n')
+# support links: the Stripe ones only when they are live (test links take no real payment)
+support = json.loads((DEMO / "support.json").read_text()) if (DEMO / "support.json").exists() else {}
+stripe = support.get("stripe", {}) if support.get("stripe_mode") == "live" else {}
+config = {"api": api, "support": {"github": "https://github.com/sponsors/MaximeRivest", "stripe": stripe}}
+(SITE / "config.js").write_text(f"window.SRL_CONFIG = {json.dumps(config)};\n")
 if domain:
     (SITE / "CNAME").write_text(domain + "\n")
 (SITE / ".nojekyll").write_text("")

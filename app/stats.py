@@ -31,7 +31,7 @@ from pathlib import Path
 DIR = Path(__file__).resolve().parent / "stats"
 DIR.mkdir(exist_ok=True)
 LOCK = threading.Lock()
-TYPES = {"view", "search", "open", "read", "make", "done", "fail", "job", "job_done", "job_failed", "support", "give"}
+TYPES = {"view", "search", "open", "read", "make", "done", "fail", "job", "job_done", "job_failed", "support", "give", "thanks_shown", "supported"}
 FIELDS = {"view": 12, "ref": 80, "doi": 120, "model": 20, "err": 40, "src": 12, "n": 0, "s": 0, "wait": 0, "w": 0}
 RECENT = collections.defaultdict(collections.deque)   # address → times of its last events (rate limit)
 
@@ -134,7 +134,8 @@ def page(cache: Path) -> str:
     big = [("visitors today", visitors(1)), ("visitors, 7 days", visitors(7)), ("visitors, 30 days", visitors(30)),
            ("searches", count("search")), ("papers opened", count("open")), ("rewrites made", count("job_done") + count("done")),
            ("saved rewrites read", count("read")), ("support window opened", count("support")),
-           ("clicked to give", count("give"))]
+           ("clicked to support", count("give")), ("thank-you note seen", count("thanks_shown")),
+           ("came back after supporting", count("supported"))]
     top = max([len(uniq[x]) for x in days] + [1])   # heights as classes: the page's policy forbids inline styles
     bars = "".join(f'<div class="bar"><span class="h{round(10 * len(uniq[d]) / top)}"></span>'
                    f'<em>{len(uniq[d])}</em><small>{d[5:]}</small></div>' for d in days)

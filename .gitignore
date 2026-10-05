@@ -87,3 +87,6 @@ article-tokens/text/
 *.safetensors
 *.tmp
 app/tools/py_requests.pkl
+app/support.json
+app/sponsors.json
+app/stripe_read_key

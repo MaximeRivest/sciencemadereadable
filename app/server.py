@@ -9,6 +9,8 @@ GET /api/rewrites?doi=   the saved rewrites of a paper, by model (examples, and 
 GET /api/examples        the papers with saved rewrites ready to read (no key needed).
 GET /api/status          is the home GPU worker online, how long is the queue.
 GET /api/now             what is being rewritten right now (titles, progress) and the latest finished.
+GET /api/support         what the GPU costs a day, support of the last 24 h (Stripe, GitHub Sponsors), the
+                         Stripe links, today's sponsor.
 GET /api/library         every paper with a saved rewrite (titles, journal, year, which models).
 POST /api/event          a usage count from the page (no cookies; see stats.py).
 GET /stats               the usage dashboard: only for people on the tailnet (Tailscale says who).
@@ -26,6 +28,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import sys
 import threading
@@ -199,6 +202,109 @@ def progress_of(j: dict) -> float:
 LIBRARY = {"at": 0.0, "items": []}
 
 
+# ---------------------------------------------------------------- support
+# support.json (not published; example: support.example.json): what the GPU costs a day, the Stripe links
+# (made by tools/stripe_setup.py), sponsors of the day by date, support counted by hand.
+# Read every 5 minutes, only totals are shown:
+#   Stripe, with the read-only key in stripe_read_key (Checkout Sessions and Subscriptions: read).
+#     Supporters' names and emails stay here. A day's sponsor goes to sponsors.json, waiting for approval
+#     (tools/sponsor_day.py): nothing a stranger types is shown on the site before that.
+#   GitHub Sponsors, with this machine's GitHub login (gh); the token never leaves it. The logins of
+#     sponsors who chose to be public are shown, as GitHub shows them.
+SUPPORT_FILE = HERE / "support.json"
+STRIPE_KEY_FILE = HERE / "stripe_read_key"
+SPONSORS_FILE = HERE / "sponsors.json"
+SUPPORTERS = {"github": None, "stripe": None}   # each: {day_count, day_dollars, monthly, recent?}
+GITHUB_QUERY = """{ viewer {
+  sponsorsActivities(first: 100, period: DAY, actions: [NEW_SPONSORSHIP]) { nodes { sponsorsTier { monthlyPriceInDollars } } }
+  sponsorshipsAsMaintainer(first: 6, includePrivate: false, orderBy: {field: CREATED_AT, direction: DESC}) {
+    nodes { sponsorEntity { ... on User { login } ... on Organization { login } } } }
+  monthly: sponsorshipsAsMaintainer(first: 100, includePrivate: true, activeOnly: true) { nodes { isOneTimePayment } } } }"""
+
+
+def read_github():
+    import subprocess
+    out = subprocess.run(["gh", "api", "graphql", "-f", f"query={GITHUB_QUERY}"], capture_output=True, text=True, timeout=60)
+    v = json.loads(out.stdout)["data"]["viewer"]
+    day = [n["sponsorsTier"]["monthlyPriceInDollars"] for n in v["sponsorsActivities"]["nodes"] if n.get("sponsorsTier")]
+    return {"day_count": len(day), "day_dollars": sum(day),
+            "monthly": sum(1 for n in v["monthly"]["nodes"] if not n["isOneTimePayment"]),
+            "recent": [n["sponsorEntity"]["login"] for n in v["sponsorshipsAsMaintainer"]["nodes"] if n.get("sponsorEntity")]}
+
+
+def stripe_get(key: str, path: str, params: dict) -> list[dict]:
+    items, params = [], {"limit": 100, **params}
+    while True:
+        req = urllib.request.Request(f"https://api.stripe.com/v1/{path}?{urllib.parse.urlencode(params)}",
+                                     headers={"Authorization": f"Bearer {key}"})
+        with urllib.request.urlopen(req, timeout=60) as r:
+            page = json.loads(r.read())
+        items += page["data"]
+        if not page.get("has_more") or len(items) > 2000:
+            return items
+        params["starting_after"] = page["data"][-1]["id"]
+
+
+def read_stripe():
+    if not STRIPE_KEY_FILE.exists():
+        return None
+    key = STRIPE_KEY_FILE.read_text().strip()
+    paid = [x for x in stripe_get(key, "checkout/sessions", {"status": "complete", "created[gte]": int(time.time()) - 86400})
+            if x.get("payment_status") in ("paid", "no_payment_required") and x.get("currency") == "usd"]
+    try:
+        monthly = len(stripe_get(key, "subscriptions", {"status": "active"}))
+    except urllib.error.HTTPError:   # the key may not read subscriptions
+        monthly = 0
+    # a day's sponsor: kept for approval, never shown before it
+    fields = lambda x: {f["key"]: (f.get("text") or {}).get("value") for f in x.get("custom_fields") or []}
+    new = {x["id"]: {**fields(x), "dollars": x["amount_total"] / 100, "paid": x["created"], "status": "waiting"}
+           for x in paid if fields(x).get("name")}
+    if new:
+        with SPONSORS_LOCK:
+            known = json.loads(SPONSORS_FILE.read_text()) if SPONSORS_FILE.exists() else {}
+            added = {k: v for k, v in new.items() if k not in known}
+            if added:
+                SPONSORS_FILE.write_text(json.dumps({**known, **added}, indent=1, ensure_ascii=False))
+                print(f"day sponsor waiting for approval: {', '.join(v['name'] for v in added.values())} "
+                      f"(app/tools/sponsor_day.py)", flush=True)
+    return {"day_count": len(paid), "day_dollars": round(sum(x["amount_total"] for x in paid) / 100, 2), "monthly": monthly}
+
+
+SPONSORS_LOCK = threading.Lock()
+
+
+def read_supporters_forever():
+    while True:
+        for name, read in (("github", read_github), ("stripe", read_stripe)):
+            try:
+                SUPPORTERS[name] = read()
+            except Exception as e:   # no gh, no network, a wrong key: the page shows the costs without the totals
+                print(f"support from {name} not read: {e}", flush=True)
+        time.sleep(300)
+
+
+def support_state(private: bool = False) -> dict:
+    try:
+        cfg = json.loads(SUPPORT_FILE.read_text())
+    except (OSError, ValueError):
+        cfg = {}
+    today = time.strftime("%Y-%m-%d")
+    sponsor = (cfg.get("sponsors_by_day") or {}).get(today)
+    by_hand = [g for g in cfg.get("support_by_hand", []) if time.time() - g.get("at", 0) < 86400]
+    stripe = cfg.get("stripe") or {}
+    if cfg.get("stripe_mode") != "live" and not private:
+        stripe = {}   # test links: only on the private port (lambda and the tailnet), never through the public door
+    out = {"daily_cost": cfg.get("daily_cost"), "gpu": cfg.get("gpu"), "stripe": stripe,
+           "sponsor_of_the_day": sponsor}
+    seen = [v for v in SUPPORTERS.values() if v]
+    if seen:
+        out.update(day_count=sum(v["day_count"] for v in seen) + len(by_hand),
+                   day_dollars=round(sum(v["day_dollars"] for v in seen) + sum(g.get("dollars", 0) for g in by_hand), 2),
+                   monthly_supporters=sum(v["monthly"] for v in seen),
+                   recent=(SUPPORTERS["github"] or {}).get("recent", []))
+    return out
+
+
 def library() -> list[dict]:
     """Every paper with a saved rewrite, newest first (rebuilt at most every 30 s)."""
     if time.time() - LIBRARY["at"] < 30:
@@ -321,6 +427,8 @@ class Handler(SimpleHTTPRequestHandler):
                                         "worker_online": time.time() - WORKER["seen"] < 30})
         if u.path == "/api/library":
             return self.send_json(200, library())
+        if u.path == "/api/support":
+            return self.send_json(200, support_state(private=not isinstance(self, PublicHandler)))
         if u.path == "/api/status":
             with JOBS_LOCK:
                 running = sum(1 for j in JOBS.values() if j["status"] == "running")
@@ -477,7 +585,7 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_json(200, {"ok": True})
 
 
-PUBLIC = {("GET", "/api/now"), ("GET", "/api/library"), ("GET", "/api/status"), ("GET", "/api/rewrites"), ("GET", "/api/examples"), ("GET", "/api/jobs"),
+PUBLIC = {("GET", "/api/support"), ("GET", "/api/now"), ("GET", "/api/library"), ("GET", "/api/status"), ("GET", "/api/rewrites"), ("GET", "/api/examples"), ("GET", "/api/jobs"),
           ("POST", "/api/jobs"), ("POST", "/api/event"), ("POST", "/api/worker/next")}
 
 
@@ -511,6 +619,7 @@ if __name__ == "__main__":
     ap.add_argument("--public-port", type=int, default=8799, help="the public door (0: none)")
     a = ap.parse_args()
     threading.Thread(target=save_jobs_forever, daemon=True).start()
+    threading.Thread(target=read_supporters_forever, daemon=True).start()
     if a.public_port:
         public = ThreadingHTTPServer(("127.0.0.1", a.public_port), PublicHandler)
         threading.Thread(target=public.serve_forever, daemon=True).start()
