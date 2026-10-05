@@ -53,7 +53,7 @@ RARE_ZIPF = 3.0          # words outside the age list: hard when rarer than once
 EVERYDAY_ZIPF = 3.3      # a single word this common in everyday English (~2 per million words) is not looked up
 MAX_PAPER_SHARE = 0.01   # a term used in more than 1% of corpus papers is learned from training data: no lookup
 MIN_OVERLAP = 2          # shared content words between a page and the paper, else "check the sense"
-USER_AGENT = "ScholarsReadingList-glossary/0.1 (https://scholarsreadinglist.com; research use)"
+USER_AGENT = "sciencemadereadable-glossary/0.1 (https://sciencemadereadable.com; research use)"
 SECTIONS = ["title", "abstract", "introduction_first", "introduction_rest", "methods", "results",
             "discussion", "conclusion"]
 STOP = set("""a an the of and or in on at to for from by with without into onto over under than then

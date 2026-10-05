@@ -5,16 +5,17 @@
   "scripts": {
     "build": "node tools/build.mjs",
     "check-prompts": "node --conditions=functai-source tools/check_prompts.ts",
-    "postinstall": "mkdir -p node_modules/@lm15 && ln -sfn ../../../../../functai/ts/node_modules/@lm15/lm15 node_modules/@lm15/lm15",
+    "postinstall": "mkdir -p node_modules/@lm15 && ln -sfn ../../../../functai/ts/node_modules/@lm15/lm15 node_modules/@lm15/lm15",
     "worker": "node --conditions=functai-source worker/worker.ts"
   },
   "dependencies": {
     "dompurify": "^3.4.16",
     "esbuild": "^0.25.12",
-    "functai": "file:../../../functai/ts",
+    "functai": "file:../../functai/ts",
     "marked": "^15.0.12"
   },
   "devDependencies": {
     "@xmldom/xmldom": "^0.9.12"
-  }
+  },
+  "license": "Apache-2.0"
 }

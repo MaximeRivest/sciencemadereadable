@@ -1,5 +1,5 @@
 import { OpenAIChatLM } from "@lm15/lm15";
-import * as P from "/home/maxime/Projects/scholarsreadinglist/sciencemadereadable/app/web/src/programs.ts";
+import * as P from "../web/src/programs.ts";
 const client = new OpenAIChatLM({ apiKey: "none", baseUrl: "http://127.0.0.1:8014/v1" });
 const router: any = { resolve: (model: string) => ({ provider: "openai", model }),
   complete: (r: any, o: any) => client.complete(r, o), stream: (r: any, o: any) => client.stream(r, o) };

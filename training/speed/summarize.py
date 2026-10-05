@@ -1,6 +1,6 @@
 """Time and price per paper for the three students (rented GPUs) and the three API writers.
 
-    python3 research/training/speed/summarize.py
+    python3 training/speed/summarize.py
 
 Time per paper: the 3 benchmark test papers, one at a time (what one reader waits).
 Price per paper: students = GPU price per hour / papers per hour with the GPU kept full

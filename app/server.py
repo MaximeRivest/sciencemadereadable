@@ -104,7 +104,7 @@ class Refused(Exception):
 
 
 def fetch(url: str, timeout: int = 60) -> bytes:
-    req = urllib.request.Request(url, headers={"User-Agent": "scholars-reading-list-demo (maxime.rivest@gmail.com)"})
+    req = urllib.request.Request(url, headers={"User-Agent": "sciencemadereadable (https://sciencemadereadable.com)"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read()
 

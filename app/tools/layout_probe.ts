@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { DOMParser } from "@xmldom/xmldom";
-import { splitSections, sectionNodes, layout } from "/home/maxime/Projects/scholarsreadinglist/sciencemadereadable/app/web/src/jats.ts";
+import { splitSections, sectionNodes, layout } from "../web/src/jats.ts";
 for (const id of ["PMC12995867", "PMC13376281", "PMC10175599"]) {
-  const doc = new DOMParser().parseFromString(readFileSync(`/home/maxime/Projects/scholarsreadinglist/sciencemadereadable/paper_corpus/xml/${id}.xml`, "utf8"), "text/xml");
+  const doc = new DOMParser().parseFromString(readFileSync(new URL(`../../paper_corpus/xml/${id}.xml`, import.meta.url), "utf8"), "text/xml");
   const s = splitSections(doc.documentElement)!; const nodes = sectionNodes(doc.documentElement);
   const figs = doc.getElementsByTagName("fig").length, tabs = doc.getElementsByTagName("table-wrap").length;
   const found: string[] = [];

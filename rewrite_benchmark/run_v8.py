@@ -1,5 +1,5 @@
 import sys, json
-sys.path.insert(0, "/home/maxime/Projects/scholarsreadinglist/sciencemadereadable/rewrite_benchmark")
+sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent))
 import dpyr, translator
 from prepare import prepare_any, prepare_source
 from pathlib import Path

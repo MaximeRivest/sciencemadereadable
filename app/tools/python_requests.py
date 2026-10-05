@@ -58,4 +58,4 @@ for name, (fn, lm, inputs) in cases.items():
 out["studentOpening"]["training_prompt"] = student.conversation(student.OPENING_G, cases["studentOpening"][2],
     {"title": "", "abstract": "", "introduction_first": "", "conclusion": ""})[0]
 out["studentSection"]["training_prompt"] = student.conversation(student.SECTION_G, cases["studentSection"][2], {"result": ""})[0]
-import pickle; pickle.dump(out, open("/tmp/fx/py_requests.pkl", "wb"))
+import pickle; pickle.dump(out, open(ROOT / "app/tools/py_requests.pkl", "wb"))

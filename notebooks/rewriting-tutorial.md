@@ -40,7 +40,7 @@ In the notebook we call it `tk`. First, tell Python where to find it:
 
 ```python
 import sys
-sys.path.insert(0, "/home/maxime/Projects/scholarsreadinglist/sciencemadereadable/rewrite_benchmark")  # finds tutorial_kit.py
+sys.path.insert(0, "rewrite_benchmark")  # finds tutorial_kit.py
 ```
 
 Now load everything we saved:
@@ -509,7 +509,7 @@ In the notebook we call it `tk`. First, tell Python where to find it:
 
 ```python
 import sys
-sys.path.insert(0, "/home/maxime/Projects/scholarsreadinglist/sciencemadereadable/rewrite_benchmark")  # finds tutorial_kit.py
+sys.path.insert(0, "rewrite_benchmark")  # finds tutorial_kit.py
 ```
 
 Now load everything we saved:
@@ -965,7 +965,7 @@ In the notebook we call it `tk`. First, tell Python where to find it:
 
 ```python
 import sys
-sys.path.insert(0, "/home/maxime/Projects/scholarsreadinglist/sciencemadereadable/rewrite_benchmark")  # finds tutorial_kit.py
+sys.path.insert(0, "rewrite_benchmark")  # finds tutorial_kit.py
 ```
 
 Now load everything we saved:
@@ -1434,7 +1434,7 @@ In the notebook we call it `tk`. First, tell Python where to find it:
 
 ```python
 import sys
-sys.path.insert(0, "/home/maxime/Projects/scholarsreadinglist/sciencemadereadable/rewrite_benchmark")  # finds tutorial_kit.py
+sys.path.insert(0, "rewrite_benchmark")  # finds tutorial_kit.py
 ```
 
 Now load everything we saved:

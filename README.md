@@ -8,8 +8,10 @@ information, uncertainty, headings and order, written so that a curious 14-year-
 It is done by a small model we trained (Qwen3.5 9B, fine-tuned on about 4,400 papers rewritten by
 large models), which runs on a single GPU.
 
-Models: [maximerivest/qwen3.5-9b-paper-rewriter](https://huggingface.co/maximerivest/qwen3.5-9b-paper-rewriter),
-[maximerivest/qwen3.5-4b-paper-rewriter](https://huggingface.co/maximerivest/qwen3.5-4b-paper-rewriter).
+- **Models:** [qwen3.5-9b-paper-rewriter](https://huggingface.co/maximerivest/qwen3.5-9b-paper-rewriter) (the one the site uses),
+  [qwen3.5-4b-paper-rewriter](https://huggingface.co/maximerivest/qwen3.5-4b-paper-rewriter)
+- **Training data:** [paper-rewrites-for-young-readers](https://huggingface.co/datasets/maximerivest/paper-rewrites-for-young-readers)
+- **Write-up:** `training/figures/blog/x_article.md`, with its figures in `training/figures/blog/out/`
 
 ## How it fits together
 
@@ -39,9 +41,11 @@ uv sync
 .venv/bin/python app/server.py              # queue, paper service and the page: http://127.0.0.1:8795
 ```
 
-The page and the worker (Node 22+):
+The page and the worker (Node 22+). They use [functai](https://github.com/MaximeRivest/functai)'s
+TypeScript library, which is not on npm yet: clone it next to this folder first.
 
 ```
+git clone https://github.com/MaximeRivest/functai ../functai
 cd app && npm install && node tools/build.mjs
 npm run worker                              # takes jobs, runs the model through vLLM (app/worker/)
 ```
@@ -59,7 +63,20 @@ paper copies, the large-model rewrites, the offline Wikipedia copy (46 GB,
 `glossary/data/offline/download.sh`), training data and checkpoints (about 200 GB), and run outputs.
 The trained models are on Hugging Face (above).
 
+## Next version
+
+`training/v3/` builds the next training set: every fact in an answer must come from the paper, the
+glossary given with it, or what a curious 14-year-old knows; anything else becomes a ⟦marker⟧ to be
+explained afterwards, so the small model writes instead of recalling. Design: `training/dataset_v3.md`.
+A 50-paper pilot (`training/v3/pilot50.py`) finished on 2026-10-05: in a blind comparison the judge
+still preferred the current answers (159 to 40, 41 ties), so the recipe needs more work before training.
+
 ## Status
 
 A research project that went live on 2026-10-05. The rewrites read well and keep the papers'
 structure, but they can still contain factual errors: always check the original, shown alongside.
+
+## Licence
+
+Code and notes: [Apache 2.0](LICENSE). The papers shown and rewritten are open-access articles under
+CC BY; their rewrites credit the original authors and link to the paper.

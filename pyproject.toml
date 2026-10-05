@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Scientific papers rewritten in plain words, faithfully, by small trained models"
 readme = "README.md"
 requires-python = ">=3.12"
+license = "Apache-2.0"
 # The app's paper service, the corpus, the glossary, the benchmark and the training-data pipeline.
 # (Model training itself has its own environment: training/README.md.)
 dependencies = [

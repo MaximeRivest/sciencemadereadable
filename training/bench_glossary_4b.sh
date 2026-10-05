@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 4B step 152 with the reference glossary (no retraining), same 3 papers.
-cd ~/Projects/scholarsreadinglist/sciencemadereadable/training
+cd "$(dirname "$0")"
 NAME=student-qwen35-4b-step-00152-glossary
 LLAMA=/nix/store/8zgm2wxi6s5vxx8q334h0hgpx3wbq7ab-llama-cpp-99999/bin/llama-server
 .venv/bin/python export_gguf.py --base Qwen/Qwen3.5-4B --weights runs/qwen35-4b/adapters/step-00152 --out exports/qwen35-4b-step-00152.gguf > logs/bench-$NAME.log 2>&1

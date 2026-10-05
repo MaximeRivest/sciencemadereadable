@@ -7,8 +7,8 @@
 # For each model: latency (3 test papers, one at a time) and throughput (128 papers at once),
 # then the MTP variants of the 4B and 9B for latency only.
 H=srl@$1; LABEL=$2; LP=$3
-cd ~/Projects/scholarsreadinglist
-LOG=research/training/speed/$LABEL.log
+cd "$(dirname "$0")/../.."
+LOG=training/speed/$LABEL.log
 SETTINGS='--dtype bfloat16 --max-model-len 65536 --max-num-seqs 512 --max-num-batched-tokens 16384
   --gpu-memory-utilization 0.92 --enable-prefix-caching --override-generation-config {"temperature":0.0}
   --default-chat-template-kwargs {"enable_thinking":false}'
@@ -33,10 +33,10 @@ serve() {  # serve DIR [SPEC]
     -d '{"model":"local","messages":[{"role":"user","content":"Say hello."}],"max_tokens":20}' >/dev/null
 }
 bench() {  # bench MODE NAME
-  PYTHONPATH=/tmp/fx/functai-train/python .venv/bin/python research/training/bench_speed.py $1 $2 $LP 2>&1 \
+  .venv/bin/python training/bench_speed.py $1 $2 $LP 2>&1 \
     | grep --line-buffered -v -i warn | tee -a $LOG
 }
-T=research/training
+T=training
 echo "[$(date -Is)] $LABEL $(ssh -n $H 'nvidia-smi --query-gpu=name --format=csv,noheader')" | tee -a $LOG
 for m in m08:0.8b:$T/exports/qwen35-0.8b-glossary-scratch-final-hf m4:4b:$T/exports/qwen35-4b-glossary-scratch-final-hf \
          m9:9b:$T/runs/qwen35-9b-full-glossary/models/final; do

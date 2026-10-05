@@ -87,3 +87,4 @@ article-tokens/text/
 *.gguf
 *.safetensors
 *.tmp
+app/tools/py_requests.pkl
