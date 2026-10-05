@@ -1,13 +1,14 @@
 # Science made readable · the app
 
-**Live: https://sciencemadereadable.com** (GitHub Pages: MaximeRivest/sciencemadereadable; DNS at GoDaddy:
-apex A/AAAA → GitHub Pages, www → maximerivest.github.io). The queue's public door is Tailscale Funnel
-on lambda, https://lambda.tail69222b.ts.net:10000 → `server.py`'s public port 8799 (queue, saved
-rewrites, examples, counts only). Publish a new version (from the repository root):
+**Live: https://sciencemadereadable.com**, served by GitHub Pages from the `gh-pages` branch of this
+repository (DNS at GoDaddy: apex A/AAAA → GitHub Pages, www → maximerivest.github.io). The queue's
+public door is Tailscale Funnel on lambda, https://lambda.tail69222b.ts.net:10000 → `server.py`'s public
+port 8799 (queue, saved rewrites, examples, counts only). Publish a new version of the page (from the
+repository root; `SITE` is a checkout of the `gh-pages` branch):
 
 ```
 (cd app && node tools/build.mjs) && .venv/bin/python app/tools/export_site.py https://lambda.tail69222b.ts.net:10000 sciencemadereadable.com
-cd ~/Projects/sciencemadereadable-site && rsync -a --delete --exclude .git --exclude README.md ~/Projects/scholarsreadinglist/sciencemadereadable/app/site/ ./ && git commit -am update && git push
+rsync -a --delete --exclude .git app/site/ "$SITE"/ && git -C "$SITE" add -A && git -C "$SITE" commit -m update && git -C "$SITE" push
 ```
 
 ## Where the models run
