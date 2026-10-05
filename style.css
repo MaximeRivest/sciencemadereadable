@@ -9,6 +9,7 @@
           --accent: #6cc39a; --accent-soft: #1f2d26; --card: #1d1c19; }
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { background: var(--paper); }
 body { margin: 0; color: var(--ink); font: 17px/1.6 var(--sans); min-height: 100vh; display: flex; flex-direction: column; }
 a { color: var(--accent); }
