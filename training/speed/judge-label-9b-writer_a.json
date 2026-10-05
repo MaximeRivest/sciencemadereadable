@@ -1,0 +1,69 @@
+{
+ "name": "label-9b-writer_a",
+ "papers": [
+  "PMC12995867",
+  "PMC13376281",
+  "PMC10175599"
+ ],
+ "units": 15,
+ "units_compared": 15,
+ "candidates": {
+  "label-9b-writer_a": {
+   "faithful_and_exact": 7.266666666666667,
+   "understandable": 7.8,
+   "pleasant_to_read": 7.666666666666667,
+   "structure_and_voice": 8.6,
+   "mean": 7.833333333333333,
+   "major_issues": 14,
+   "numbers_kept": 0.9118040198535554,
+   "headings_kept": 0.898888888888889,
+   "third_person": 0,
+   "bullets_added": 0,
+   "empty_units": 0,
+   "status": {
+    "ok": 15,
+    "invalid": 0,
+    "empty": 0,
+    "error": 0
+   }
+  },
+  "opus": {
+   "faithful_and_exact": 8.266666666666667,
+   "understandable": 8.533333333333333,
+   "pleasant_to_read": 8.066666666666666,
+   "structure_and_voice": 8.933333333333334,
+   "mean": 8.45,
+   "major_issues": 2,
+   "numbers_kept": 0.9129333459009142,
+   "headings_kept": 0.868989898989899,
+   "third_person": 0,
+   "bullets_added": 2,
+   "empty_units": 0,
+   "status": {
+    "ok": 15,
+    "invalid": 0,
+    "empty": 0,
+    "error": 0
+   }
+  },
+  "qwen4b": {
+   "faithful_and_exact": 2.6666666666666665,
+   "understandable": 3.933333333333333,
+   "pleasant_to_read": 4.666666666666667,
+   "structure_and_voice": 3.7333333333333334,
+   "mean": 3.75,
+   "major_issues": 134,
+   "numbers_kept": 0.445515222170585,
+   "headings_kept": 0.3729100529100529,
+   "third_person": 0,
+   "bullets_added": 23,
+   "empty_units": 0,
+   "status": {
+    "ok": 15,
+    "invalid": 0,
+    "empty": 0,
+    "error": 0
+   }
+  }
+ }
+}

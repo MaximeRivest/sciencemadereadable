@@ -1,0 +1,211 @@
+{
+ "typical_words": 7100.0,
+ "test_words": 4459.666666666667,
+ "gpu_per_hour": {
+  "rtx6000": 1.8,
+  "h100": 4.5
+ },
+ "api_prices": {
+  "opus": [
+   4.0,
+   20.0,
+   "Claude Opus 5.5 (platform.claude.com pricing)"
+  ],
+  "astra": [
+   10.0,
+   50.0,
+   "GPT-6 Astra (developers.openai.com)"
+  ],
+  "luna": [
+   0.1,
+   0.5,
+   "GPT-6 Luna (developers.openai.com)"
+  ],
+  "sonnet": [
+   2.0,
+   10.0,
+   "Claude Sonnet 5.5 (platform.claude.com pricing)"
+  ],
+  "sol": [
+   2.0,
+   10.0,
+   "GPT-6 Sol (developers.openai.com)"
+  ],
+  "terra": [
+   2.0,
+   12.0,
+   "GPT-5.6 Terra (developers.openai.com)"
+  ]
+ },
+ "rows": [
+  {
+   "model": "our 0.8b",
+   "where": "rtx6000",
+   "seconds": [
+    9.33743691444397,
+    14.127570152282715,
+    14.401803731918335
+   ],
+   "papers_per_hour": 1661.5216414014235,
+   "words_per_paper": 7118.3125,
+   "usd_per_word": 1.521911689431352e-07,
+   "failed_calls": 10,
+   "calls": 640
+  },
+  {
+   "model": "our 0.8b",
+   "where": "h100",
+   "seconds": [
+    6.948613166809082,
+    9.597376346588135,
+    10.176519393920898
+   ],
+   "papers_per_hour": 3117.1140598192605,
+   "words_per_paper": 7118.3125,
+   "usd_per_word": 2.0280692010020754e-07,
+   "failed_calls": 11,
+   "calls": 640
+  },
+  {
+   "model": "our 4b",
+   "where": "rtx6000",
+   "seconds": [
+    22.4813072681427,
+    33.546955823898315,
+    34.912683725357056
+   ],
+   "seconds_mtp": [
+    15.275287389755249,
+    23.029852151870728,
+    23.585739135742188
+   ],
+   "papers_per_hour": 502.3927293111327,
+   "words_per_paper": 7118.3125,
+   "usd_per_word": 5.03329180690824e-07,
+   "failed_calls": 4,
+   "calls": 640
+  },
+  {
+   "model": "our 4b",
+   "where": "h100",
+   "seconds": [
+    13.444560527801514,
+    26.595736026763916,
+    20.77214479446411
+   ],
+   "seconds_mtp": [
+    7.72295069694519,
+    11.267184495925903
+   ],
+   "papers_per_hour": 1063.8986109998925,
+   "words_per_paper": 7118.3125,
+   "usd_per_word": 5.942035223439747e-07,
+   "failed_calls": 4,
+   "calls": 640
+  },
+  {
+   "model": "our 9b",
+   "where": "rtx6000",
+   "seconds": [
+    36.91198134422302,
+    55.18926525115967,
+    56.76873755455017
+   ],
+   "seconds_mtp": [
+    24.175387144088745,
+    30.704404830932617,
+    33.03768277168274
+   ],
+   "papers_per_hour": 392.01741997793806,
+   "words_per_paper": 7118.3125,
+   "usd_per_word": 6.450451126468571e-07,
+   "failed_calls": 5,
+   "calls": 640
+  },
+  {
+   "model": "our 9b",
+   "where": "h100",
+   "seconds": [
+    20.40664267539978,
+    30.219558715820312,
+    31.80076575279236
+   ],
+   "seconds_mtp": [
+    11.3905770778656,
+    16.677876949310303,
+    16.552101612091064
+   ],
+   "papers_per_hour": 806.8114882782412,
+   "words_per_paper": 7118.3125,
+   "usd_per_word": 7.835440016131552e-07,
+   "failed_calls": 4,
+   "calls": 640
+  },
+  {
+   "model": "opus",
+   "where": "API",
+   "seconds": [
+    72.61152076721191,
+    84.86619830131531,
+    92.18337202072144
+   ],
+   "usd_per_test_paper": 0.612372,
+   "usd_per_word": 0.00013731340159952164
+  },
+  {
+   "model": "astra",
+   "where": "API",
+   "seconds": [
+    105.86244368553162,
+    286.90078043937683,
+    510.39155173301697
+   ],
+   "usd_per_test_paper": 0.7575533333333333,
+   "usd_per_word": 0.00016986770311682486
+  },
+  {
+   "model": "luna",
+   "where": "API",
+   "seconds": [
+    58.99456024169922,
+    92.61912989616394,
+    94.14497327804565
+   ],
+   "usd_per_test_paper": 0.0067319,
+   "usd_per_word": 1.5095074370281783e-06
+  },
+  {
+   "model": "sonnet",
+   "where": "API",
+   "seconds": [
+    49.54475450515747,
+    73.76675367355347,
+    56.64558672904968
+   ],
+   "usd_per_test_paper": 0.27384866666666663,
+   "usd_per_word": 6.140563569773524e-05
+  },
+  {
+   "model": "sol",
+   "where": "API",
+   "seconds": [
+    55.17508363723755,
+    71.61393642425537,
+    84.73873591423035
+   ],
+   "usd_per_test_paper": 0.134458,
+   "usd_per_word": 3.0149786979594883e-05
+  },
+  {
+   "model": "terra",
+   "where": "API",
+   "seconds": [
+    51.45312261581421,
+    84.61944246292114,
+    79.78829646110535
+   ],
+   "usd_per_test_paper": 0.15474,
+   "usd_per_word": 3.469766051274385e-05
+  }
+ ]
+}

@@ -1,0 +1,12 @@
+node_modules/
+cache/
+.shots/
+server.log
+web/app.js
+web/app.js.map
+students.json
+stats/
+worker_token
+site/
+jobs.json
+jobs.tmp

@@ -1,0 +1,220 @@
+{
+ "writer": "astra",
+ "lm": "openai-codex:gpt-6-astra",
+ "settings": "{'lm': 'openai-codex:gpt-6-astra', 'reasoning': Reasoning(effort='low', thinking_budget=None, summary=None)}",
+ "papers": [
+  {
+   "paper_id": "PMC12995867",
+   "seconds": 105.86244368553162,
+   "calls": [
+    {
+     "step": "opening",
+     "seconds": 41.50802969932556,
+     "start": 1791142788.1955097,
+     "usage": {
+      "input_tokens": 6701,
+      "output_tokens": 1306,
+      "total_tokens": 8007,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 0
+     }
+    },
+    {
+     "step": "introduction_rest",
+     "seconds": 26.300713777542114,
+     "start": 1791142829.7048678,
+     "usage": {
+      "input_tokens": 3261,
+      "output_tokens": 810,
+      "total_tokens": 4071,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 0
+     }
+    },
+    {
+     "step": "discussion",
+     "seconds": 55.076465368270874,
+     "start": 1791142829.7202256,
+     "usage": {
+      "input_tokens": 4241,
+      "output_tokens": 1776,
+      "total_tokens": 6017,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 0
+     }
+    },
+    {
+     "step": "results",
+     "seconds": 59.97623682022095,
+     "start": 1791142829.7138467,
+     "usage": {
+      "input_tokens": 3901,
+      "output_tokens": 1880,
+      "total_tokens": 5781,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 25
+     }
+    },
+    {
+     "step": "methods",
+     "seconds": 64.34734916687012,
+     "start": 1791142829.7097728,
+     "usage": {
+      "input_tokens": 4184,
+      "output_tokens": 2064,
+      "total_tokens": 6248,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 0
+     }
+    }
+   ]
+  },
+  {
+   "paper_id": "PMC13376281",
+   "seconds": 286.90078043937683,
+   "calls": [
+    {
+     "step": "opening",
+     "seconds": 57.16639566421509,
+     "start": 1791142894.058051,
+     "usage": {
+      "input_tokens": 9290,
+      "output_tokens": 1804,
+      "total_tokens": 11094,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 30
+     }
+    },
+    {
+     "step": "introduction_rest",
+     "seconds": 31.983705520629883,
+     "start": 1791142951.2493088,
+     "usage": {
+      "input_tokens": 4229,
+      "output_tokens": 1266,
+      "total_tokens": 5495,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 0
+     }
+    },
+    {
+     "step": "results",
+     "seconds": 128.4866659641266,
+     "start": 1791142951.2663517,
+     "usage": {
+      "input_tokens": 4478,
+      "output_tokens": 1928,
+      "total_tokens": 6406,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 0
+     }
+    },
+    {
+     "step": "discussion",
+     "seconds": 222.18091702461243,
+     "start": 1791142951.2664478,
+     "usage": {
+      "input_tokens": 5004,
+      "output_tokens": 2536,
+      "total_tokens": 7540,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 58
+     }
+    },
+    {
+     "step": "methods",
+     "seconds": 222.19268012046814,
+     "start": 1791142951.2587004,
+     "usage": {
+      "input_tokens": 5380,
+      "output_tokens": 2831,
+      "total_tokens": 8211,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 0
+     }
+    }
+   ]
+  },
+  {
+   "paper_id": "PMC10175599",
+   "seconds": 510.39155173301697,
+   "calls": [
+    {
+     "step": "opening",
+     "seconds": 192.1871476173401,
+     "start": 1791143188.9029562,
+     "usage": {
+      "input_tokens": 9825,
+      "output_tokens": 1845,
+      "total_tokens": 11670,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 0
+     }
+    },
+    {
+     "step": "introduction_rest",
+     "seconds": 258.773588180542,
+     "start": 1791143383.9683797,
+     "usage": {
+      "input_tokens": 4105,
+      "output_tokens": 1196,
+      "total_tokens": 5301,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 0
+     }
+    },
+    {
+     "step": "results",
+     "seconds": 69.74994611740112,
+     "start": 1791143599.2600634,
+     "usage": {
+      "input_tokens": 4957,
+      "output_tokens": 2259,
+      "total_tokens": 7216,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 0
+     }
+    },
+    {
+     "step": "methods",
+     "seconds": 80.14822196960449,
+     "start": 1791143599.238593,
+     "usage": {
+      "input_tokens": 5227,
+      "output_tokens": 2594,
+      "total_tokens": 7821,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 0
+     }
+    },
+    {
+     "step": "discussion",
+     "seconds": 97.90328288078308,
+     "start": 1791143599.288414,
+     "usage": {
+      "input_tokens": 5953,
+      "output_tokens": 3211,
+      "total_tokens": 9164,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 0
+     }
+    }
+   ]
+  }
+ ]
+}

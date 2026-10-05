@@ -1,0 +1,89 @@
+# Science made readable: code and notes are published; data, models and run outputs are not.
+# Everything below lives next to the code on the working machine (hundreds of GB) and is
+# rebuilt by the scripts, downloaded, or published elsewhere (models: Hugging Face).
+
+# Python / Node
+.venv
+__pycache__/
+.pytest_cache/
+node_modules/
+*.pyc
+
+# Secrets and machine-specific settings
+app/worker_token
+app/worker/config*.json
+!app/worker/config.example.json
+!app/worker/config.home.example.json
+app/students.json
+app/rent/h100_ip
+*.env
+.env*
+
+# App: runtime state and build output
+app/cache/
+app/rewrites/
+app/stats/
+app/jobs.json
+app/*.tmp
+app/site/
+app/web/app.js
+app/web/app.js.map
+app/tools/fixtures.json
+app/**/*.log
+app/.shots/
+
+# Paper corpus: copies of papers, rewrites made by models, run state
+paper_corpus/xml/
+paper_corpus/library/
+paper_corpus/rewrites/
+paper_corpus/rewrites_astra/
+paper_corpus/*.parquet
+paper_corpus/*.jsonl
+paper_corpus/progress.log
+
+# Reference glossary: offline Wikipedia/Wiktionary (46 GB), web cache, outputs
+glossary/data/*
+!glossary/data/offline/
+glossary/data/offline/*
+!glossary/data/offline/download.sh
+glossary/out*/
+glossary/*.log
+
+# Benchmark and baselines: model outputs and judgments
+rewrite_benchmark/runs/
+model_baselines/judgments/
+model_baselines/rewrites/
+model_baselines/*.parquet
+model_baselines/ettin_input.json
+
+# Training: data, checkpoints, exported models, logs, outputs
+training/.venv/
+training/data/*
+!training/data/validation_ids.txt
+training/runs/
+training/exports/
+training/logs/
+training/speed/rewrites/
+training/speed/first-try-32k/
+training/speed/*.log
+training/head_to_head/calls*.jsonl
+training/hf/dataset/
+training/hf/qwen3.5-*/
+training/tools/
+training/rent/*.log
+training/v3/pilot*/
+training/**/*.gguf
+training/**/*.safetensors
+training/**/*.pt
+
+# Article token measurements: paper copies
+article-tokens/xml/
+article-tokens/text/
+
+# Any stray big binary data
+*.parquet
+*.sqlite
+*.pt
+*.gguf
+*.safetensors
+*.tmp

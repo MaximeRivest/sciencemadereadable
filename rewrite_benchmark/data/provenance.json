@@ -1,0 +1,18 @@
+{
+  "session_id": "01a0e736-a851-75b8-8af7-9bab57c64275",
+  "session_date": "2026-09-28T08:51:54.066Z",
+  "session_filename": "2026-09-28T08-51-54-066Z_01a0e736-a851-75b8-8af7-9bab57c64275.jsonl",
+  "branch_leaf": "2b066f5c",
+  "selected_entry_ids": {
+    "opening": "7edc86a7",
+    "introduction_rest": "c2d8f99b",
+    "methods": "ebe8df96",
+    "results": "f08d074c",
+    "discussion": "2b066f5c"
+  },
+  "source_xml_sha256": "62f10d429307ae0d32864578024ed8c9d0692487b0c7415aa83adb8b3513e4e2",
+  "pairs_sha256": "bbf784362ea4a3bbc278f9cb988671c7d112f4378d9fc5c8067cac10fae11e0e",
+  "messages_sha256": "dd5ab7a6143e4d13fd618a3b8ce45beb7c46f5a9dae51616b76c7398078d3d03",
+  "export_policy": "Only the five selected assistant messages' visible text and allowlisted provenance. No thinking, tool messages, system prompts, credentials, or unrelated conversation.",
+  "pairing_policy": "Eight source sections paired to exact character spans; outer section headings and conversational wrappers omitted. Inner headings unchanged. Editorial notes retained separately. No reference text rewritten by the exporter."
+}

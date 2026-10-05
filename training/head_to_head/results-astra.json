@@ -1,0 +1,8490 @@
+{
+ "judge": "astra",
+ "writers": {
+  "Opus": "opus",
+  "Sonnet": "v8-sonnet",
+  "Astra": "v8-astra",
+  "Sol": "v8-sol",
+  "Terra 5.6": "v8-terra",
+  "Luna": "v8-luna",
+  "Our 9B": "student-9b-glossary-final-greedy",
+  "Our 4B": "student-4b-glossary-final-greedy",
+  "Our 0.8B": "student-0.8b-glossary-final-greedy"
+ },
+ "reader": "a curious 14-year-old",
+ "grid": {
+  "Opus|Sonnet": {
+   "wins": 3,
+   "losses": 9,
+   "no_clear_winner": 3
+  },
+  "Opus|Astra": {
+   "wins": 0,
+   "losses": 15,
+   "no_clear_winner": 0
+  },
+  "Opus|Sol": {
+   "wins": 2,
+   "losses": 10,
+   "no_clear_winner": 3
+  },
+  "Opus|Terra 5.6": {
+   "wins": 0,
+   "losses": 14,
+   "no_clear_winner": 1
+  },
+  "Opus|Luna": {
+   "wins": 2,
+   "losses": 11,
+   "no_clear_winner": 2
+  },
+  "Opus|Our 9B": {
+   "wins": 11,
+   "losses": 2,
+   "no_clear_winner": 2
+  },
+  "Opus|Our 4B": {
+   "wins": 11,
+   "losses": 0,
+   "no_clear_winner": 4
+  },
+  "Opus|Our 0.8B": {
+   "wins": 15,
+   "losses": 0,
+   "no_clear_winner": 0
+  },
+  "Sonnet|Opus": {
+   "wins": 9,
+   "losses": 3,
+   "no_clear_winner": 3
+  },
+  "Sonnet|Astra": {
+   "wins": 1,
+   "losses": 13,
+   "no_clear_winner": 1
+  },
+  "Sonnet|Sol": {
+   "wins": 6,
+   "losses": 5,
+   "no_clear_winner": 4
+  },
+  "Sonnet|Terra 5.6": {
+   "wins": 2,
+   "losses": 9,
+   "no_clear_winner": 4
+  },
+  "Sonnet|Luna": {
+   "wins": 7,
+   "losses": 7,
+   "no_clear_winner": 1
+  },
+  "Sonnet|Our 9B": {
+   "wins": 12,
+   "losses": 2,
+   "no_clear_winner": 1
+  },
+  "Sonnet|Our 4B": {
+   "wins": 13,
+   "losses": 0,
+   "no_clear_winner": 2
+  },
+  "Sonnet|Our 0.8B": {
+   "wins": 15,
+   "losses": 0,
+   "no_clear_winner": 0
+  },
+  "Astra|Opus": {
+   "wins": 15,
+   "losses": 0,
+   "no_clear_winner": 0
+  },
+  "Astra|Sonnet": {
+   "wins": 13,
+   "losses": 1,
+   "no_clear_winner": 1
+  },
+  "Astra|Sol": {
+   "wins": 13,
+   "losses": 1,
+   "no_clear_winner": 1
+  },
+  "Astra|Terra 5.6": {
+   "wins": 10,
+   "losses": 4,
+   "no_clear_winner": 1
+  },
+  "Astra|Luna": {
+   "wins": 12,
+   "losses": 0,
+   "no_clear_winner": 3
+  },
+  "Astra|Our 9B": {
+   "wins": 15,
+   "losses": 0,
+   "no_clear_winner": 0
+  },
+  "Astra|Our 4B": {
+   "wins": 15,
+   "losses": 0,
+   "no_clear_winner": 0
+  },
+  "Astra|Our 0.8B": {
+   "wins": 15,
+   "losses": 0,
+   "no_clear_winner": 0
+  },
+  "Sol|Opus": {
+   "wins": 10,
+   "losses": 2,
+   "no_clear_winner": 3
+  },
+  "Sol|Sonnet": {
+   "wins": 5,
+   "losses": 6,
+   "no_clear_winner": 4
+  },
+  "Sol|Astra": {
+   "wins": 1,
+   "losses": 13,
+   "no_clear_winner": 1
+  },
+  "Sol|Terra 5.6": {
+   "wins": 5,
+   "losses": 9,
+   "no_clear_winner": 1
+  },
+  "Sol|Luna": {
+   "wins": 4,
+   "losses": 6,
+   "no_clear_winner": 5
+  },
+  "Sol|Our 9B": {
+   "wins": 11,
+   "losses": 1,
+   "no_clear_winner": 3
+  },
+  "Sol|Our 4B": {
+   "wins": 13,
+   "losses": 1,
+   "no_clear_winner": 1
+  },
+  "Sol|Our 0.8B": {
+   "wins": 15,
+   "losses": 0,
+   "no_clear_winner": 0
+  },
+  "Terra 5.6|Opus": {
+   "wins": 14,
+   "losses": 0,
+   "no_clear_winner": 1
+  },
+  "Terra 5.6|Sonnet": {
+   "wins": 9,
+   "losses": 2,
+   "no_clear_winner": 4
+  },
+  "Terra 5.6|Astra": {
+   "wins": 4,
+   "losses": 10,
+   "no_clear_winner": 1
+  },
+  "Terra 5.6|Sol": {
+   "wins": 9,
+   "losses": 5,
+   "no_clear_winner": 1
+  },
+  "Terra 5.6|Luna": {
+   "wins": 9,
+   "losses": 4,
+   "no_clear_winner": 2
+  },
+  "Terra 5.6|Our 9B": {
+   "wins": 15,
+   "losses": 0,
+   "no_clear_winner": 0
+  },
+  "Terra 5.6|Our 4B": {
+   "wins": 14,
+   "losses": 0,
+   "no_clear_winner": 1
+  },
+  "Terra 5.6|Our 0.8B": {
+   "wins": 15,
+   "losses": 0,
+   "no_clear_winner": 0
+  },
+  "Luna|Opus": {
+   "wins": 11,
+   "losses": 2,
+   "no_clear_winner": 2
+  },
+  "Luna|Sonnet": {
+   "wins": 7,
+   "losses": 7,
+   "no_clear_winner": 1
+  },
+  "Luna|Astra": {
+   "wins": 0,
+   "losses": 12,
+   "no_clear_winner": 3
+  },
+  "Luna|Sol": {
+   "wins": 6,
+   "losses": 4,
+   "no_clear_winner": 5
+  },
+  "Luna|Terra 5.6": {
+   "wins": 4,
+   "losses": 9,
+   "no_clear_winner": 2
+  },
+  "Luna|Our 9B": {
+   "wins": 12,
+   "losses": 1,
+   "no_clear_winner": 2
+  },
+  "Luna|Our 4B": {
+   "wins": 12,
+   "losses": 0,
+   "no_clear_winner": 3
+  },
+  "Luna|Our 0.8B": {
+   "wins": 15,
+   "losses": 0,
+   "no_clear_winner": 0
+  },
+  "Our 9B|Opus": {
+   "wins": 2,
+   "losses": 11,
+   "no_clear_winner": 2
+  },
+  "Our 9B|Sonnet": {
+   "wins": 2,
+   "losses": 12,
+   "no_clear_winner": 1
+  },
+  "Our 9B|Astra": {
+   "wins": 0,
+   "losses": 15,
+   "no_clear_winner": 0
+  },
+  "Our 9B|Sol": {
+   "wins": 1,
+   "losses": 11,
+   "no_clear_winner": 3
+  },
+  "Our 9B|Terra 5.6": {
+   "wins": 0,
+   "losses": 15,
+   "no_clear_winner": 0
+  },
+  "Our 9B|Luna": {
+   "wins": 1,
+   "losses": 12,
+   "no_clear_winner": 2
+  },
+  "Our 9B|Our 4B": {
+   "wins": 9,
+   "losses": 1,
+   "no_clear_winner": 5
+  },
+  "Our 9B|Our 0.8B": {
+   "wins": 15,
+   "losses": 0,
+   "no_clear_winner": 0
+  },
+  "Our 4B|Opus": {
+   "wins": 0,
+   "losses": 11,
+   "no_clear_winner": 4
+  },
+  "Our 4B|Sonnet": {
+   "wins": 0,
+   "losses": 13,
+   "no_clear_winner": 2
+  },
+  "Our 4B|Astra": {
+   "wins": 0,
+   "losses": 15,
+   "no_clear_winner": 0
+  },
+  "Our 4B|Sol": {
+   "wins": 1,
+   "losses": 13,
+   "no_clear_winner": 1
+  },
+  "Our 4B|Terra 5.6": {
+   "wins": 0,
+   "losses": 14,
+   "no_clear_winner": 1
+  },
+  "Our 4B|Luna": {
+   "wins": 0,
+   "losses": 12,
+   "no_clear_winner": 3
+  },
+  "Our 4B|Our 9B": {
+   "wins": 1,
+   "losses": 9,
+   "no_clear_winner": 5
+  },
+  "Our 4B|Our 0.8B": {
+   "wins": 14,
+   "losses": 1,
+   "no_clear_winner": 0
+  },
+  "Our 0.8B|Opus": {
+   "wins": 0,
+   "losses": 15,
+   "no_clear_winner": 0
+  },
+  "Our 0.8B|Sonnet": {
+   "wins": 0,
+   "losses": 15,
+   "no_clear_winner": 0
+  },
+  "Our 0.8B|Astra": {
+   "wins": 0,
+   "losses": 15,
+   "no_clear_winner": 0
+  },
+  "Our 0.8B|Sol": {
+   "wins": 0,
+   "losses": 15,
+   "no_clear_winner": 0
+  },
+  "Our 0.8B|Terra 5.6": {
+   "wins": 0,
+   "losses": 15,
+   "no_clear_winner": 0
+  },
+  "Our 0.8B|Luna": {
+   "wins": 0,
+   "losses": 15,
+   "no_clear_winner": 0
+  },
+  "Our 0.8B|Our 9B": {
+   "wins": 0,
+   "losses": 15,
+   "no_clear_winner": 0
+  },
+  "Our 0.8B|Our 4B": {
+   "wins": 1,
+   "losses": 14,
+   "no_clear_winner": 0
+  }
+ },
+ "strength": {
+  "Opus": -22.160457712952418,
+  "Sonnet": 160.9681277578337,
+  "Astra": 549.1436302493105,
+  "Sol": 160.9681277578337,
+  "Terra 5.6": 346.9702515256951,
+  "Luna": 186.0747351953837,
+  "Our 9B": -168.80653455732343,
+  "Our 4B": -322.7850760935877,
+  "Our 0.8B": -890.3728041221932
+ },
+ "outcomes": [
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Sonnet",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Sol",
+   "winner": "Sol",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Our 9B",
+   "winner": "Our 9B",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Our 4B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Our 0.8B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Sol",
+   "winner": "Sol",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Our 9B",
+   "winner": "Our 9B",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Our 4B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Our 0.8B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Sol",
+   "winner": "Sol",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Luna",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Our 9B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Our 4B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Our 0.8B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Sol",
+   "y": "Terra 5.6",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Sol",
+   "y": "Luna",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Sol",
+   "y": "Our 9B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Sol",
+   "y": "Our 4B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Sol",
+   "y": "Our 0.8B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Terra 5.6",
+   "y": "Luna",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Terra 5.6",
+   "y": "Our 9B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Terra 5.6",
+   "y": "Our 4B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Terra 5.6",
+   "y": "Our 0.8B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Luna",
+   "y": "Our 9B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Luna",
+   "y": "Our 4B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Luna",
+   "y": "Our 0.8B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Our 9B",
+   "y": "Our 4B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Our 9B",
+   "y": "Our 0.8B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "opening",
+   "x": "Our 4B",
+   "y": "Our 0.8B",
+   "winner": "Our 4B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Sonnet",
+   "winner": "Sonnet",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Sol",
+   "winner": "Sol",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Our 9B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Our 4B",
+   "winner": null,
+   "orders": [
+    "tie",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Our 0.8B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Sol",
+   "winner": "Sol",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Terra 5.6",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Luna",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Our 9B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Our 4B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Our 0.8B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Sol",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Terra 5.6",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Luna",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Our 9B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Our 4B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Our 0.8B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Sol",
+   "y": "Terra 5.6",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Sol",
+   "y": "Luna",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Sol",
+   "y": "Our 9B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Sol",
+   "y": "Our 4B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Sol",
+   "y": "Our 0.8B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Terra 5.6",
+   "y": "Luna",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Terra 5.6",
+   "y": "Our 9B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Terra 5.6",
+   "y": "Our 4B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Terra 5.6",
+   "y": "Our 0.8B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Luna",
+   "y": "Our 9B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Luna",
+   "y": "Our 4B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Luna",
+   "y": "Our 0.8B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Our 9B",
+   "y": "Our 4B",
+   "winner": "Our 4B",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Our 9B",
+   "y": "Our 0.8B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "introduction_rest",
+   "x": "Our 4B",
+   "y": "Our 0.8B",
+   "winner": "Our 4B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Sonnet",
+   "winner": "Sonnet",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Sol",
+   "winner": "Sol",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Our 9B",
+   "winner": null,
+   "orders": [
+    "A",
+    "tie"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Our 4B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Our 0.8B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Sol",
+   "winner": null,
+   "orders": [
+    "B",
+    "tie"
+   ],
+   "first_shown_won": [
+    false,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Terra 5.6",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Luna",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Our 9B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Our 4B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Our 0.8B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Sol",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Terra 5.6",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Luna",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Our 9B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Our 4B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Our 0.8B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Sol",
+   "y": "Terra 5.6",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Sol",
+   "y": "Luna",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Sol",
+   "y": "Our 9B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Sol",
+   "y": "Our 4B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Sol",
+   "y": "Our 0.8B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Terra 5.6",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Terra 5.6",
+   "y": "Our 9B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Terra 5.6",
+   "y": "Our 4B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Terra 5.6",
+   "y": "Our 0.8B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Luna",
+   "y": "Our 9B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Luna",
+   "y": "Our 4B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Luna",
+   "y": "Our 0.8B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Our 9B",
+   "y": "Our 4B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Our 9B",
+   "y": "Our 0.8B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "methods",
+   "x": "Our 4B",
+   "y": "Our 0.8B",
+   "winner": "Our 4B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Sonnet",
+   "winner": "Sonnet",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Sol",
+   "winner": null,
+   "orders": [
+    "tie",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Our 9B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Our 4B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Our 0.8B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Sol",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Terra 5.6",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Luna",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Our 9B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Our 4B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Our 0.8B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Sol",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Terra 5.6",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Luna",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Our 9B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Our 4B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Our 0.8B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Sol",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Sol",
+   "y": "Luna",
+   "winner": null,
+   "orders": [
+    "A",
+    "tie"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Sol",
+   "y": "Our 9B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Sol",
+   "y": "Our 4B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Sol",
+   "y": "Our 0.8B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Terra 5.6",
+   "y": "Luna",
+   "winner": null,
+   "orders": [
+    "tie",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Terra 5.6",
+   "y": "Our 9B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Terra 5.6",
+   "y": "Our 4B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Terra 5.6",
+   "y": "Our 0.8B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Luna",
+   "y": "Our 9B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Luna",
+   "y": "Our 4B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Luna",
+   "y": "Our 0.8B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Our 9B",
+   "y": "Our 4B",
+   "winner": null,
+   "orders": [
+    "tie",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Our 9B",
+   "y": "Our 0.8B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "results",
+   "x": "Our 4B",
+   "y": "Our 0.8B",
+   "winner": "Our 4B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Sonnet",
+   "winner": "Sonnet",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Sol",
+   "winner": "Sol",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Our 9B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Our 4B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Our 0.8B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Astra",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Sol",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Terra 5.6",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Luna",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Our 9B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Our 4B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Our 0.8B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Sol",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Luna",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Our 9B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Our 4B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Our 0.8B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Sol",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Sol",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Sol",
+   "y": "Our 9B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Sol",
+   "y": "Our 4B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Sol",
+   "y": "Our 0.8B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Terra 5.6",
+   "y": "Luna",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Terra 5.6",
+   "y": "Our 9B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Terra 5.6",
+   "y": "Our 4B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Terra 5.6",
+   "y": "Our 0.8B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Luna",
+   "y": "Our 9B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Luna",
+   "y": "Our 4B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Luna",
+   "y": "Our 0.8B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Our 9B",
+   "y": "Our 4B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Our 9B",
+   "y": "Our 0.8B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC12995867",
+   "unit": "discussion",
+   "x": "Our 4B",
+   "y": "Our 0.8B",
+   "winner": "Our 4B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Sonnet",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Sol",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Our 9B",
+   "winner": "Our 9B",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Our 4B",
+   "winner": null,
+   "orders": [
+    "A",
+    "tie"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Our 0.8B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Sol",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Our 9B",
+   "winner": "Our 9B",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Our 4B",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Our 0.8B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Sol",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Luna",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Our 9B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Our 4B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Our 0.8B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Sol",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Sol",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Sol",
+   "y": "Our 9B",
+   "winner": "Our 9B",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Sol",
+   "y": "Our 4B",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Sol",
+   "y": "Our 0.8B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Terra 5.6",
+   "y": "Luna",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Terra 5.6",
+   "y": "Our 9B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Terra 5.6",
+   "y": "Our 4B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Terra 5.6",
+   "y": "Our 0.8B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Luna",
+   "y": "Our 9B",
+   "winner": "Our 9B",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Luna",
+   "y": "Our 4B",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Luna",
+   "y": "Our 0.8B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Our 9B",
+   "y": "Our 4B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Our 9B",
+   "y": "Our 0.8B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "opening",
+   "x": "Our 4B",
+   "y": "Our 0.8B",
+   "winner": "Our 4B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Sonnet",
+   "winner": "Sonnet",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Sol",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Luna",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Our 9B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Our 4B",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Our 0.8B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Sol",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Terra 5.6",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Luna",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Our 9B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Our 4B",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Our 0.8B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Sol",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Terra 5.6",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Luna",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Our 9B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Our 4B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Our 0.8B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Sol",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Sol",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Sol",
+   "y": "Our 9B",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Sol",
+   "y": "Our 4B",
+   "winner": "Our 4B",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Sol",
+   "y": "Our 0.8B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Terra 5.6",
+   "y": "Luna",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Terra 5.6",
+   "y": "Our 9B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Terra 5.6",
+   "y": "Our 4B",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Terra 5.6",
+   "y": "Our 0.8B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Luna",
+   "y": "Our 9B",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Luna",
+   "y": "Our 4B",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Luna",
+   "y": "Our 0.8B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Our 9B",
+   "y": "Our 4B",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Our 9B",
+   "y": "Our 0.8B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "introduction_rest",
+   "x": "Our 4B",
+   "y": "Our 0.8B",
+   "winner": "Our 4B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Sonnet",
+   "winner": "Sonnet",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Sol",
+   "winner": "Sol",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Our 9B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Our 4B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Our 0.8B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Sol",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Luna",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Our 9B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Our 4B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Our 0.8B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Sol",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Terra 5.6",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Luna",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Our 9B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Our 4B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Our 0.8B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Sol",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Sol",
+   "y": "Luna",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Sol",
+   "y": "Our 9B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Sol",
+   "y": "Our 4B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Sol",
+   "y": "Our 0.8B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Terra 5.6",
+   "y": "Luna",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Terra 5.6",
+   "y": "Our 9B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Terra 5.6",
+   "y": "Our 4B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Terra 5.6",
+   "y": "Our 0.8B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Luna",
+   "y": "Our 9B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Luna",
+   "y": "Our 4B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Luna",
+   "y": "Our 0.8B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Our 9B",
+   "y": "Our 4B",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Our 9B",
+   "y": "Our 0.8B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "methods",
+   "x": "Our 4B",
+   "y": "Our 0.8B",
+   "winner": "Our 4B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Sonnet",
+   "winner": "Sonnet",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Sol",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Our 9B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Our 4B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Our 0.8B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Sol",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Our 9B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Our 4B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Our 0.8B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Sol",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Luna",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Our 9B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Our 4B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Our 0.8B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Sol",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Sol",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Sol",
+   "y": "Our 9B",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Sol",
+   "y": "Our 4B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Sol",
+   "y": "Our 0.8B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Terra 5.6",
+   "y": "Luna",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Terra 5.6",
+   "y": "Our 9B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Terra 5.6",
+   "y": "Our 4B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Terra 5.6",
+   "y": "Our 0.8B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Luna",
+   "y": "Our 9B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Luna",
+   "y": "Our 4B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Luna",
+   "y": "Our 0.8B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Our 9B",
+   "y": "Our 4B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Our 9B",
+   "y": "Our 0.8B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "results",
+   "x": "Our 4B",
+   "y": "Our 0.8B",
+   "winner": "Our 0.8B",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Sonnet",
+   "winner": "Sonnet",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Sol",
+   "winner": "Sol",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Luna",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Our 9B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Our 4B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Our 0.8B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Astra",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Sol",
+   "winner": "Sol",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Luna",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Our 9B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Our 4B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Our 0.8B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Sol",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Terra 5.6",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Luna",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Our 9B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Our 4B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Our 0.8B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Sol",
+   "y": "Terra 5.6",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Sol",
+   "y": "Luna",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Sol",
+   "y": "Our 9B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Sol",
+   "y": "Our 4B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Sol",
+   "y": "Our 0.8B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Terra 5.6",
+   "y": "Luna",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Terra 5.6",
+   "y": "Our 9B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Terra 5.6",
+   "y": "Our 4B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Terra 5.6",
+   "y": "Our 0.8B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Luna",
+   "y": "Our 9B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Luna",
+   "y": "Our 4B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Luna",
+   "y": "Our 0.8B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Our 9B",
+   "y": "Our 4B",
+   "winner": null,
+   "orders": [
+    "tie",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Our 9B",
+   "y": "Our 0.8B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC13376281",
+   "unit": "discussion",
+   "x": "Our 4B",
+   "y": "Our 0.8B",
+   "winner": "Our 4B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Sonnet",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Sol",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Our 9B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Our 4B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Opus",
+   "y": "Our 0.8B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Sol",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Our 9B",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Our 4B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Sonnet",
+   "y": "Our 0.8B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Sol",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Terra 5.6",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Luna",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Our 9B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Our 4B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Astra",
+   "y": "Our 0.8B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Sol",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Sol",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Sol",
+   "y": "Our 9B",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Sol",
+   "y": "Our 4B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Sol",
+   "y": "Our 0.8B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Terra 5.6",
+   "y": "Luna",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Terra 5.6",
+   "y": "Our 9B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Terra 5.6",
+   "y": "Our 4B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Terra 5.6",
+   "y": "Our 0.8B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Luna",
+   "y": "Our 9B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Luna",
+   "y": "Our 4B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Luna",
+   "y": "Our 0.8B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Our 9B",
+   "y": "Our 4B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Our 9B",
+   "y": "Our 0.8B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "opening",
+   "x": "Our 4B",
+   "y": "Our 0.8B",
+   "winner": "Our 4B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Sonnet",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Sol",
+   "winner": "Sol",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Our 9B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Our 4B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Opus",
+   "y": "Our 0.8B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Sol",
+   "winner": "Sol",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Our 9B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Our 4B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Sonnet",
+   "y": "Our 0.8B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Sol",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Terra 5.6",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Luna",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Our 9B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Our 4B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Astra",
+   "y": "Our 0.8B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Sol",
+   "y": "Terra 5.6",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Sol",
+   "y": "Luna",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Sol",
+   "y": "Our 9B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Sol",
+   "y": "Our 4B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Sol",
+   "y": "Our 0.8B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Terra 5.6",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Terra 5.6",
+   "y": "Our 9B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Terra 5.6",
+   "y": "Our 4B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Terra 5.6",
+   "y": "Our 0.8B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Luna",
+   "y": "Our 9B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Luna",
+   "y": "Our 4B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Luna",
+   "y": "Our 0.8B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Our 9B",
+   "y": "Our 4B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Our 9B",
+   "y": "Our 0.8B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "introduction_rest",
+   "x": "Our 4B",
+   "y": "Our 0.8B",
+   "winner": "Our 4B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Sonnet",
+   "winner": "Sonnet",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Sol",
+   "winner": "Sol",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Luna",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Our 9B",
+   "winner": null,
+   "orders": [
+    "A",
+    "tie"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Our 4B",
+   "winner": null,
+   "orders": [
+    "A",
+    "tie"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Opus",
+   "y": "Our 0.8B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Sol",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Luna",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Our 9B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Our 4B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Sonnet",
+   "y": "Our 0.8B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Sol",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Terra 5.6",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Luna",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Our 9B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Our 4B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Astra",
+   "y": "Our 0.8B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Sol",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Sol",
+   "y": "Luna",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Sol",
+   "y": "Our 9B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Sol",
+   "y": "Our 4B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Sol",
+   "y": "Our 0.8B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Terra 5.6",
+   "y": "Luna",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Terra 5.6",
+   "y": "Our 9B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Terra 5.6",
+   "y": "Our 4B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Terra 5.6",
+   "y": "Our 0.8B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Luna",
+   "y": "Our 9B",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Luna",
+   "y": "Our 4B",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Luna",
+   "y": "Our 0.8B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Our 9B",
+   "y": "Our 4B",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Our 9B",
+   "y": "Our 0.8B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "methods",
+   "x": "Our 4B",
+   "y": "Our 0.8B",
+   "winner": "Our 4B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Sonnet",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Sol",
+   "winner": "Sol",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Our 9B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Our 4B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Opus",
+   "y": "Our 0.8B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Sol",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Terra 5.6",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Our 9B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Our 4B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Sonnet",
+   "y": "Our 0.8B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Sol",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Terra 5.6",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Luna",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Our 9B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Our 4B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Astra",
+   "y": "Our 0.8B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Sol",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Sol",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Sol",
+   "y": "Our 9B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Sol",
+   "y": "Our 4B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Sol",
+   "y": "Our 0.8B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Terra 5.6",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Terra 5.6",
+   "y": "Our 9B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Terra 5.6",
+   "y": "Our 4B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Terra 5.6",
+   "y": "Our 0.8B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Luna",
+   "y": "Our 9B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Luna",
+   "y": "Our 4B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Luna",
+   "y": "Our 0.8B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Our 9B",
+   "y": "Our 4B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Our 9B",
+   "y": "Our 0.8B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "results",
+   "x": "Our 4B",
+   "y": "Our 0.8B",
+   "winner": "Our 4B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Sonnet",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Sol",
+   "winner": "Sol",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Terra 5.6",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Luna",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Our 9B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Our 4B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Opus",
+   "y": "Our 0.8B",
+   "winner": "Opus",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Astra",
+   "winner": "Astra",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Sol",
+   "winner": "Sol",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Terra 5.6",
+   "winner": "Terra 5.6",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Our 9B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Our 4B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Sonnet",
+   "y": "Our 0.8B",
+   "winner": "Sonnet",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Sol",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Terra 5.6",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Luna",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Our 9B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Our 4B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Astra",
+   "y": "Our 0.8B",
+   "winner": "Astra",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Sol",
+   "y": "Terra 5.6",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Sol",
+   "y": "Luna",
+   "winner": null,
+   "orders": [
+    "A",
+    "A"
+   ],
+   "first_shown_won": [
+    true,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Sol",
+   "y": "Our 9B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Sol",
+   "y": "Our 4B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Sol",
+   "y": "Our 0.8B",
+   "winner": "Sol",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Terra 5.6",
+   "y": "Luna",
+   "winner": "Luna",
+   "orders": [
+    "B",
+    "A"
+   ],
+   "first_shown_won": [
+    false,
+    true
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Terra 5.6",
+   "y": "Our 9B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Terra 5.6",
+   "y": "Our 4B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Terra 5.6",
+   "y": "Our 0.8B",
+   "winner": "Terra 5.6",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Luna",
+   "y": "Our 9B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Luna",
+   "y": "Our 4B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Luna",
+   "y": "Our 0.8B",
+   "winner": "Luna",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Our 9B",
+   "y": "Our 4B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Our 9B",
+   "y": "Our 0.8B",
+   "winner": "Our 9B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  },
+  {
+   "paper": "PMC10175599",
+   "unit": "discussion",
+   "x": "Our 4B",
+   "y": "Our 0.8B",
+   "winner": "Our 4B",
+   "orders": [
+    "A",
+    "B"
+   ],
+   "first_shown_won": [
+    true,
+    false
+   ]
+  }
+ ]
+}

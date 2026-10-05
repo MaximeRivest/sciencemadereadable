@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What is inside a pine cone?</title>
+<style>
+:root{color-scheme:light dark;--paper:var(--color-background-primary,#fff);--panel:var(--color-background-secondary,#f5f5f2);--ink:var(--color-text-primary,#172421);--muted:var(--color-text-secondary,#52605a);--line:var(--color-border-primary,#b8c0ba);--accent:var(--color-text-info,#176b64);--good:var(--color-text-success,#286c44);--warn:var(--color-text-warning,#865519);--radius:var(--border-radius-md,12px)}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-sans,system-ui,sans-serif);font-size:17px;line-height:1.6}a{color:var(--accent);text-underline-offset:.2em}button{font:inherit;color:inherit;cursor:pointer}button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:4px}button{touch-action:manipulation}main{max-width:1050px;margin:auto;padding:36px 26px 70px}h1,h2,h3,p{margin:0}h1{font-size:clamp(2.3rem,6vw,4.2rem);line-height:1.06;letter-spacing:-.045em;max-width:850px}h2{font-size:clamp(1.6rem,3.5vw,2.25rem);line-height:1.16;letter-spacing:-.025em}h3{font-size:1.12rem;line-height:1.35}p+p{margin-top:12px}.kicker{font-size:.77rem;letter-spacing:.14em;text-transform:uppercase;font-weight:750;color:var(--accent);margin-bottom:14px}.intro{font-size:1.16rem;max-width:730px;margin-top:22px}.muted,.note{color:var(--muted)}.note{font-size:.87rem;line-height:1.55}.section{padding-top:42px;margin-top:42px;border-top:1px solid var(--line)}.section-title{display:flex;gap:15px;align-items:baseline;margin-bottom:15px}.number{font-family:var(--font-mono,monospace);font-size:.85rem;color:var(--accent);font-weight:700;white-space:nowrap}.lede{max-width:790px;margin-bottom:25px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}.card{border:1px solid var(--line);border-radius:var(--radius);padding:24px;background:var(--paper)}.panel{background:var(--panel)}.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px}.fact{border-left:3px solid var(--accent);padding-left:14px}.fact strong{display:block;font-size:1.5rem;line-height:1.2}.fact span{display:block;font-size:.9rem}.anatomy{display:grid;grid-template-columns:1fr 28px 1fr 28px 1fr;gap:12px;align-items:center;padding:22px 12px}.anatomy figure{margin:0;text-align:center}.anatomy svg{width:100%;max-width:160px;height:125px;display:block;margin:auto;color:var(--accent)}figcaption strong{display:block}figcaption span{font-size:.87rem;color:var(--muted)}.arrow{text-align:center;font-size:1.6rem;color:var(--muted)}.chart-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:28px;flex-wrap:wrap}.segmented{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:var(--radius);background:var(--paper)}.segmented button{border:0;border-radius:calc(var(--radius) - 4px);padding:8px 14px;background:var(--paper);font-size:.9rem}.segmented button[aria-pressed=true]{background:var(--ink);color:var(--paper)}.chart-row{margin:22px 0}.row-label{display:flex;justify-content:space-between;align-items:baseline;gap:14px;margin-bottom:8px}.row-label strong{font-size:1.2rem;font-variant-numeric:tabular-nums;white-space:nowrap}.row-label .small{display:block;font-size:.8rem;color:var(--muted)}.track{height:30px;position:relative;border-left:1px solid var(--line);border-right:1px solid var(--line);background:repeating-linear-gradient(to right,transparent 0,transparent calc(20% - 1px),var(--line) calc(20% - 1px),var(--line) 20%)}.bar{position:absolute;left:0;top:5px;height:20px;color:var(--accent);border:1.5px solid currentColor}.bar.light{background:repeating-linear-gradient(135deg,transparent 0,transparent 4px,currentColor 4px,currentColor 5px)}.bar.heavy{background:currentColor}.whisker{position:absolute;top:3px;height:24px;border-left:2px solid var(--ink);border-right:2px solid var(--ink)}.whisker::before{content:"";position:absolute;top:10px;left:0;right:0;border-top:2px solid var(--ink)}.mean-tick{position:absolute;top:3px;height:24px;border-left:2px solid var(--ink)}.axis{display:flex;justify-content:space-between;margin-top:6px;font-size:.78rem;font-variant-numeric:tabular-nums;color:var(--muted)}.axis-label{text-align:right;font-size:.8rem;color:var(--muted);margin-top:2px}.takeaway{padding:18px 20px;border-left:4px solid var(--accent);background:var(--panel);margin-top:25px}.takeaway strong{font-size:1.08rem}.chart-note{margin-top:16px}.uncertainty-key{display:inline-block;width:24px;height:12px;border-left:2px solid currentColor;border-right:2px solid currentColor;vertical-align:-1px;position:relative;margin-right:5px}.uncertainty-key:after{content:"";position:absolute;left:0;right:0;top:5px;border-top:2px solid currentColor}.metric{font-size:2.3rem;line-height:1.2;letter-spacing:-.04em;font-weight:750;margin:12px 0 4px;font-variant-numeric:tabular-nums}.waffle{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;max-width:320px;margin:22px auto}.seed{aspect-ratio:1;border:1px solid var(--line);border-radius:50%;background:var(--paper)}.seed.damaged{border:2px solid var(--ink);position:relative;background:var(--panel)}.seed.damaged:before,.seed.damaged:after{content:"";position:absolute;left:16%;right:16%;top:calc(50% - 1px);border-top:2px solid var(--ink);transform:rotate(45deg)}.seed.damaged:after{transform:rotate(-45deg)}.legend{display:flex;gap:18px;flex-wrap:wrap;align-items:center;font-size:.86rem;margin-top:18px}.legend span{display:flex;gap:7px;align-items:center}.legend .seed{width:19px;height:19px;display:inline-block;flex-shrink:0}.tree-frame{margin-top:22px;border:1px solid var(--line);border-radius:var(--radius);padding:24px}.tree-step+.tree-step{margin-top:25px;padding-top:23px;border-top:1px solid var(--line)}.step-label{font-size:.76rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:var(--accent);margin-bottom:6px}.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.choice{border:1px solid var(--line);border-radius:var(--radius);background:var(--paper);padding:16px;text-align:left;line-height:1.45}.choice[aria-pressed=true]{border:2px solid var(--ink);padding:15px;background:var(--panel)}.choice .selection{font-size:.8rem;color:var(--muted);display:block;margin-top:9px}.choice[aria-pressed=true] .selection{color:var(--ink);font-weight:700}.choice strong{display:block;font-size:1.05rem}.choice .share{font-size:1.65rem;letter-spacing:-.03em;display:block;margin:8px 0 2px;font-weight:750}.choice .sub{font-size:.83rem;color:var(--muted);display:block}.tree-result{margin-top:24px;background:var(--panel);border-radius:var(--radius);padding:20px}.tree-result .metric{color:var(--accent)}details{margin-top:20px}summary{cursor:pointer;font-weight:650}details p{margin-top:12px}table{width:100%;border-collapse:collapse;font-size:.87rem;margin-top:14px}th,td{padding:10px 8px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}th{font-weight:700}.table-wrap{overflow-x:auto}td.num{white-space:nowrap;font-variant-numeric:tabular-nums}.badge{font-size:.77rem;font-weight:750;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;color:var(--accent)}.claim{font-size:1.15rem;margin-bottom:12px}.source-list{padding-left:20px}.source-list li+li{margin-top:10px}.footer{border-top:1px solid var(--line);padding-top:24px;margin-top:38px;font-size:.86rem;color:var(--muted)}.footer p+p{margin-top:12px}.small-break{margin-top:14px}.print-tree{display:none}@media(max-width:640px){main{padding:25px 17px 45px}.grid{grid-template-columns:1fr}.card,.tree-frame{padding:18px}.section{padding-top:30px;margin-top:30px}.facts{gap:9px}.fact{padding-left:9px}.fact strong{font-size:1.25rem}.fact span{font-size:.8rem}.anatomy{gap:5px;padding:10px 0;grid-template-columns:1fr 16px 1fr 16px 1fr}.anatomy svg{height:92px}.anatomy figcaption{font-size:.92rem}.anatomy figcaption span{font-size:.76rem}.choices{gap:8px}.choice{padding:12px}.choice[aria-pressed=true]{padding:11px}.choice strong{font-size:.95rem}.choice .share{font-size:1.35rem}.chart-head{margin-bottom:18px}.metric{font-size:2rem}.row-label strong{font-size:1.05rem}}
+@media print{body{font-size:11pt}main{max-width:none;padding:0}.section{margin-top:20px;padding-top:20px}.card,.tree-step,.grid,.anatomy{break-inside:avoid}.segmented,.tree-frame{display:none}.print-tree{display:block}details>*,details{display:block}a{color:inherit}h1{font-size:30pt}h2{font-size:20pt}.footer{font-size:9pt}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<p class="kicker">A science paper, made visible</p>
+<h1>What is inside<br>a pine cone?</h1>
+<p class="intro">A heavier cone can hold more nuts. But does it give you more food <strong>for the same weight of cones?</strong> Researchers in Chile investigated.</p>
+<div class="facts" aria-label="Study overview"><div class="fact"><strong>560 cones</strong><span>collected and examined</span></div><div class="fact"><strong>7 plantations</strong><span>in Chile</span></div><div class="fact"><strong>10 winters</strong><span>2010–2020, skipping 2016</span></div></div>
+</header>
+
+<section class="section" aria-labelledby="anatomy-title">
+<div class="section-title"><span class="number">01 /</span><h2 id="anatomy-title">First, what are we weighing?</h2></div>
+<p class="lede">The whole cone, the seed with its shell, and the edible nut are three different things. Only the last one is the food we are counting.</p>
+<div class="anatomy panel card">
+<figure><svg viewBox="0 0 160 130" role="img" aria-label="Drawing of a whole pine cone"><path d="M80 7C62 17 27 57 31 90C34 115 56 123 80 123S126 115 129 90C133 57 98 17 80 7Z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M80 13V118M58 31Q80 60 102 31M45 49Q80 84 115 49M35 72Q80 109 125 72M34 95Q80 133 126 95M61 48L48 70M99 48L112 70M57 87L45 106M103 87L115 106" fill="none" stroke="currentColor" stroke-width="2"/></svg><figcaption><strong>Whole cone</strong><span>Weighed freshly picked</span></figcaption></figure>
+<div class="arrow" aria-hidden="true">→</div>
+<figure><svg viewBox="0 0 160 130" role="img" aria-label="Drawing of a seed still inside its shell"><path d="M112 14C126 41 133 88 107 111C85 131 47 113 43 84C38 53 75 25 112 14Z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M111 16C102 42 68 67 54 101" fill="none" stroke="currentColor" stroke-width="2"/></svg><figcaption><strong>Seed + shell</strong><span>Taken out of the cone</span></figcaption></figure>
+<div class="arrow" aria-hidden="true">→</div>
+<figure><svg viewBox="0 0 160 130" role="img" aria-label="Drawing of the edible nut after the shell is removed"><path d="M102 17C120 24 128 62 111 89C98 111 75 122 57 108C36 92 48 55 68 34C79 23 92 15 102 17Z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M98 28Q65 64 66 98" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><figcaption><strong>Edible nut</strong><span>Dried before weighing</span></figcaption></figure>
+</div><p class="note small-break">Drawings explain the parts; their sizes are not measurements.</p>
+</section>
+
+<section class="section" aria-labelledby="yield-title">
+<div class="section-title"><span class="number">02 /</span><h2 id="yield-title">Same starting weight. A little more food.</h2></div>
+<p class="lede">Imagine two batches with the <strong>same total weight</strong>: one made of light cones, the other of heavy cones. Here is how much edible nut you would get at the average rates reported in the study.</p>
+<div class="card">
+<div class="chart-head"><h3>Edible nuts from <span id="batch-heading">1 kilogram</span> of cones</h3><div class="segmented" aria-label="Starting weight of cones"><button type="button" data-batch="1000" aria-pressed="true">1 kilogram</button><button type="button" data-batch="100" aria-pressed="false">100 grams</button></div></div>
+<div id="yield-chart"></div>
+<div class="axis" id="yield-axis" aria-hidden="true"></div><p class="axis-label">Grams of edible nuts · bars start at zero</p>
+<div class="takeaway" aria-live="polite"><strong id="yield-difference">4.3 grams more food per kilogram of cones.</strong><p id="yield-relative">That is about 12% more than the 36.2 grams from light cones—not 12% of the whole cone weight.</p></div>
+<p class="note chart-note"><span class="uncertainty-key" aria-hidden="true"></span>The capped lines show uncertainty in each estimated average: one “standard error” on either side. They do not show the full range of individual cones.</p>
+<p class="note small-break">The study compared cones below 393 g with cones above 503 g. The middle-weight group was left out of that comparison. These batch amounts rescale the reported average percentages; they are not separately measured bags of cones.</p>
+</div>
+</section>
+
+<section class="section" aria-labelledby="number-title">
+<div class="section-title"><span class="number">03 /</span><h2 id="number-title">A heavy cone also held more nuts.</h2></div>
+<p class="lede">Now we are comparing <strong>one cone with one cone</strong>, not equal weights. Keeping these two comparisons separate prevents a common mix-up.</p>
+<div class="card"><h3>Healthy, edible nuts per cone</h3><div id="count-chart"></div><div class="axis" aria-hidden="true"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span><span>125</span></div><p class="axis-label">Number of edible nuts · bars start at zero</p><div class="takeaway"><strong>About 113 nuts instead of 76.</strong><p>That is about 48% more nuts per cone. The individual nuts were also heavier on average.</p></div><p class="note chart-note">Labels are rounded to whole nuts; bars use the reported averages, 112.9 and 76.1. Capped lines again show one standard error on either side. More nuts per cone is not the same result as more food per kilogram.</p></div>
+</section>
+
+<section class="section" aria-labelledby="damage-title">
+<div class="section-title"><span class="number">04 /</span><h2 id="damage-title">Fewer seeds were empty or damaged.</h2></div>
+<p class="lede">Picture 100 seeds from each group. A crossed circle means a seed was empty or damaged. Each circle stands for one seed.</p>
+<div class="grid">
+<div class="card"><h3>Seeds from light cones</h3><div class="metric">About 16 in 100</div><p class="note">Reported average: 15.9%</p><div class="waffle" id="light-waffle" role="img" aria-label="100 seed symbols, with 16 crossed out to represent the rounded average empty or damaged share"></div></div>
+<div class="card"><h3>Seeds from heavy cones</h3><div class="metric">About 9 in 100</div><p class="note">Reported average: 9.0%</p><div class="waffle" id="heavy-waffle" role="img" aria-label="100 seed symbols, with 9 crossed out to represent the average empty or damaged share"></div></div>
+</div>
+<div class="legend"><span><i class="seed damaged" aria-hidden="true"></i>Empty or damaged</span><span><i class="seed" aria-hidden="true"></i>Not empty or damaged</span></div>
+<p class="note small-break">These pictures show rounded average rates, not two actual samples of 100 seeds. The reported averages have uncertainty too: ±2.0 percentage points for light cones and ±1.6 for heavy cones, each one standard error.</p>
+</section>
+
+<section class="section" aria-labelledby="tree-title">
+<div class="section-title"><span class="number">05 /</span><h2 id="tree-title">Follow the clues, one question at a time.</h2></div>
+<p class="lede">The paper’s branching chart grouped cones with similar features. Instead of looking at all its branches at once, follow one path. Each number describes a group <strong>in this study</strong>—not a promise about a new cone.</p>
+<p class="note">The branching analysis shown in Figure 1 uses 328 cones. That is a smaller set than the 560 collected across the whole study.</p>
+<div class="tree-frame" id="tree"></div>
+<details><summary>See all six final groups together</summary><div class="table-wrap"><table id="leaves-table"><thead><tr><th>Which cones?</th><th>Cones in group</th><th>Edible share of cone weight</th></tr></thead><tbody></tbody></table></div><p class="note">Each “share” is a weight percentage. These groups are based on the measured contents of cones, not treatments applied to trees. Figure 1 gives no uncertainty ranges for these group averages.</p></details>
+<noscript><p>The step-by-step chart needs JavaScript. The full group data are available in the linked source figure below.</p></noscript>
+</section>
+
+<section class="section" aria-labelledby="meaning-title">
+<div class="section-title"><span class="number">06 /</span><h2 id="meaning-title">A finding is not yet a farming instruction.</h2></div>
+<div class="grid"><div class="card panel"><p class="badge">What the study found</p><p class="claim"><strong>Heavier cones tended to provide more edible nuts for the same weight of cones.</strong></p><p>They also contained more healthy nuts, and a smaller share of their seeds were empty or damaged.</p></div><div class="card"><p class="badge">What still needs testing</p><p class="claim"><strong>Would extra watering or nutrients reliably improve the harvest?</strong></p><p>This study did not directly test that cause-and-effect question. Growers would need evidence that a change works—and that the extra food is worth the cost.</p></div></div>
+</section>
+
+<footer class="footer">
+<p><strong>Source:</strong> Verónica Loewe-Muñoz, Claudia Delard, Rodrigo del Río, Mónica Balzarini, and Dusan Gomory. <a href="https://doi.org/10.1371/journal.pone.0300008" target="_blank" rel="noopener">Recommendations for increasing yield of the edible <em>Pinus pinea</em> L. pine nuts</a>, PLOS ONE (2024). Visual explanations adapted from the paper’s Table 4 and <a href="https://journals.plos.org/plosone/article/figure?id=10.1371/journal.pone.0300008.g001" target="_blank" rel="noopener">Figure 1</a>. The paper is licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. These are new diagrams and simplified explanations, not the original figures.</p>
+<details><summary>Accuracy notes and design choices</summary><ul class="source-list"><li>“Edible share” compares dried edible nuts with freshly weighed whole cones. It is a food-output measure, not a picture of the cone’s fresh contents.</li><li>Table 4 supplies the averages and standard errors for the two weight groups. We preserve those uncertainties rather than drawing invented distributions.</li><li>The text beside the original branching chart appears to swap 2.60% and 4.04%. This companion follows Figure 1 itself: 78 or fewer nuts → 2.60%; 79 or more → 4.04%.</li><li>Half-number cutoffs in the original figure become whole-number groups here: ≤78.5 means 78 or fewer nuts; ≤45.5 means 45 or fewer. Other cutoffs remain exactly as reported.</li><li>The original Figure 2 shows distributions. We have not redrawn those box plots from averages: their underlying values are not available in the materials used here.</li><li>Bars share a zero baseline; circles use explicit counts and symbols. Meaning does not depend on colour, and the diagrams do not suggest that watering caused the observed differences.</li></ul></details>
+<p class="small-break">Companion to a plain-language rewrite for curious readers aged 12–14. A small study of Chilean plantations, not a guarantee for every tree or country.</p>
+</footer>
+</main>
+<script>
+'use strict';
+const DATA = {
+ light: {label:'Light cones',threshold:'Less than 393 g each',yield:3.62,yieldSE:.18,nuts:76.1,nutsSE:3.7},
+ heavy: {label:'Heavy cones',threshold:'More than 503 g each',yield:4.05,yieldSE:.17,nuts:112.9,nutsSE:4.4}
+};
+function row(kind,value,se,max,display,detail,unit){
+ const d=DATA[kind];
+ const el=document.createElement('div');el.className='chart-row';
+ el.innerHTML=`<div class="row-label"><div>${d.label}<span class="small">${detail}</span></div><strong>${display}</strong></div><div class="track" role="img" aria-label="${d.label}: average ${Number(value.toFixed(3))} ${unit}, standard error ${Number(se.toFixed(3))}"><div class="bar ${kind}" style="width:${value/max*100}%"></div><div class="whisker" style="left:${(value-se)/max*100}%;width:${2*se/max*100}%"></div><div class="mean-tick" style="left:${value/max*100}%"></div></div>`;
+ return el;
+}
+let batch=1000;
+function renderYield(){
+ const chart=document.getElementById('yield-chart');chart.replaceChildren();
+ const scale=batch/100,max=batch*.05,digits=batch===1000?1:2;
+ for(const kind of ['light','heavy']){const d=DATA[kind];chart.append(row(kind,d.yield*scale,d.yieldSE*scale,max,(d.yield*scale).toFixed(digits)+' g',d.threshold,'grams of edible nuts'));}
+ document.getElementById('batch-heading').textContent=batch===1000?'1 kilogram':'100 grams';
+ document.getElementById('yield-axis').innerHTML=Array.from({length:6},(_,i)=>`<span>${Number((max*i/5).toFixed(2))}</span>`).join('');
+ document.getElementById('yield-difference').textContent=`${((DATA.heavy.yield-DATA.light.yield)*scale).toFixed(digits)} grams more food per ${batch===1000?'kilogram':'100 grams'} of cones.`;
+ document.getElementById('yield-relative').textContent=`That is about 12% more than the ${(DATA.light.yield*scale).toFixed(digits)} grams from light cones—not 12% of the whole cone weight.`;
+ document.querySelectorAll('[data-batch]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.batch)===batch)));
+}
+document.querySelectorAll('[data-batch]').forEach(b=>b.addEventListener('click',()=>{batch=Number(b.dataset.batch);renderYield();}));
+renderYield();
+for(const kind of ['light','heavy']){const d=DATA[kind];document.getElementById('count-chart').append(row(kind,d.nuts,d.nutsSE,125,'About '+Math.round(d.nuts)+' nuts','Average per cone','nuts'));}
+for(const [kind,count] of [['light',16],['heavy',9]]){const w=document.getElementById(kind+'-waffle');for(let i=0;i<100;i++){const s=document.createElement('span');s.className='seed'+(i<count?' damaged':'');s.setAttribute('aria-hidden','true');w.append(s);}}
+const TREE={
+ id:'nuts',question:'How many healthy, edible nuts were in the cone?',
+ choices:[
+  {id:'few',label:'78 or fewer nuts',n:96,value:2.60,next:{id:'fewNuts',question:'Within that group, how many nuts?',choices:[
+   {id:'fewest',label:'45 or fewer',n:34,value:1.83,description:'Cones with 45 or fewer healthy pine nuts.'},
+   {id:'some',label:'46 to 78',n:62,value:3.02,description:'Cones with 46 to 78 healthy pine nuts.'}
+  ]}},
+  {id:'many',label:'79 or more nuts',n:232,value:4.04,next:{id:'kernelShare',question:'How much of the seed-and-shell weight was edible nut?',help:'Weigh all the seeds with their shells. Then ask what percentage of that weight was the edible part inside.',choices:[
+   {id:'lowerShare',label:'21% or less was edible',n:128,value:3.64,next:{id:'lowerSeedShare',question:'How much of the whole cone’s weight was seeds with shells?',choices:[
+    {id:'lowerLower',label:'18.6% or less',n:41,value:3.00,description:'79 or more nuts; edible nuts were at most 21% of seed-and-shell weight; seeds with shells were at most 18.6% of cone weight.'},
+    {id:'lowerHigher',label:'More than 18.6%',n:87,value:3.94,description:'79 or more nuts; edible nuts were at most 21% of seed-and-shell weight; seeds with shells were more than 18.6% of cone weight.'}
+   ]}},
+   {id:'higherShare',label:'More than 21% was edible',n:104,value:4.54,next:{id:'higherSeedShare',question:'How much of the whole cone’s weight was seeds with shells?',choices:[
+    {id:'higherLower',label:'20.8% or less',n:78,value:4.35,description:'79 or more nuts; edible nuts were more than 21% of seed-and-shell weight; seeds with shells were at most 20.8% of cone weight.'},
+    {id:'higherHigher',label:'More than 20.8%',n:26,value:5.10,description:'79 or more nuts; edible nuts were more than 21% of seed-and-shell weight; seeds with shells were more than 20.8% of cone weight.'}
+   ]}}
+  ]}}
+ ]
+};
+const selected=[];
+function renderTree(focusId){
+ const host=document.getElementById('tree');host.replaceChildren();
+ let node=TREE,depth=0,last=null;
+ while(node){
+  const section=document.createElement('div');section.className='tree-step';
+  section.innerHTML=`<p class="step-label">Question ${depth+1}</p><h3 id="question-${node.id}">${node.question}</h3>${node.help?`<p class="note small-break">${node.help}</p>`:''}`;
+  const choices=document.createElement('div');choices.className='choices';choices.setAttribute('role','group');choices.setAttribute('aria-labelledby','question-'+node.id);
+  const currentDepth=depth;
+  node.choices.forEach(c=>{
+   const active=selected[currentDepth]===c.id;
+   const b=document.createElement('button');b.type='button';b.className='choice';b.id='choice-'+c.id;b.setAttribute('aria-pressed',String(active));
+   b.innerHTML=`<strong>${c.label}</strong><span class="share">${c.value.toFixed(2)}%</span><span class="sub">of cone weight was edible nuts<br>${c.n} cones in this group</span><span class="selection">${active?'✓ Selected':c.next?'Explore this group →':'Choose this group →'}</span>`;
+   b.addEventListener('click',()=>{selected.splice(currentDepth,selected.length-currentDepth,c.id);renderTree(b.id);});choices.append(b);
+  });section.append(choices);host.append(section);
+  const choice=node.choices.find(c=>c.id===selected[depth]);
+  if(!choice)break;
+  last=choice;node=choice.next;depth++;
+ }
+ const outcome=document.createElement('div');outcome.className='tree-result';outcome.setAttribute('role','status');outcome.setAttribute('aria-live','polite');
+ if(!last){outcome.innerHTML='<strong>Start by choosing either group above.</strong><p>You will see how the study separated cones into smaller groups. Nothing here tells us that changing a tree would move its cones into a better group.</p>';}
+ else if(last.next){outcome.innerHTML=`<strong>Your selected group has ${last.n} cones.</strong><p>Its average edible share is ${last.value.toFixed(2)}%. Choose an answer to the next question to look more closely.</p>`;}
+ else{outcome.innerHTML=`<p class="badge">The end of this path · ${last.n} cones</p><div class="metric">${last.value.toFixed(2)} g per 100 g</div><p>At this group’s average rate, that is the edible nut weight for every 100 grams of whole cone. It is a measured group average, not a guaranteed harvest.</p>`;}
+ host.append(outcome);
+ if(focusId)document.getElementById(focusId)?.focus({preventScroll:true});
+}
+renderTree();
+const leaves=[];
+function collect(node){for(const c of node.choices){if(c.next)collect(c.next);else leaves.push(c);}}
+collect(TREE);
+document.querySelector('#leaves-table tbody').innerHTML=leaves.map(c=>`<tr><td>${c.description}</td><td class="num">${c.n}</td><td class="num">${c.value.toFixed(2)}%</td></tr>`).join('');
+// Exposed only for reproducibility checks: this page has no network dependencies.
+window.studyData={groups:DATA,tree:TREE,leaves};
+</script>
+</body>
+</html>

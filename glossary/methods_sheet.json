@@ -1,0 +1,1498 @@
+[
+ {
+  "term": "statistical analysis",
+  "aliases": [
+   "statistical analyses"
+  ],
+  "kind": "statistical idea",
+  "explanation": "Using math on collected numbers to find patterns. It also checks whether a difference is real or could just be luck. Imagine checking whether one class really scored higher on a test, or whether the gap is small enough to be chance.",
+  "used_for": "Researchers use it to decide whether their results show a real effect.",
+  "papers": 1270
+ },
+ {
+  "term": "analysis of variance",
+  "aliases": [
+   "ANOVA",
+   "one-way analysis"
+  ],
+  "kind": "statistical method",
+  "explanation": "A test that compares the averages of three or more groups at once. It asks whether the groups differ more than you would expect from the normal spread of values inside each group. The \"one-way\" version compares groups that differ in just one thing, such as plants grown under three light levels.",
+  "used_for": "Researchers use it to check whether treatments or sites really differ, for example in plant growth.",
+  "papers": 416
+ },
+ {
+  "term": "principal component analysis",
+  "aliases": [
+   "PCA"
+  ],
+  "kind": "statistical method",
+  "explanation": "A method that squeezes many measured variables into a few new combined ones that keep most of the variation. It is like summing up a person's many body measurements as just \"overall size\" and \"body shape.\"",
+  "used_for": "Researchers use it to spot main patterns among many environmental measurements and plot them on a simple graph.",
+  "papers": 389
+ },
+ {
+  "term": "correlation",
+  "aliases": [
+   "correlation analysis",
+   "correlation coefficient",
+   "negative correlation",
+   "strong correlation",
+   "significant correlation",
+   "significant positive correlation"
+  ],
+  "kind": "statistical idea",
+  "explanation": "How closely two quantities rise or fall together. It is measured by a number, the correlation coefficient, which runs from -1 to +1. Positive means both go up together, like height and shoe size. Negative means one goes up as the other goes down. \"Strong\" means the link is close, and \"significant\" means it is unlikely to be just chance.",
+  "used_for": "Researchers use it to see which factors are linked, such as water temperature and fish numbers.",
+  "papers": 298
+ },
+ {
+  "term": "phylogenetic analysis",
+  "aliases": [
+   "phylogenetic analyses"
+  ],
+  "kind": "computing method",
+  "explanation": "Working out how species or genes are related by comparing their DNA or features. The result is a family tree of evolution showing which ones share a more recent common ancestor.",
+  "used_for": "Researchers use it to identify organisms and trace their evolutionary history.",
+  "papers": 268
+ },
+ {
+  "term": "sensitivity analysis",
+  "aliases": [],
+  "kind": "computing method",
+  "explanation": "Changing the inputs or assumptions of a model a little and watching how much the results change. It is like testing whether a cake still turns out if you add a bit more or less sugar.",
+  "used_for": "Researchers use it to find which inputs matter most and how reliable their conclusions are.",
+  "papers": 212
+ },
+ {
+  "term": "standard deviation",
+  "aliases": [
+   "SD"
+  ],
+  "kind": "statistical idea",
+  "explanation": "A number showing how spread out values are around their average. A small value means most values sit close to the average. A large value means they are widely scattered.",
+  "used_for": "Researchers report it to show how much their measurements vary.",
+  "papers": 188
+ },
+ {
+  "term": "Kruskal-Wallis test",
+  "aliases": [
+   "wallis test"
+  ],
+  "kind": "statistical method",
+  "explanation": "A test that compares three or more groups using only the order of the values, not the exact numbers. It works by ranking all values from smallest to largest. This makes it useful when the data are lopsided or contain odd extreme values.",
+  "used_for": "Researchers use it instead of ANOVA when their data do not follow a neat bell-shaped pattern.",
+  "papers": 183
+ },
+ {
+  "term": "Shannon index",
+  "aliases": [],
+  "kind": "statistical method",
+  "explanation": "A score for how diverse a community of living things is. It takes into account both how many species there are and how evenly individuals are shared among them. A forest with many species in similar numbers scores higher than one dominated by a single species.",
+  "used_for": "Researchers use it to compare biodiversity between habitats or over time.",
+  "papers": 169
+ },
+ {
+  "term": "Akaike information criterion",
+  "aliases": [
+   "AIC",
+   "best model",
+   "final model",
+   "full model"
+  ],
+  "kind": "statistical method",
+  "explanation": "A score for comparing models, which are math descriptions of how something works. It rewards models that fit the data well and penalizes ones with too many parts. The lowest score marks the \"best model.\" A \"full model\" includes every possible factor, and the \"final model\" is the one researchers keep.",
+  "used_for": "Researchers use it to decide which factors best explain their results without overcomplicating things.",
+  "papers": 169
+ },
+ {
+  "term": "polymerase chain reaction",
+  "aliases": [
+   "PCR",
+   "PCR amplification"
+  ],
+  "kind": "lab technique",
+  "explanation": "A lab method that copies a chosen piece of DNA millions of times. It does this by repeatedly heating and cooling the sample with a copying enzyme, a protein that speeds up chemical reactions. It works like a photocopier for genes.",
+  "used_for": "Researchers use it to get enough DNA to detect, identify or sequence organisms.",
+  "papers": 158
+ },
+ {
+  "term": "agarose gel electrophoresis",
+  "aliases": [],
+  "kind": "lab technique",
+  "explanation": "A method that sorts DNA pieces by size. Electricity pulls the pieces through a jelly-like slab made from seaweed material, and small pieces travel farther than big ones.",
+  "used_for": "Researchers use it to check whether PCR worked and how big the DNA pieces are.",
+  "papers": 150
+ },
+ {
+  "term": "scanning electron microscopy",
+  "aliases": [
+   "SEM"
+  ],
+  "kind": "instrument",
+  "explanation": "A microscope that scans a beam of electrons, the tiny charged particles found in atoms, across a surface instead of using light. It gives very detailed, 3D-looking pictures of tiny things.",
+  "used_for": "Researchers use it to view fine surface details of cells, pollen, minerals or particles.",
+  "papers": 150
+ },
+ {
+  "term": "maximum likelihood",
+  "aliases": [
+   "ML"
+  ],
+  "kind": "statistical method",
+  "explanation": "A way of choosing the explanation or settings that make the observed data most probable. It is like choosing the suspect whose story best fits all the clues.",
+  "used_for": "Researchers use it to fit models and to build evolutionary trees.",
+  "papers": 134
+ },
+ {
+  "term": "mass spectrometry",
+  "aliases": [
+   "MS analysis"
+  ],
+  "kind": "instrument",
+  "explanation": "A method that turns molecules into charged particles and sorts them by weight. This reveals which substances are in a sample and how much of each there is.",
+  "used_for": "Researchers use it to identify pollutants, nutrients or other chemicals in samples.",
+  "papers": 117
+ },
+ {
+  "term": "amplicon sequence variants",
+  "aliases": [
+   "ASVs"
+  ],
+  "kind": "computing method",
+  "explanation": "The exact, distinct DNA sequences found after copying and reading one gene from a mixed sample. An amplicon is a piece of DNA copied by PCR, and each unique sequence roughly stands for one type of microbe.",
+  "used_for": "Researchers use them to list which microbes live in soil or water samples.",
+  "papers": 116
+ },
+ {
+  "term": "limit of detection",
+  "aliases": [
+   "LOD"
+  ],
+  "kind": "statistical idea",
+  "explanation": "The smallest amount of a substance that a method can reliably tell apart from zero. Anything below it might be there but cannot be measured with confidence.",
+  "used_for": "Researchers use it to show how sensitive their measurements are.",
+  "papers": 113
+ },
+ {
+  "term": "statistical tests",
+  "aliases": [],
+  "kind": "statistical idea",
+  "explanation": "A statistical test is a set of math rules for deciding whether a pattern in data is probably real or could easily have happened by chance. It is like checking whether a coin that landed heads 8 times out of 10 is really unfair or just had a lucky run.",
+  "used_for": "Researchers use them to decide whether differences or links they see in their measurements are trustworthy.",
+  "papers": 113
+ },
+ {
+  "term": "receiver operating characteristic curve and area under the curve (ROC / AUC)",
+  "aliases": [
+   "ROC",
+   "AUC",
+   "area under the curve",
+   "receiver operating characteristic"
+  ],
+  "kind": "statistical idea",
+  "explanation": "A ROC curve is a graph showing how well a model sorts things into two groups, such as places where a species lives and places where it doesn't, at every possible cut-off. The area under that curve (AUC) is one number from 0.5 (no better than guessing) to 1 (perfect sorting).",
+  "used_for": "Researchers use AUC to score how well models, such as species-distribution maps, tell 'present' from 'absent'.",
+  "papers": 111
+ },
+ {
+  "term": "Pearson correlation",
+  "aliases": [
+   "pearson correlation analysis",
+   "pearson correlation coefficient",
+   "strong positive correlation",
+   "significant negative correlation",
+   "high correlation"
+  ],
+  "kind": "statistical method",
+  "explanation": "Pearson correlation gives a number from -1 to 1 showing how closely two measurements rise and fall together in a straight-line way. Near 1 means both go up together (like height and shoe size), near -1 means one goes up as the other goes down, and near 0 means no straight-line link.",
+  "used_for": "Researchers use it to see which environmental factors move together, such as temperature and plant growth.",
+  "papers": 109
+ },
+ {
+  "term": "remote sensing",
+  "aliases": [],
+  "kind": "field method",
+  "explanation": "Remote sensing means gathering information about Earth from far away, usually with cameras and sensors on satellites, planes or drones. It is like studying a forest from a photo taken from space instead of walking through it.",
+  "used_for": "Researchers use it to map land cover, track forests, crops, floods and changes over large areas.",
+  "papers": 105
+ },
+ {
+  "term": "mass spectrometer",
+  "aliases": [
+   "tandem mass spectrometry"
+  ],
+  "kind": "instrument",
+  "explanation": "A mass spectrometer is a machine that turns molecules into electrically charged pieces and sorts them by weight, showing which molecules are in a sample and how much. Tandem mass spectrometry runs two sorting steps in a row, breaking chosen molecules apart to identify them more surely.",
+  "used_for": "Researchers use it to detect pollutants, nutrients or proteins in water, soil and living things.",
+  "papers": 104
+ },
+ {
+  "term": "random forest (RF)",
+  "aliases": [
+   "RF",
+   "random forest"
+  ],
+  "kind": "computing method",
+  "explanation": "A random forest is a computer method that builds hundreds of simple decision trees, each a flowchart of yes/no questions, using slightly different parts of the data. The final answer is the vote or average of all the trees, like asking a big crowd instead of one person.",
+  "used_for": "Researchers use it to predict things like where species live and to find which factors matter most.",
+  "papers": 102
+ },
+ {
+  "term": "post hoc test",
+  "aliases": [],
+  "kind": "statistical method",
+  "explanation": "A post hoc test is done after a first test shows that some groups differ, to find out exactly which pairs of groups differ. Post hoc is Latin for 'after this'.",
+  "used_for": "Researchers use it to pinpoint which treatments or sites are different from each other.",
+  "papers": 96
+ },
+ {
+  "term": "null model",
+  "aliases": [],
+  "kind": "statistical idea",
+  "explanation": "A null model is a version of the data made by chance alone, often by randomly shuffling it, showing what you'd expect if no special process were acting. Real data is then compared to it.",
+  "used_for": "Researchers use it to tell whether patterns, like which species live together, are more than random.",
+  "papers": 94
+ },
+ {
+  "term": "rRNA gene sequencing",
+  "aliases": [
+   "rrna gene sequencing",
+   "16S rRNA gene sequencing"
+  ],
+  "kind": "lab technique",
+  "explanation": "This reads the DNA letters of a gene for rRNA, a molecule that helps cells build proteins and that all microbes have. The gene differs slightly between kinds of microbes, so it works like a name tag.",
+  "used_for": "Researchers use it to find out which bacteria and other microbes live in soil, water or guts.",
+  "papers": 90
+ },
+ {
+  "term": "light microscope",
+  "aliases": [],
+  "kind": "instrument",
+  "explanation": "A light microscope uses ordinary light and glass lenses to magnify small things, up to about 1000 times. It is the kind of microscope found in school labs.",
+  "used_for": "Researchers use it to look at cells, tiny organisms and soil or water particles.",
+  "papers": 85
+ },
+ {
+  "term": "hierarchical clustering",
+  "aliases": [],
+  "kind": "statistical method",
+  "explanation": "Hierarchical clustering groups samples step by step, first joining the two most similar, then joining groups together, until everything is in one tree. The result is a branching diagram like a family tree.",
+  "used_for": "Researchers use it to find which sites, species or samples naturally group together.",
+  "papers": 79
+ },
+ {
+  "term": "Markov chain Monte Carlo",
+  "aliases": [
+   "MCMC"
+  ],
+  "kind": "computing method",
+  "explanation": "A computer method that takes millions of small random steps, each step depending only on the one before, so that it ends up visiting likely answers more often than unlikely ones. Counting where it spends its time gives a picture of which answers fit the data best.",
+  "used_for": "Researchers use it to estimate unknown numbers, like population growth rates, when the math is too hard to solve directly.",
+  "papers": 76
+ },
+ {
+  "term": "species distribution modeling",
+  "aliases": [],
+  "kind": "computing method",
+  "explanation": "Building a computer model that links places where a species has been found to conditions there, like temperature and rainfall, then predicts where else it could live.",
+  "used_for": "Researchers use it to map likely habitat and to predict how ranges may shift as the climate changes.",
+  "papers": 76
+ },
+ {
+  "term": "Mantel test",
+  "aliases": [],
+  "kind": "statistical method",
+  "explanation": "A test that checks whether two tables of distances match up, for example whether sites that are far apart also have very different species. It shuffles one table many times to see if the match could be due to chance.",
+  "used_for": "Researchers use it to see whether genetic or community differences grow with geographic distance.",
+  "papers": 75
+ },
+ {
+  "term": "spatial analysis",
+  "aliases": [],
+  "kind": "statistical method",
+  "explanation": "Studying data together with where each measurement was taken, looking for patterns like clusters, gradients or hotspots on a map.",
+  "used_for": "Researchers use it to find where pollution, species or diseases are concentrated and why.",
+  "papers": 75
+ },
+ {
+  "term": "regression analysis",
+  "aliases": [],
+  "kind": "statistical method",
+  "explanation": "Fitting a line or curve through data points to describe how one quantity changes when another changes, like how plant height rises with fertilizer.",
+  "used_for": "Researchers use it to measure the strength of relationships and to predict values.",
+  "papers": 74
+ },
+ {
+  "term": "jackknife test",
+  "aliases": [],
+  "kind": "statistical method",
+  "explanation": "Repeating a calculation many times, each time leaving out one piece (one sample or one variable), and seeing how much the result changes.",
+  "used_for": "Researchers use it to judge how reliable a result is and which variables matter most in a model.",
+  "papers": 74
+ },
+ {
+  "term": "confidence interval",
+  "aliases": [
+   "CI",
+   "CIs",
+   "confidence intervals"
+  ],
+  "kind": "statistical idea",
+  "explanation": "A range of values that likely contains the true value being estimated, built so that it would capture the truth in, say, 95 percent of repeated studies. A narrow range means a more precise estimate.",
+  "used_for": "Researchers use it to show how uncertain their estimates are.",
+  "papers": 73
+ },
+ {
+  "term": "chemical analysis",
+  "aliases": [
+   "elemental analysis"
+  ],
+  "kind": "lab technique",
+  "explanation": "Lab testing to find out which substances or chemical elements are in a sample, and how much of each.",
+  "used_for": "Researchers use it to measure nutrients and pollutants in soil, water or tissue.",
+  "papers": 71
+ },
+ {
+  "term": "limit of quantification",
+  "aliases": [
+   "LOQ"
+  ],
+  "kind": "statistical idea",
+  "explanation": "The smallest amount of a substance that a lab method can measure with trustworthy accuracy. Below it, the substance may be detected but its amount is too uncertain to report.",
+  "used_for": "Researchers use it to state which low measurements can be trusted.",
+  "papers": 69
+ },
+ {
+  "term": "generalized linear model",
+  "aliases": [
+   "GLM",
+   "GLMs",
+   "generalized linear models"
+  ],
+  "kind": "statistical method",
+  "explanation": "An extended form of regression that works for data that are not smooth numbers, such as counts of animals or yes/no outcomes like present or absent.",
+  "used_for": "Researchers use it to link species counts or presence to environmental factors.",
+  "papers": 69
+ },
+ {
+  "term": "Langmuir model",
+  "aliases": [],
+  "kind": "statistical method",
+  "explanation": "A formula describing how molecules stick to a surface until every available spot is filled, like cars filling a parking lot until it is full.",
+  "used_for": "Researchers use it to estimate how much pollutant a material such as soil or charcoal can soak up.",
+  "papers": 69
+ },
+ {
+  "term": "diversity index",
+  "aliases": [],
+  "kind": "statistical idea",
+  "explanation": "A single number summarizing how many species are in a place and how evenly individuals are spread among them. A garden with ten flower types in equal amounts scores higher than one dominated by a single type.",
+  "used_for": "Researchers use it to compare biodiversity between sites or over time.",
+  "papers": 67
+ },
+ {
+  "term": "Bayesian inference",
+  "aliases": [
+   "BI"
+  ],
+  "kind": "statistical method",
+  "explanation": "A way of reasoning with probability that starts from what is already believed and updates it as new data come in, like changing your guess about rain after seeing dark clouds.",
+  "used_for": "Researchers use it to estimate quantities and their uncertainty, and to build evolutionary family trees.",
+  "papers": 67
+ },
+ {
+  "term": "transmission electron microscopy",
+  "aliases": [
+   "TEM"
+  ],
+  "kind": "instrument",
+  "explanation": "A microscope that shoots a beam of electrons (tiny charged particles) through a very thin sample instead of light, showing details thousands of times smaller than a regular microscope can.",
+  "used_for": "Researchers use it to see the inside of cells, viruses and tiny particles.",
+  "papers": 67
+ },
+ {
+  "term": "metagenomic sequencing",
+  "aliases": [
+   "metagenomics"
+  ],
+  "kind": "lab technique",
+  "explanation": "Reading the DNA of all organisms in a sample, like a scoop of soil or water, at once, without growing them separately first.",
+  "used_for": "Researchers use it to find out which microbes live somewhere and what they can do.",
+  "papers": 67
+ },
+ {
+  "term": "X-ray diffraction",
+  "aliases": [
+   "XRD"
+  ],
+  "kind": "instrument",
+  "explanation": "Shining X-rays at a material and recording how they bounce off the orderly rows of atoms inside it; each mineral gives its own pattern, like a fingerprint.",
+  "used_for": "Researchers use it to identify minerals and crystal structures in soils and materials.",
+  "papers": 66
+ },
+ {
+  "term": "mean absolute error",
+  "aliases": [
+   "MAE"
+  ],
+  "kind": "statistical idea",
+  "explanation": "The average size of a model's mistakes, found by taking how far each prediction was from the real value, ignoring whether it was too high or too low, and averaging.",
+  "used_for": "Researchers use it to judge and compare how accurate prediction models are.",
+  "papers": 66
+ },
+ {
+  "term": "Simpson index",
+  "aliases": [
+   "Simpson diversity index"
+  ],
+  "kind": "statistical idea",
+  "explanation": "A diversity index based on the chance that two individuals picked at random belong to the same species. It is most affected by the most common species.",
+  "used_for": "Researchers use it to measure how much a community is dominated by a few species.",
+  "papers": 65
+ },
+ {
+  "term": "model validation",
+  "aliases": [],
+  "kind": "statistical method",
+  "explanation": "Checking a model by testing its predictions against data it was not built from, like quizzing a student on new questions rather than ones they memorized.",
+  "used_for": "Researchers use it to make sure a model works beyond the data used to create it.",
+  "papers": 64
+ },
+ {
+  "term": "average nucleotide identity",
+  "aliases": [
+   "ANI"
+  ],
+  "kind": "computing method",
+  "explanation": "The percentage of matching DNA letters (nucleotides, the building blocks of DNA) between the shared genes of two microbes.",
+  "used_for": "Researchers use it to decide whether two bacteria belong to the same species, often with about 95 percent as the cutoff.",
+  "papers": 63
+ },
+ {
+  "term": "library preparation and sequencing",
+  "aliases": [
+   "library preparation"
+  ],
+  "kind": "lab technique",
+  "explanation": "Cutting DNA into small pieces and attaching short tags so a sequencing machine can read them, then reading the order of DNA letters in each piece.",
+  "used_for": "Researchers use it as the standard route for reading genes and genomes from samples.",
+  "papers": 63
+ },
+ {
+  "term": "open reading frame",
+  "aliases": [
+   "ORF",
+   "ORFs",
+   "open reading frames"
+  ],
+  "kind": "computing method",
+  "explanation": "A stretch of DNA that has a start signal and runs without a stop signal long enough that it may contain the instructions for a protein.",
+  "used_for": "Researchers search DNA for these to find possible genes.",
+  "papers": 61
+ },
+ {
+  "term": "rRNA gene amplicon sequencing",
+  "aliases": [
+   "rrna gene amplicon sequencing",
+   "rrna sequencing"
+  ],
+  "kind": "lab technique",
+  "explanation": "Scientists make many copies of one gene that every microbe carries (the gene for part of the cell's protein-building machine) and then read the DNA letters of all those copies. Each kind of microbe has a slightly different version, a bit like a barcode on a product.",
+  "used_for": "Finding out which microbes live in a soil, water or gut sample and how common each one is.",
+  "papers": 61
+ },
+ {
+  "term": "Raw sequencing data",
+  "aliases": [
+   "raw sequencing"
+  ],
+  "kind": "computing method",
+  "explanation": "These are the DNA letter readouts exactly as the sequencing machine produces them, before errors are removed or the pieces are sorted. It is like a rough draft that still needs editing.",
+  "used_for": "Shared publicly or cleaned up so other scientists can check and reuse the results.",
+  "papers": 61
+ },
+ {
+  "term": "Shared Socioeconomic Pathways",
+  "aliases": [
+   "shared socioeconomic pathways (SSPs)",
+   "SSPs"
+  ],
+  "kind": "other",
+  "explanation": "A set of five imagined stories about how the world might develop this century, for example fast growth with lots of fossil fuel use, or a greener path. Each story includes guesses about population, money and energy use.",
+  "used_for": "Feeding into climate models to predict how climate and nature could change under different futures.",
+  "papers": 60
+ },
+ {
+  "term": "Chi-square test",
+  "aliases": [
+   "chi-square test"
+  ],
+  "kind": "statistical method",
+  "explanation": "A test that compares the counts you actually got in different groups with the counts you would expect if nothing special were going on. For example, it checks whether a coin landed heads too often to be chance.",
+  "used_for": "Checking whether things like species presence and habitat type are linked.",
+  "papers": 60
+ },
+ {
+  "term": "Rank correlation",
+  "aliases": [
+   "rank correlation"
+  ],
+  "kind": "statistical method",
+  "explanation": "A way to measure whether two things tend to rise together by first putting each list in order, 1st, 2nd, 3rd and so on, and then comparing the orders instead of the exact values. It works even when the data are lopsided or contain extreme values.",
+  "used_for": "Testing links such as whether warmer sites tend to have more species.",
+  "papers": 60
+ },
+ {
+  "term": "Quantification and statistical analysis",
+  "aliases": [
+   "quantification and statistical analysis"
+  ],
+  "kind": "statistical idea",
+  "explanation": "The part of a study where measurements are turned into numbers and then checked with math to see which patterns are real and which could be due to chance.",
+  "used_for": "Explaining in a paper exactly how the results were calculated and tested.",
+  "papers": 60
+ },
+ {
+  "term": "Differentially expressed genes",
+  "aliases": [
+   "differentially expressed genes (DEGs)",
+   "DEGs"
+  ],
+  "kind": "statistical idea",
+  "explanation": "Genes that are switched on more strongly or more weakly in one condition than in another, for example in a plant under drought compared with a well-watered plant.",
+  "used_for": "Finding which genes an organism uses to respond to stress, pollution or other changes.",
+  "papers": 59
+ },
+ {
+  "term": "Standard error",
+  "aliases": [
+   "standard error (SE)",
+   "SE"
+  ],
+  "kind": "statistical idea",
+  "explanation": "A number that shows how much an average from a sample would likely change if you repeated the sampling. A small standard error means the average is probably close to the true value.",
+  "used_for": "Showing how precise an average is, often as error bars on graphs.",
+  "papers": 59
+ },
+ {
+  "term": "Bayesian information criterion",
+  "aliases": [
+   "bayesian information criterion (BIC)",
+   "BIC"
+  ],
+  "kind": "statistical method",
+  "explanation": "A score for comparing different models that rewards fitting the data well but punishes using too many parts. A lower score means the model is a better choice, like picking the simplest explanation that still works.",
+  "used_for": "Choosing the best model among several possible ones.",
+  "papers": 57
+ },
+ {
+  "term": "Metagenome-assembled genomes",
+  "aliases": [
+   "metagenome-assembled genomes (MAGs)",
+   "MAGs"
+  ],
+  "kind": "computing method",
+  "explanation": "Scientists sequence all the DNA in a sample at once, which mixes together the DNA of many microbes. A computer then sorts and joins the pieces back into near-complete sets of genes for individual microbes, like rebuilding several jigsaw puzzles from one mixed pile.",
+  "used_for": "Studying microbes that cannot be grown in the lab.",
+  "papers": 56
+ },
+ {
+  "term": "Electrospray ionization",
+  "aliases": [
+   "electrospray ionization (ESI)",
+   "ESI"
+  ],
+  "kind": "lab technique",
+  "explanation": "A liquid sample is sprayed through a needle with a high voltage, which turns it into a fine mist of electrically charged droplets. The molecules leave the droplets as charged particles that a machine called a mass spectrometer can then weigh.",
+  "used_for": "Identifying and measuring chemicals in samples.",
+  "papers": 53
+ },
+ {
+  "term": "Specific leaf area",
+  "aliases": [
+   "specific leaf area (SLA)",
+   "SLA"
+  ],
+  "kind": "field method",
+  "explanation": "A leaf's area divided by its dry weight. Thin, light leaves have a high value and thick, tough leaves have a low value.",
+  "used_for": "Describing plant growth strategy, for example fast-growing versus long-lived plants.",
+  "papers": 53
+ },
+ {
+  "term": "Experimental model",
+  "aliases": [
+   "experimental model"
+  ],
+  "kind": "other",
+  "explanation": "The organism, system or setup that scientists choose to study in experiments, standing in for a bigger or harder-to-study case, such as using lab mice to learn about mammals.",
+  "used_for": "Testing ideas under controlled conditions.",
+  "papers": 53
+ },
+ {
+  "term": "Relative humidity",
+  "aliases": [
+   "relative humidity (RH)",
+   "RH"
+  ],
+  "kind": "statistical idea",
+  "explanation": "How much water vapour is in the air compared with the most the air could hold at that temperature, given as a percentage. At 100% the air is saturated, which is when dew and fog form.",
+  "used_for": "Describing weather and growing conditions in studies.",
+  "papers": 52
+ },
+ {
+  "term": "DNA extraction and sequencing",
+  "aliases": [
+   "dna extraction and sequencing"
+  ],
+  "kind": "lab technique",
+  "explanation": "First the DNA is pulled out of cells and cleaned, and then a machine reads the order of its letters, A, C, G and T.",
+  "used_for": "Identifying organisms and studying their genes.",
+  "papers": 52
+ },
+ {
+  "term": "FTIR analysis",
+  "aliases": [
+   "ftir analysis",
+   "Fourier-transform infrared spectroscopy"
+  ],
+  "kind": "lab technique",
+  "explanation": "Infrared light, a kind of light just beyond red that we feel as heat, is shone at a sample. Different chemical bonds absorb different colours of this light, giving each material a fingerprint pattern.",
+  "used_for": "Identifying chemical groups in soil, plastics or plant material.",
+  "papers": 51
+ },
+ {
+  "term": "Post hoc tests",
+  "aliases": [
+   "post hoc tests"
+  ],
+  "kind": "statistical method",
+  "explanation": "Follow-up tests done after a first test shows that some groups differ, used to find out exactly which pairs of groups are different.",
+  "used_for": "Comparing treatments pair by pair.",
+  "papers": 51
+ },
+ {
+  "term": "Ultrafast bootstrap",
+  "aliases": [
+   "ultrafast bootstrap"
+  ],
+  "kind": "computing method",
+  "explanation": "A quick computer method that rebuilds a family tree of species many times from reshuffled versions of the DNA data and counts how often each branch appears. A branch that shows up nearly every time is well supported.",
+  "used_for": "Measuring how trustworthy the branches of an evolutionary tree are.",
+  "papers": 50
+ },
+ {
+  "term": "Wilcoxon rank-sum test",
+  "aliases": [
+   "wilcoxon rank-sum test",
+   "Mann-Whitney U test"
+  ],
+  "kind": "statistical method",
+  "explanation": "A test that compares two groups by putting all the values in order and checking whether one group tends to hold the higher places. It does not need the data to follow a bell-shaped curve.",
+  "used_for": "Comparing two groups when the data are uneven or contain extreme values.",
+  "papers": 50
+ },
+ {
+  "term": "Diameter at breast height",
+  "aliases": [
+   "diameter at breast height (DBH)",
+   "DBH"
+  ],
+  "kind": "field method",
+  "explanation": "The width of a tree trunk measured about 1.3 m above the ground, roughly at an adult's chest height. Measuring at the same height makes trees easy to compare.",
+  "used_for": "Estimating tree size, age and the amount of carbon stored in forests.",
+  "papers": 49
+ },
+ {
+  "term": "high-performance liquid chromatography",
+  "aliases": [
+   "HPLC"
+  ],
+  "kind": "lab technique",
+  "explanation": "A liquid sample is pushed at high pressure through a thin tube packed with tiny beads. Different chemicals in the sample stick to the beads by different amounts, so they come out of the tube at different times, a bit like runners finishing a race spread out.",
+  "used_for": "Researchers use it to find out which chemicals are in a sample and how much of each there is.",
+  "papers": 49
+ },
+ {
+  "term": "Wilcoxon test",
+  "aliases": [
+   "wilcoxon test"
+  ],
+  "kind": "statistical method",
+  "explanation": "A way to check whether two groups of numbers really differ or only look different by chance. It ranks all the values from smallest to largest and compares the ranks instead of the raw numbers, so a few extreme values cannot mislead it much.",
+  "used_for": "Researchers use it to compare two groups, such as polluted and clean sites, when the data are uneven or lopsided.",
+  "papers": 49
+ },
+ {
+  "term": "linear discriminant analysis",
+  "aliases": [
+   "LDA"
+  ],
+  "kind": "statistical method",
+  "explanation": "A method that finds the combination of measurements that best separates samples into groups that are already known. It is like finding the single best line to draw between two crowds of dots on a graph.",
+  "used_for": "Researchers use it to sort samples into groups or to find which features differ most between groups.",
+  "papers": 48
+ },
+ {
+  "term": "regularization multiplier",
+  "aliases": [
+   "RM"
+  ],
+  "kind": "statistical idea",
+  "explanation": "A setting in some computer models that controls how simple or detailed the model is allowed to be. A higher value keeps the model simpler so it does not just memorize noise in the data.",
+  "used_for": "Researchers adjust it when predicting where species can live, often in a program called MaxEnt, to get maps that work on new data.",
+  "papers": 48
+ },
+ {
+  "term": "Tukey test",
+  "aliases": [
+   "tukey test",
+   "Tukey's HSD"
+  ],
+  "kind": "statistical method",
+  "explanation": "After finding that several groups differ somewhere, this test compares every pair of groups. It is designed so that doing many comparisons does not give more false alarms.",
+  "used_for": "Researchers use it to say exactly which treatments or sites differ from which.",
+  "papers": 48
+ },
+ {
+  "term": "co-occurrence network",
+  "aliases": [],
+  "kind": "computing method",
+  "explanation": "A diagram where each dot is a species and lines join species that tend to appear, or increase, together across samples. It looks like a map of friendships at a school.",
+  "used_for": "Researchers use it to guess which organisms may interact and which ones are central in a community.",
+  "papers": 48
+ },
+ {
+  "term": "DNA sequencing",
+  "aliases": [
+   "dna sequencing"
+  ],
+  "kind": "lab technique",
+  "explanation": "Reading the order of the four chemical letters (A, C, G, T) along a piece of DNA.",
+  "used_for": "Researchers use it to identify species, compare genes and study evolution.",
+  "papers": 47
+ },
+ {
+  "term": "hazard index",
+  "aliases": [
+   "HI"
+  ],
+  "kind": "statistical idea",
+  "explanation": "A number made by adding up, for each pollutant, how much a person takes in divided by the amount thought to be safe. A value above 1 suggests a possible health risk.",
+  "used_for": "Researchers use it to judge whether a mix of pollutants in food, water or soil could harm people.",
+  "papers": 46
+ },
+ {
+  "term": "beta diversity analysis",
+  "aliases": [
+   "beta diversity"
+  ],
+  "kind": "statistical method",
+  "explanation": "Measuring how different the mix of species is from one place or sample to another. Two ponds with the same species have low beta diversity, while two ponds with completely different species have high beta diversity.",
+  "used_for": "Researchers use it to compare communities across habitats, treatments or seasons.",
+  "papers": 46
+ },
+ {
+  "term": "morphological analysis",
+  "aliases": [],
+  "kind": "lab technique",
+  "explanation": "Studying the shape, size and structure of organisms or particles, often by measuring them or looking at them under a microscope.",
+  "used_for": "Researchers use it to identify species or describe physical changes, such as damage to cells.",
+  "papers": 46
+ },
+ {
+  "term": "machine learning models",
+  "aliases": [
+   "machine learning"
+  ],
+  "kind": "computing method",
+  "explanation": "Computer programs that learn patterns from many examples instead of following rules written by hand, much as you learn to recognize birds by seeing many pictures of them.",
+  "used_for": "Researchers use them to predict things like species locations or pollution levels from large datasets.",
+  "papers": 46
+ },
+ {
+  "term": "interquartile range",
+  "aliases": [
+   "IQR"
+  ],
+  "kind": "statistical idea",
+  "explanation": "The spread of the middle half of the data. Line up all the values in order, cut off the lowest quarter and the highest quarter, and the IQR is the gap between the smallest and largest values that remain.",
+  "used_for": "Researchers use it to describe how spread out data are and to spot unusual values.",
+  "papers": 45
+ },
+ {
+  "term": "X-ray photoelectron spectroscopy",
+  "aliases": [
+   "XPS"
+  ],
+  "kind": "instrument",
+  "explanation": "X-rays are shone on a material and knock electrons out of its surface. The energy of those electrons reveals which elements are present in the top few billionths of a meter and how they are bonded.",
+  "used_for": "Researchers use it to study the surface chemistry of materials, such as pollutant-trapping particles.",
+  "papers": 45
+ },
+ {
+  "term": "conceptual model",
+  "aliases": [],
+  "kind": "other",
+  "explanation": "A simple diagram or description of how the parts of a system are thought to connect, like a flowchart of how nutrients move through a lake.",
+  "used_for": "Researchers use it to organize their ideas and plan which things to measure.",
+  "papers": 45
+ },
+ {
+  "term": "Spearman rank correlation",
+  "aliases": [
+   "spearman correlation analysis",
+   "Spearman's rho"
+  ],
+  "kind": "statistical method",
+  "explanation": "A number from -1 to 1 that shows how strongly two things rise or fall together. It ranks the values first, so it works even when the relationship is not a straight line on a graph.",
+  "used_for": "Researchers use it to check links, such as between pollution levels and species numbers.",
+  "papers": 45
+ },
+ {
+  "term": "least significant difference",
+  "aliases": [
+   "LSD"
+  ],
+  "kind": "statistical method",
+  "explanation": "The smallest gap between two group averages that is large enough to count as a real difference rather than chance. Any pair of groups whose averages differ by more than this gap is called different.",
+  "used_for": "Researchers use it to compare treatment groups pair by pair after an overall test.",
+  "papers": 44
+ },
+ {
+  "term": "optical density",
+  "aliases": [
+   "OD"
+  ],
+  "kind": "statistical idea",
+  "explanation": "A measure of how much light a liquid blocks. A cloudier liquid, for example one full of bacteria, has a higher value.",
+  "used_for": "Researchers use it to track how fast microbes grow or how much of a colored substance is in a sample.",
+  "papers": 44
+ },
+ {
+  "term": "differential expression analysis",
+  "aliases": [],
+  "kind": "computing method",
+  "explanation": "Comparing how active each gene is under two conditions, for example with and without a pollutant, to find genes that are switched up or down.",
+  "used_for": "Researchers use it to learn how organisms respond to stress at the gene level.",
+  "papers": 44
+ },
+ {
+  "term": "inductively coupled plasma mass spectrometry",
+  "aliases": [
+   "ICP-MS"
+  ],
+  "kind": "instrument",
+  "explanation": "A sample is sprayed into an extremely hot gas that breaks it into charged atoms. The machine then sorts these atoms by weight and counts them, detecting even very tiny amounts.",
+  "used_for": "Researchers use it to measure metals and other elements, such as arsenic or lead, in water, soil or tissue.",
+  "papers": 43
+ },
+ {
+  "term": "image analysis",
+  "aliases": [],
+  "kind": "computing method",
+  "explanation": "Using a computer to measure things in photos or scans automatically, such as counting cells in a microscope picture or measuring leaf area in a photo.",
+  "used_for": "Researchers use it to get fast, consistent measurements from large numbers of pictures.",
+  "papers": 43
+ },
+ {
+  "term": "transcriptomic analysis",
+  "aliases": [],
+  "kind": "lab technique",
+  "explanation": "Reading all the working copies (called RNA) that a cell makes from its genes at one moment. This shows which genes are switched on and how strongly, a bit like seeing which recipes in a cookbook are being cooked right now.",
+  "used_for": "Researchers use it to see how organisms respond to stresses such as heat or pollution.",
+  "papers": 42
+ },
+ {
+  "term": "microbial community analysis",
+  "aliases": [],
+  "kind": "lab technique",
+  "explanation": "Working out which microbes live in a sample, such as soil or water, and how common each one is, usually by reading their DNA.",
+  "used_for": "Researchers use it to see how microbe groups change with pollution, farming or climate.",
+  "papers": 42
+ },
+ {
+  "term": "training and validation",
+  "aliases": [
+   "training and test"
+  ],
+  "kind": "computing method",
+  "explanation": "Splitting data into two parts: one part teaches a computer model, and the other part, which the model has never seen, checks how well it predicts. It is like studying with practice questions and then sitting a different exam.",
+  "used_for": "Researchers use it to make sure a model really works on new data and has not just memorized the old data.",
+  "papers": 42
+ },
+ {
+  "term": "best-fit model",
+  "aliases": [],
+  "kind": "statistical idea",
+  "explanation": "Out of several possible mathematical descriptions of the data, the one that matches the measurements most closely without being needlessly complicated.",
+  "used_for": "Researchers use it to choose which explanation of their data to trust and report.",
+  "papers": 42
+ },
+ {
+  "term": "species distribution model (SDM)",
+  "aliases": [
+   "species distribution models (SDMs)",
+   "SDMs",
+   "MaxEnt",
+   "maxent models"
+  ],
+  "kind": "computing method",
+  "explanation": "A computer model that links the places where a species has been found to conditions there, such as temperature and rainfall, and then maps where else it could live. MaxEnt is a popular method of this kind that works with records of only where a species was seen.",
+  "used_for": "Researchers use it to predict how species ranges may shift with climate change, or where invasive species could spread.",
+  "papers": 40
+ },
+ {
+  "term": "triple quadrupole mass spectrometer",
+  "aliases": [],
+  "kind": "instrument",
+  "explanation": "A mass spectrometer is a machine that weighs molecules by turning them into charged particles and steering them with electric fields. The triple quadrupole kind has three filtering stages in a row: it picks one molecule, breaks it apart, then checks for a specific fragment, which makes it very selective and sensitive.",
+  "used_for": "Researchers use it to measure tiny amounts of pollutants, such as pesticides or 'forever chemicals', in water, soil and organisms.",
+  "papers": 39
+ },
+ {
+  "term": "isotope ratio mass spectrometer",
+  "aliases": [],
+  "kind": "instrument",
+  "explanation": "Isotopes are forms of the same element whose atoms differ slightly in weight, like normal carbon and slightly heavier carbon. This machine measures very exactly how much of the heavy and light forms a sample contains.",
+  "used_for": "Researchers use it to trace food chains, water sources and where nutrients or pollution came from.",
+  "papers": 39
+ },
+ {
+  "term": "Shapiro-Wilk test",
+  "aliases": [
+   "shapiro-wilk test"
+  ],
+  "kind": "statistical method",
+  "explanation": "A test that checks whether data follow the bell-shaped 'normal' curve, where most values sit near the average and fewer lie far away.",
+  "used_for": "Researchers use it to decide which other statistical tests suit their data.",
+  "papers": 39
+ },
+ {
+  "term": "Method validation",
+  "aliases": [],
+  "kind": "statistical idea",
+  "explanation": "Checking that a measuring or testing procedure gives correct, repeatable results before trusting it. It is like testing a new kitchen scale with a known 1 kg bag of sugar before weighing anything else.",
+  "used_for": "Researchers use it to show their measurements of things like pollutants can be trusted.",
+  "papers": 37
+ },
+ {
+  "term": "GO enrichment analysis",
+  "aliases": [
+   "gene ontology enrichment analysis"
+  ],
+  "kind": "computing method",
+  "explanation": "Gene Ontology (GO) is a shared catalogue that labels each gene with the jobs it does in a cell. This analysis takes a list of genes that changed in an experiment. It then checks whether some jobs show up on that list more often than chance would predict.",
+  "used_for": "Researchers use it to work out which body processes, such as stress responses, were affected in an organism.",
+  "papers": 37
+ },
+ {
+  "term": "Alpha diversity analysis",
+  "aliases": [],
+  "kind": "statistical method",
+  "explanation": "Measuring how varied life is inside a single sample or place. It counts how many species there are and how evenly their numbers are spread. A pond with ten species in similar numbers has higher alpha diversity than one where a single species dominates.",
+  "used_for": "Researchers use it to compare how rich and balanced communities of microbes, plants or animals are at different sites.",
+  "papers": 37
+ },
+ {
+  "term": "Candidate models",
+  "aliases": [
+   "different models",
+   "four models"
+  ],
+  "kind": "statistical idea",
+  "explanation": "A model here is a mathematical formula that tries to explain or predict data. Candidate models are a set of competing formulas, each built from different combinations of possible explanations. They are compared to find the one that fits the data best without being too complicated.",
+  "used_for": "Researchers use them to decide which factors, such as rainfall or temperature, best explain what they observed.",
+  "papers": 37
+ },
+ {
+  "term": "Bioinformatics analysis",
+  "aliases": [
+   "sequence analysis"
+  ],
+  "kind": "computing method",
+  "explanation": "Using computers to store, compare and make sense of large amounts of biological information. A main example is reading DNA sequences, the order of the chemical 'letters' in DNA.",
+  "used_for": "Researchers use it to identify species from their DNA, find genes and compare organisms.",
+  "papers": 37
+ },
+ {
+  "term": "Sanger sequencing",
+  "aliases": [],
+  "kind": "lab technique",
+  "explanation": "An older, very accurate lab method for reading the order of the chemical letters in one piece of DNA at a time. It copies the DNA with special letters that glow in different colours, then reads off the colours in order.",
+  "used_for": "Researchers use it to identify a species or check a single gene.",
+  "papers": 37
+ },
+ {
+  "term": "canonical correspondence analysis",
+  "aliases": [
+   "correspondence analysis (CCA)",
+   "CCA"
+  ],
+  "kind": "statistical method",
+  "explanation": "A method that draws a single map showing both which species are found at each site and how those species line up with environmental conditions such as temperature or acidity.",
+  "used_for": "Researchers use it to see which environmental factors best explain where species occur.",
+  "papers": 36
+ },
+ {
+  "term": "Quantitative PCR",
+  "aliases": [
+   "qPCR",
+   "real-time PCR"
+  ],
+  "kind": "lab technique",
+  "explanation": "PCR stands for polymerase chain reaction. It is a method that copies a chosen piece of DNA over and over, doubling it each round like a photocopier. In quantitative PCR, a glowing dye shows how fast the copies pile up. The fewer rounds it takes, the more DNA there was at the start.",
+  "used_for": "Researchers use it to measure how much of a particular gene, microbe or virus is in a sample.",
+  "papers": 36
+ },
+ {
+  "term": "Likelihood ratio test",
+  "aliases": [],
+  "kind": "statistical method",
+  "explanation": "A test that compares how well a simpler model and a more complex model explain the same data. It checks whether the extra parts of the complex model improve the fit by more than chance would.",
+  "used_for": "Researchers use it to decide whether adding a factor, like soil type, really matters.",
+  "papers": 36
+ },
+ {
+  "term": "Solid-phase extraction",
+  "aliases": [
+   "SPE"
+  ],
+  "kind": "lab technique",
+  "explanation": "A way of pulling chosen chemicals out of a liquid by passing the liquid through a small tube packed with a material that grabs them. It works a bit like a water filter catching particles. The trapped chemicals are then washed out into a small, concentrated amount.",
+  "used_for": "Researchers use it to concentrate tiny traces of pollutants from water before measuring them.",
+  "papers": 35
+ },
+ {
+  "term": "Quality control",
+  "aliases": [
+   "QC"
+  ],
+  "kind": "statistical idea",
+  "explanation": "Routine checks, such as testing blank and known samples, to catch mistakes or contamination during measurements.",
+  "used_for": "Researchers use it to make sure their data are accurate and reliable.",
+  "papers": 35
+ },
+ {
+  "term": "Fourier transform infrared spectroscopy",
+  "aliases": [
+   "FTIR"
+  ],
+  "kind": "instrument",
+  "explanation": "Infrared light is invisible light just beyond red. Different chemical bonds in a material soak up different infrared colours. The instrument records which colours are absorbed, giving a 'fingerprint' of the material.",
+  "used_for": "Researchers use it to identify materials, such as the type of plastic in microplastic pieces, or the chemical groups in soil.",
+  "papers": 35
+ },
+ {
+  "term": "Predictive model",
+  "aliases": [],
+  "kind": "statistical idea",
+  "explanation": "A mathematical formula built from existing data that is used to estimate values that have not been measured yet, such as future conditions or unsampled places.",
+  "used_for": "Researchers use it to forecast things like where a species might live under future climate.",
+  "papers": 35
+ },
+ {
+  "term": "Multiple range test",
+  "aliases": [
+   "Duncan's multiple range test"
+  ],
+  "kind": "statistical method",
+  "explanation": "A test done after finding that groups differ overall, to work out exactly which pairs of groups have different averages. Results are often shown as letters, where groups sharing a letter are not clearly different.",
+  "used_for": "Researchers use it to compare several treatments, such as different fertilizers.",
+  "papers": 35
+ },
+ {
+  "term": "Illumina sequencing",
+  "aliases": [
+   "high-throughput sequencing"
+  ],
+  "kind": "lab technique",
+  "explanation": "A modern machine-based method that reads millions of short DNA pieces at once. Each piece is copied many times on a glass slide, and glowing colours reveal its letters one by one.",
+  "used_for": "Researchers use it to identify all the microbes in a soil or water sample at once.",
+  "papers": 35
+ },
+ {
+  "term": "permutation test",
+  "aliases": [],
+  "kind": "statistical method",
+  "explanation": "A check that shuffles the group labels on the data many times and recalculates the result after each shuffle. If the real result is bigger than almost all the shuffled ones, it probably isn't just luck.",
+  "used_for": "Researchers use it to test whether a difference between groups is real without assuming the data follow a neat bell-shaped pattern.",
+  "papers": 34
+ },
+ {
+  "term": "machine learning model",
+  "aliases": [
+   "ml analysis"
+  ],
+  "kind": "computing method",
+  "explanation": "A computer program that finds patterns by itself from many examples, instead of following rules a person wrote. It is a bit like learning to recognize birds by looking at thousands of photos.",
+  "used_for": "Researchers use it to predict things like where species live or how much pollution is present, using large datasets.",
+  "papers": 34
+ },
+ {
+  "term": "Kolmogorov-Smirnov test",
+  "aliases": [
+   "smirnov test",
+   "KS test"
+  ],
+  "kind": "statistical method",
+  "explanation": "A test that compares the overall shape of how values are spread out in two sets of numbers, or in one set and an expected pattern. It finds the biggest gap between their running totals.",
+  "used_for": "Researchers use it to check whether two samples come from the same kind of spread, or whether data follow a bell curve.",
+  "papers": 34
+ },
+ {
+  "term": "regression coefficient",
+  "aliases": [],
+  "kind": "statistical idea",
+  "explanation": "A number in a fitted line or equation that tells how much the outcome changes when one input goes up by one unit. For example, it could say how many more plants grow for each extra degree of temperature.",
+  "used_for": "Researchers use it to describe how strongly, and in which direction, one factor affects another.",
+  "papers": 34
+ },
+ {
+  "term": "two-way analysis of variance",
+  "aliases": [
+   "two-way analysis",
+   "two-way ANOVA"
+  ],
+  "kind": "statistical method",
+  "explanation": "A test that compares group averages when the groups are sorted by two factors at once, such as fertilizer type and amount of water. It also checks whether the two factors work together in a special way.",
+  "used_for": "Researchers use it to see how two treatments, separately and together, affect something like plant growth.",
+  "papers": 34
+ },
+ {
+  "term": "uncertainty analysis",
+  "aliases": [],
+  "kind": "statistical method",
+  "explanation": "Working out how much a result could be off because of measurement errors, missing information or guesses built into a model. It gives a range of likely values instead of one exact number.",
+  "used_for": "Researchers use it to show how much trust can be placed in estimates such as future carbon levels.",
+  "papers": 34
+ },
+ {
+  "term": "evenness index",
+  "aliases": [],
+  "kind": "statistical idea",
+  "explanation": "A number that shows how equally individuals are shared among the species in a place. A forest with equal numbers of five tree species is very even, while one where a single species dominates is not.",
+  "used_for": "Researchers use it to compare how balanced different communities of living things are.",
+  "papers": 34
+ },
+ {
+  "term": "linear mixed effects model",
+  "aliases": [
+   "linear mixed effects models",
+   "mixed model"
+  ],
+  "kind": "statistical method",
+  "explanation": "A straight-line style model that also allows for groups in the data that are naturally alike, such as repeated measurements from the same pond. It separates the main effects from the background differences between those groups.",
+  "used_for": "Researchers use it when data come from repeated visits to the same sites or animals.",
+  "papers": 34
+ },
+ {
+  "term": "generalized additive model",
+  "aliases": [
+   "GAM"
+  ],
+  "kind": "statistical method",
+  "explanation": "A model that lets the link between a factor and an outcome follow a smooth curve instead of a straight line. The computer works out the shape of the curve from the data.",
+  "used_for": "Researchers use it for patterns that rise and fall, like how species numbers change across a season.",
+  "papers": 33
+ },
+ {
+  "term": "multiple reaction monitoring",
+  "aliases": [
+   "MRM"
+  ],
+  "kind": "lab technique",
+  "explanation": "A setting on a mass spectrometer, a machine that weighs molecules after breaking them into charged pieces. In this setting, the machine watches only for specific molecules and their particular broken pieces, which makes it very sensitive.",
+  "used_for": "Researchers use it to measure tiny amounts of particular chemicals, such as pesticides, in water or tissue.",
+  "papers": 33
+ },
+ {
+  "term": "internal transcribed spacer",
+  "aliases": [
+   "ITS"
+  ],
+  "kind": "lab technique",
+  "explanation": "A stretch of DNA in fungi and other organisms that varies a lot between species, so it works like a barcode. Scientists copy and read this stretch to identify which species are present.",
+  "used_for": "Researchers use it to identify fungi in soil, roots or water samples.",
+  "papers": 33
+ },
+ {
+  "term": "hazard quotient",
+  "aliases": [
+   "HQ"
+  ],
+  "kind": "statistical idea",
+  "explanation": "A number made by dividing the amount of a pollutant a person or animal takes in by the amount considered safe. A value above 1 suggests a possible health risk.",
+  "used_for": "Researchers use it to judge health risks from pollutants in food, water or soil.",
+  "papers": 33
+ },
+ {
+  "term": "calibration and validation",
+  "aliases": [],
+  "kind": "statistical method",
+  "explanation": "Calibration means adjusting a model or instrument until it matches known measurements. Validation means then checking it against different data it hasn't seen before.",
+  "used_for": "Researchers use it to make sure models and instruments give trustworthy results.",
+  "papers": 33
+ },
+ {
+  "term": "qualitative analysis",
+  "aliases": [],
+  "kind": "statistical method",
+  "explanation": "Studying information that is described in words or categories rather than numbers. Examples include interview answers, or simply noting which chemicals are present without measuring how much.",
+  "used_for": "Researchers use it to describe kinds and features of things when exact amounts aren't needed.",
+  "papers": 33
+ },
+ {
+  "term": "phylogenomic analysis",
+  "aliases": [],
+  "kind": "computing method",
+  "explanation": "Using many genes, or whole sets of genes, from different organisms to work out their family tree. It shows which species share more recent common ancestors.",
+  "used_for": "Researchers use it to study how species are related and how they evolved.",
+  "papers": 33
+ },
+ {
+  "term": "likelihood",
+  "aliases": [
+   "higher likelihood"
+  ],
+  "kind": "statistical idea",
+  "explanation": "A score for how well a particular explanation or model fits the observed data. A higher likelihood means the data would be more expected if that explanation were true.",
+  "used_for": "Researchers use it to compare models and choose the one that fits the data best.",
+  "papers": 33
+ },
+ {
+  "term": "descriptive analysis",
+  "aliases": [
+   "descriptive statistics"
+  ],
+  "kind": "statistical method",
+  "explanation": "Summarizing data with simple numbers and graphs, such as averages, ranges and counts, without testing any ideas yet.",
+  "used_for": "Researchers use it to give a first overview of what their data look like.",
+  "papers": 32
+ },
+ {
+  "term": "multivariate analysis",
+  "aliases": [
+   "multivariate analyses"
+  ],
+  "kind": "statistical method",
+  "explanation": "Methods that look at many measured things at once instead of one at a time. Think of comparing sites using temperature, soil acidity and species counts all together.",
+  "used_for": "Researchers use it to find overall patterns in complicated environmental data.",
+  "papers": 32
+ },
+ {
+  "term": "kappa coefficient",
+  "aliases": [
+   "Cohen's kappa"
+  ],
+  "kind": "statistical idea",
+  "explanation": "A number showing how well two sets of labels agree, after removing the agreement you'd expect by pure chance. A value of 1 means perfect agreement, and 0 means no better than guessing.",
+  "used_for": "Researchers use it to check the accuracy of maps or classifications, such as land-cover maps made from satellite images.",
+  "papers": 32
+ },
+ {
+  "term": "stereo microscope",
+  "aliases": [],
+  "kind": "instrument",
+  "explanation": "A microscope with two eyepieces that gives a low-magnification, three-dimensional view of the surface of an object. It is used for things like whole insects or seeds rather than thin slices of material.",
+  "used_for": "Researchers use it to sort and identify small organisms, seeds or particles.",
+  "papers": 32
+ },
+ {
+  "term": "root mean square error (RMSE)",
+  "aliases": [
+   "RMSE"
+  ],
+  "kind": "statistical idea",
+  "explanation": "RMSE measures how far a model's guesses are from the real values, on average. A model here means a set of equations that makes predictions. Each miss is squared, the squares are averaged, and then the square root is taken, so big misses count extra.",
+  "used_for": "Researchers use it to judge how accurate a prediction model is and to compare models.",
+  "papers": 0
+ },
+ {
+  "term": "true skill statistic (TSS)",
+  "aliases": [
+   "TSS"
+  ],
+  "kind": "statistical idea",
+  "explanation": "TSS scores a yes/no prediction by adding the share of real 'yes' cases it caught to the share of real 'no' cases it caught, then subtracting 1. A score of 0 means no better than random guessing and 1 means perfect.",
+  "used_for": "Researchers use it to check how well models predict where a species is present or absent.",
+  "papers": 0
+ },
+ {
+  "term": "permutational multivariate analysis of variance (PERMANOVA)",
+  "aliases": [
+   "PERMANOVA"
+  ],
+  "kind": "statistical method",
+  "explanation": "PERMANOVA tests whether groups of samples differ when each sample is described by many measurements at once, like the full list of species in a soil sample. It shuffles the group labels thousands of times to see how often a difference this big would appear just by chance.",
+  "used_for": "Researchers use it to test whether, for example, microbe communities differ between polluted and clean sites.",
+  "papers": 0
+ },
+ {
+  "term": "operational taxonomic units (OTUs)",
+  "aliases": [
+   "OTUs"
+  ],
+  "kind": "other",
+  "explanation": "OTUs are groups of DNA sequences that are very similar, usually at least 97% alike, and are treated as one kind of organism. It is like sorting unlabeled photos into piles of people who look almost the same.",
+  "used_for": "Researchers use them to count and compare kinds of microbes in a sample without naming each species.",
+  "papers": 0
+ },
+ {
+  "term": "variance inflation factor (VIF)",
+  "aliases": [
+   "VIF"
+  ],
+  "kind": "statistical idea",
+  "explanation": "VIF measures how much one input to a model can already be predicted from the other inputs. A high VIF means two inputs carry almost the same information, like using both air temperature and water temperature, which confuses the model.",
+  "used_for": "Researchers use it to remove overlapping factors before building a model.",
+  "papers": 0
+ },
+ {
+  "term": "redundancy analysis (RDA)",
+  "aliases": [
+   "RDA"
+  ],
+  "kind": "statistical method",
+  "explanation": "RDA finds how much of the variation in a whole group of measurements, such as which species are found at each site, can be explained by environmental factors like temperature or soil acidity. It shows the results as a map where arrows point in the direction each factor pushes the samples.",
+  "used_for": "Researchers use it to see which environmental conditions shape the mix of species in a place.",
+  "papers": 0
+ },
+ {
+  "term": "non-metric multidimensional scaling (NMDS)",
+  "aliases": [
+   "NMDS"
+  ],
+  "kind": "statistical method",
+  "explanation": "NMDS takes samples described by many measurements and places them as dots on a flat picture so that samples that are alike sit close together and very different ones sit far apart. It cares only about the order of how different they are, not the exact amounts.",
+  "used_for": "Researchers use it to visually compare the species makeup of many sites or samples.",
+  "papers": 0
+ },
+ {
+  "term": "principal coordinate analysis (PCoA)",
+  "aliases": [
+   "PCoA"
+  ],
+  "kind": "statistical method",
+  "explanation": "PCoA starts from a table of how different every pair of samples is and draws them as dots on a graph, keeping the real distances as well as possible. The first axis shows the biggest differences, the second axis the next biggest.",
+  "used_for": "Researchers use it to show patterns, such as how microbe communities group by habitat.",
+  "papers": 0
+ },
+ {
+  "term": "digital elevation model (DEM)",
+  "aliases": [
+   "DEM"
+  ],
+  "kind": "computing method",
+  "explanation": "A DEM is a computer map of land height, made of a grid where each square stores how high the ground is there. It works like a 3D relief map stored as numbers.",
+  "used_for": "Researchers use it to study slopes, water flow, flooding and how height affects habitats.",
+  "papers": 0
+ },
+ {
+  "term": "false discovery rate (FDR)",
+  "aliases": [
+   "FDR"
+  ],
+  "kind": "statistical idea",
+  "explanation": "When you run many tests at once, some will look significant just by luck. The false discovery rate is the expected share of your 'discoveries' that are actually flukes, and methods that control it adjust results to keep that share low.",
+  "used_for": "Researchers use it when testing thousands of genes or species at once to avoid false findings.",
+  "papers": 0
+ },
+ {
+  "term": "normalized difference vegetation index (NDVI)",
+  "aliases": [
+   "NDVI"
+  ],
+  "kind": "computing method",
+  "explanation": "NDVI is a number from -1 to 1 calculated from satellite images, comparing how much red light and invisible near-infrared light the ground reflects. Healthy green plants absorb red light and reflect lots of near-infrared, so they score high.",
+  "used_for": "Researchers use it to measure how green and healthy plant cover is across large areas and over time.",
+  "papers": 0
+ },
+ {
+  "term": "coefficient of variation (CV)",
+  "aliases": [
+   "CV"
+  ],
+  "kind": "statistical idea",
+  "explanation": "The coefficient of variation shows how spread out measurements are compared to their average, usually given as a percent. It is the standard deviation (the typical distance from the average) divided by the average.",
+  "used_for": "Researchers use it to compare how variable different measurements are, even when they use different scales.",
+  "papers": 0
+ },
+ {
+  "term": "Generalized linear mixed model",
+  "aliases": [
+   "generalized linear mixed models (GLMMs)",
+   "GLMMs"
+  ],
+  "kind": "statistical method",
+  "explanation": "A generalized linear model with extra parts that account for data coming in groups, such as several measurements taken at the same site or from the same animal. Measurements from the same group tend to be alike, and this model allows for that.",
+  "used_for": "Analysing field data collected repeatedly at the same places or from the same individuals.",
+  "papers": 0
+ },
+ {
+  "term": "relative standard deviation (RSD)",
+  "aliases": [
+   "RSD"
+  ],
+  "kind": "statistical idea",
+  "explanation": "How spread out repeated measurements are, given as a percentage of their average. A small RSD means the repeats came out nearly the same.",
+  "used_for": "Researchers use it to show that their lab measurements are precise and repeatable.",
+  "papers": 0
+ },
+ {
+  "term": "generalized additive model (GAM)",
+  "aliases": [
+   "generalized additive models (GAMs)",
+   "GAMs"
+  ],
+  "kind": "statistical method",
+  "explanation": "A way of describing how an outcome depends on several factors, where each link is allowed to bend into a smooth curve instead of being a straight line. For example, plant growth might rise with temperature and then fall when it gets too hot.",
+  "used_for": "Researchers use it to describe curved patterns, like how species numbers change with temperature or season.",
+  "papers": 0
+ },
+ {
+  "term": "Tukey's honestly significant difference (HSD) test",
+  "aliases": [
+   "honestly significant difference (HSD)",
+   "HSD"
+  ],
+  "kind": "statistical method",
+  "explanation": "A follow-up test that compares every pair of groups after finding that the groups differ overall. It is built so that doing many comparisons does not create false 'differences' by luck.",
+  "used_for": "Researchers use it to find exactly which treatments or sites differ from each other.",
+  "papers": 0
+ },
+ {
+  "term": "cation exchange capacity (CEC)",
+  "aliases": [
+   "CEC"
+  ],
+  "kind": "lab technique",
+  "explanation": "A measure of how many positively charged particles, such as calcium or potassium nutrients, soil can hold onto, like a sponge holding water. It is found in the lab by washing soil with a solution and measuring what is swapped out.",
+  "used_for": "Researchers use it to judge soil fertility and how well soil holds nutrients or pollutants.",
+  "papers": 0
+ },
+ {
+  "term": "cross-validation",
+  "aliases": [
+   "cross validation",
+   "k-fold cross-validation",
+   "k-fold"
+  ],
+  "kind": "computing method",
+  "explanation": "A way to test a prediction method fairly: the data are split into parts, the method learns from all parts but one and is tested on the part it never saw, and this is repeated so every part gets a turn as the test.",
+  "used_for": "Checking how well a model will work on new data, not just on the data it learned from.",
+  "papers": 0,
+  "added_by": "hand"
+ },
+ {
+  "term": "overfitting",
+  "aliases": [
+   "overfit",
+   "over-fitting"
+  ],
+  "kind": "computing method",
+  "explanation": "When a model learns its training data too closely, including random noise, so it scores very well on that data but poorly on new data, like a student who memorises last year's answers instead of learning the subject.",
+  "used_for": "Researchers watch for it and take steps to avoid it, so their model stays useful on new data.",
+  "papers": 0,
+  "added_by": "hand"
+ }
+]

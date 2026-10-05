@@ -1,0 +1,26 @@
+[project]
+name = "sciencemadereadable"
+version = "0.1.0"
+description = "Scientific papers rewritten in plain words, faithfully, by small trained models"
+readme = "README.md"
+requires-python = ">=3.12"
+# The app's paper service, the corpus, the glossary, the benchmark and the training-data pipeline.
+# (Model training itself has its own environment: training/README.md.)
+dependencies = [
+    "functai>=1.2.0",
+    "lmcc>=0.8.5",
+    "lm15>=1.1.0",
+    "dpyr>=1.12.0",
+    "tiktoken==0.12.0",
+    "wordfreq>=3.1",
+    "pandas>=2,<3",
+    "polars>=1.44",
+    "pyarrow>=25",
+    "duckdb>=1.5",
+    "pydantic>=2,<3",
+    "requests>=2.34",
+    "openpyxl>=3.1",
+]
+
+[tool.uv]
+package = false

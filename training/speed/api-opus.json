@@ -1,0 +1,220 @@
+{
+ "writer": "opus",
+ "lm": "claude:claude-opus-5-5",
+ "settings": "{'lm': 'claude:claude-opus-5-5', 'client': ClaudeCodeLM(transport=<lm15.transports._sync.StdlibTransport object at 0x7a2cf5d96f90>, base_url='https://api.anthropic.com/v1', api_version='2023-06-01', compat=None, access=AccessPolicy(provider='claude-code', supports=EndpointSupport(complete=True, stream=True, live=False, files=False, batches=False, images=False, speech=False, video=False, responses_api=False, models=True, caches=False, extra=frozenset()), auth_modes=('claude-code-oauth', 'bearer-oauth'), enterprise_variants=(), env_keys=(), credential_policy='oauth', auth_scheme=('bearer',), headers=(('anthropic-dangerous-direct-browser-access', 'true'), ('anthropic-beta', 'claude-code-20250219,oauth-2025-04-20'), ('x-app', 'cli'), ('user-agent', 'claude-cli/2.1.284')), host=None, login_hint='Log in again: run `claude` and use /login (Claude subscription auth)', backend='claude-code', backend_options={}, system_prefix=\"You are Claude Code, Anthropic's official CLI for Claude.\", base_url=None), settings=None, credential=None, adaptations='note', provider='claude-code'), 'reasoning': Reasoning(effort='off', thinking_budget=None, summary=None), 'max_tokens': 64000}",
+ "papers": [
+  {
+   "paper_id": "PMC12995867",
+   "seconds": 72.61152076721191,
+   "calls": [
+    {
+     "step": "opening",
+     "seconds": 25.538462162017822,
+     "start": 1791143698.3014302,
+     "usage": {
+      "input_tokens": 11115,
+      "output_tokens": 2636,
+      "total_tokens": 13751,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 600
+     }
+    },
+    {
+     "step": "introduction_rest",
+     "seconds": 23.075923442840576,
+     "start": 1791143723.840202,
+     "usage": {
+      "input_tokens": 5197,
+      "output_tokens": 2420,
+      "total_tokens": 7617,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 903
+     }
+    },
+    {
+     "step": "results",
+     "seconds": 43.931294202804565,
+     "start": 1791143723.8490644,
+     "usage": {
+      "input_tokens": 6135,
+      "output_tokens": 5015,
+      "total_tokens": 11150,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 1906
+     }
+    },
+    {
+     "step": "discussion",
+     "seconds": 44.00948143005371,
+     "start": 1791143723.8542123,
+     "usage": {
+      "input_tokens": 6974,
+      "output_tokens": 4282,
+      "total_tokens": 11256,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 1063
+     }
+    },
+    {
+     "step": "methods",
+     "seconds": 47.06766057014465,
+     "start": 1791143723.8447447,
+     "usage": {
+      "input_tokens": 6602,
+      "output_tokens": 5249,
+      "total_tokens": 11851,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 1265
+     }
+    }
+   ]
+  },
+  {
+   "paper_id": "PMC13376281",
+   "seconds": 84.86619830131531,
+   "calls": [
+    {
+     "step": "opening",
+     "seconds": 28.22196674346924,
+     "start": 1791143770.913004,
+     "usage": {
+      "input_tokens": 14928,
+      "output_tokens": 3100,
+      "total_tokens": 18028,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 503
+     }
+    },
+    {
+     "step": "introduction_rest",
+     "seconds": 28.71053647994995,
+     "start": 1791143799.135157,
+     "usage": {
+      "input_tokens": 6585,
+      "output_tokens": 3196,
+      "total_tokens": 9781,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 777
+     }
+    },
+    {
+     "step": "results",
+     "seconds": 42.82109832763672,
+     "start": 1791143799.1394591,
+     "usage": {
+      "input_tokens": 6774,
+      "output_tokens": 5006,
+      "total_tokens": 11780,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 1607
+     }
+    },
+    {
+     "step": "discussion",
+     "seconds": 47.726128816604614,
+     "start": 1791143799.1431239,
+     "usage": {
+      "input_tokens": 7825,
+      "output_tokens": 5387,
+      "total_tokens": 13212,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 1572
+     }
+    },
+    {
+     "step": "methods",
+     "seconds": 56.64355111122131,
+     "start": 1791143799.1352823,
+     "usage": {
+      "input_tokens": 8215,
+      "output_tokens": 6679,
+      "total_tokens": 14894,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 1882
+     }
+    }
+   ]
+  },
+  {
+   "paper_id": "PMC10175599",
+   "seconds": 92.18337202072144,
+   "calls": [
+    {
+     "step": "opening",
+     "seconds": 27.501492738723755,
+     "start": 1791143855.779223,
+     "usage": {
+      "input_tokens": 15529,
+      "output_tokens": 3004,
+      "total_tokens": 18533,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 432
+     }
+    },
+    {
+     "step": "introduction_rest",
+     "seconds": 20.47054123878479,
+     "start": 1791143883.2818592,
+     "usage": {
+      "input_tokens": 6179,
+      "output_tokens": 2307,
+      "total_tokens": 8486,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 391
+     }
+    },
+    {
+     "step": "results",
+     "seconds": 38.710344076156616,
+     "start": 1791143883.2865236,
+     "usage": {
+      "input_tokens": 7577,
+      "output_tokens": 4635,
+      "total_tokens": 12212,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 986
+     }
+    },
+    {
+     "step": "methods",
+     "seconds": 47.90288281440735,
+     "start": 1791143883.2858953,
+     "usage": {
+      "input_tokens": 7871,
+      "output_tokens": 5715,
+      "total_tokens": 13586,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 1137
+     }
+    },
+    {
+     "step": "discussion",
+     "seconds": 64.66726636886597,
+     "start": 1791143883.2947586,
+     "usage": {
+      "input_tokens": 8993,
+      "output_tokens": 7925,
+      "total_tokens": 16918,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 2443
+     }
+    }
+   ]
+  }
+ ]
+}

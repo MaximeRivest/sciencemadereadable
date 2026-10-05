@@ -1,0 +1,169 @@
+{
+ "mode": "latency",
+ "name": "h100-0.8b",
+ "papers": 3,
+ "wall_seconds": 26.994999170303345,
+ "failed_calls": 0,
+ "input_tokens": 73959,
+ "output_tokens": 26355,
+ "per_paper": [
+  {
+   "paper": "PMC12995867",
+   "opening_seconds": 2.224363327026367,
+   "sections_seconds": 4.724249839782715,
+   "total_seconds": 6.948613166809082,
+   "words_in": 3492
+  },
+  {
+   "paper": "PMC13376281",
+   "opening_seconds": 3.1336371898651123,
+   "sections_seconds": 6.4637391567230225,
+   "total_seconds": 9.597376346588135,
+   "words_in": 5074
+  },
+  {
+   "paper": "PMC10175599",
+   "opening_seconds": 2.5519065856933594,
+   "sections_seconds": 7.624612808227539,
+   "total_seconds": 10.176519393920898,
+   "words_in": 4813
+  }
+ ],
+ "calls": [
+  {
+   "paper": "PMC12995867",
+   "step": "opening",
+   "start": 1791145439.1064253,
+   "seconds": 2.2243542671203613,
+   "input_tokens": 9016,
+   "output_tokens": 695,
+   "ok": true
+  },
+  {
+   "paper": "PMC12995867",
+   "step": "introduction_rest",
+   "start": 1791145441.3318787,
+   "seconds": 1.919332504272461,
+   "input_tokens": 2173,
+   "output_tokens": 720,
+   "ok": true
+  },
+  {
+   "paper": "PMC12995867",
+   "step": "results",
+   "start": 1791145441.3370202,
+   "seconds": 4.079005002975464,
+   "input_tokens": 3246,
+   "output_tokens": 1592,
+   "ok": true
+  },
+  {
+   "paper": "PMC12995867",
+   "step": "discussion",
+   "start": 1791145441.3419514,
+   "seconds": 4.395756244659424,
+   "input_tokens": 3753,
+   "output_tokens": 1778,
+   "ok": true
+  },
+  {
+   "paper": "PMC12995867",
+   "step": "methods",
+   "start": 1791145441.3362424,
+   "seconds": 4.718436241149902,
+   "input_tokens": 3610,
+   "output_tokens": 1966,
+   "ok": true
+  },
+  {
+   "paper": "PMC13376281",
+   "step": "opening",
+   "start": 1791145446.3186579,
+   "seconds": 3.1336259841918945,
+   "input_tokens": 10180,
+   "output_tokens": 1322,
+   "ok": true
+  },
+  {
+   "paper": "PMC13376281",
+   "step": "introduction_rest",
+   "start": 1791145449.452875,
+   "seconds": 3.2128379344940186,
+   "input_tokens": 2847,
+   "output_tokens": 1344,
+   "ok": true
+  },
+  {
+   "paper": "PMC13376281",
+   "step": "results",
+   "start": 1791145449.46372,
+   "seconds": 4.322227239608765,
+   "input_tokens": 3645,
+   "output_tokens": 1811,
+   "ok": true
+  },
+  {
+   "paper": "PMC13376281",
+   "step": "discussion",
+   "start": 1791145449.4708846,
+   "seconds": 5.3897809982299805,
+   "input_tokens": 3913,
+   "output_tokens": 2235,
+   "ok": true
+  },
+  {
+   "paper": "PMC13376281",
+   "step": "methods",
+   "start": 1791145449.4576588,
+   "seconds": 6.456951856613159,
+   "input_tokens": 5376,
+   "output_tokens": 2846,
+   "ok": true
+  },
+  {
+   "paper": "PMC10175599",
+   "step": "opening",
+   "start": 1791145455.9215662,
+   "seconds": 2.5518956184387207,
+   "input_tokens": 10450,
+   "output_tokens": 1105,
+   "ok": true
+  },
+  {
+   "paper": "PMC10175599",
+   "step": "introduction_rest",
+   "start": 1791145458.473845,
+   "seconds": 2.807584762573242,
+   "input_tokens": 2795,
+   "output_tokens": 1183,
+   "ok": true
+  },
+  {
+   "paper": "PMC10175599",
+   "step": "results",
+   "start": 1791145458.4830692,
+   "seconds": 5.086990833282471,
+   "input_tokens": 3648,
+   "output_tokens": 2114,
+   "ok": true
+  },
+  {
+   "paper": "PMC10175599",
+   "step": "methods",
+   "start": 1791145458.4783201,
+   "seconds": 5.808112144470215,
+   "input_tokens": 3976,
+   "output_tokens": 2462,
+   "ok": true
+  },
+  {
+   "paper": "PMC10175599",
+   "step": "discussion",
+   "start": 1791145458.4836378,
+   "seconds": 7.614215850830078,
+   "input_tokens": 5331,
+   "output_tokens": 3182,
+   "ok": true
+  }
+ ]
+}

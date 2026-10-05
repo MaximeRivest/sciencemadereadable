@@ -1,0 +1,7659 @@
+{
+ "aspects": [
+  "faithful_and_exact",
+  "understandable",
+  "pleasant_to_read",
+  "structure_and_voice"
+ ],
+ "units": {
+  "opus_v8": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "invalid",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 9,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "invalid",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 9,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 10
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "invalid",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 10
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 8,
+     "pleasant_to_read": 9,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 10
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "invalid",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 9,
+     "structure_and_voice": 10
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 9,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   }
+  ],
+  "astra_v8": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 10
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 10
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 8,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor"
+    ]
+   }
+  ],
+  "luna_v8": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 10
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 6,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 6,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 6,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 5,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 6,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "critical",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 6,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 7,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 7,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 6,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 7,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   }
+  ],
+  "opus_v1": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 2
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 8,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 7,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 2
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "major"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 7,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "major"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 8,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 2
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "critical",
+     "major",
+     "major",
+     "major"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 7,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 2
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 4
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 4
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 7,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 2
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 8,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor"
+    ]
+   }
+  ],
+  "astra_v1": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 4
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 6
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 4
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 7,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 7,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 4
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 5
+    },
+    "issues": [
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 7,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 6,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 5
+    },
+    "issues": [
+     "major",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 9,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 5
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 5
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 4
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   }
+  ],
+  "luna_v1": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 1,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 4
+    },
+    "issues": [
+     "major",
+     "critical",
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "critical",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 5,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "major",
+     "major",
+     "major"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 7,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 4
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 6,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 7,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 4
+    },
+    "issues": [
+     "major",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 6,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "critical",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 6,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 5
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "major"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 9,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 6,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 5
+    },
+    "issues": [
+     "critical",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 6,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 4
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor"
+    ]
+   }
+  ],
+  "opus_v8_glossary": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 9,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 9,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 10
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 9,
+     "pleasant_to_read": 9,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   }
+  ],
+  "q08_untrained": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "empty",
+    "scores": null,
+    "issues": []
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "empty",
+    "scores": null,
+    "issues": []
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "empty",
+    "scores": null,
+    "issues": []
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "empty",
+    "scores": null,
+    "issues": []
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "empty",
+    "scores": null,
+    "issues": []
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "empty",
+    "scores": null,
+    "issues": []
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "empty",
+    "scores": null,
+    "issues": []
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "empty",
+    "scores": null,
+    "issues": []
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "empty",
+    "scores": null,
+    "issues": []
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "empty",
+    "scores": null,
+    "issues": []
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "empty",
+    "scores": null,
+    "issues": []
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "empty",
+    "scores": null,
+    "issues": []
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "empty",
+    "scores": null,
+    "issues": []
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "empty",
+    "scores": null,
+    "issues": []
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "empty",
+    "scores": null,
+    "issues": []
+   }
+  ],
+  "q4_untrained": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "invalid",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 5,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 6
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 2,
+     "pleasant_to_read": 3,
+     "structure_and_voice": 2
+    },
+    "issues": [
+     "critical",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "invalid",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 5,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 5
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 5,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 6
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "major",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "invalid",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 4,
+     "pleasant_to_read": 4,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "invalid",
+    "scores": {
+     "faithful_and_exact": 1,
+     "understandable": 3,
+     "pleasant_to_read": 3,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 2,
+     "pleasant_to_read": 3,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "major",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "invalid",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 5,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 1,
+     "understandable": 3,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 1
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "critical",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 3,
+     "pleasant_to_read": 4,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "critical",
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "critical",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 4,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 2
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "invalid",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 4,
+     "pleasant_to_read": 3,
+     "structure_and_voice": 1
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "major",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "invalid",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 5,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 5
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 1,
+     "understandable": 5,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 2
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "critical",
+     "major",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "invalid",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 4,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor"
+    ]
+   }
+  ],
+  "q9_untrained": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 6,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 6,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 6,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 3
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 6,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 4
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 3,
+     "pleasant_to_read": 4,
+     "structure_and_voice": 6
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "major"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 6,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 5,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 5
+    },
+    "issues": [
+     "critical",
+     "minor",
+     "major",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 4,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 5
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 6,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "empty",
+    "scores": null,
+    "issues": []
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 7,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 7,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   }
+  ],
+  "q08_trained_noglossary": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 4,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 4,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 6
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 4,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 6,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 6
+    },
+    "issues": [
+     "major",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 3,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 4,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 3,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 0,
+     "understandable": 1,
+     "pleasant_to_read": 2,
+     "structure_and_voice": 6
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "critical",
+     "critical",
+     "critical",
+     "major",
+     "critical",
+     "minor",
+     "major",
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "major"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 4,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 6,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 5
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "major",
+     "critical",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 5,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "major",
+     "major",
+     "critical",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 5,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 5,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 4,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   }
+  ],
+  "q08_trained": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 6,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 5,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 6,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 6
+    },
+    "issues": [
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 5,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 7,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 5,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 5,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 5,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 6,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 1,
+     "understandable": 3,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 6,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 5,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 5,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   }
+  ],
+  "q4_trained_noglossary": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 10
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 6,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 6
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 6,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 2,
+     "pleasant_to_read": 4,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "critical",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 4,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "critical",
+     "critical",
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 6,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   }
+  ],
+  "q4_trained": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 7,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 7,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 7,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 4,
+     "pleasant_to_read": 5,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 4,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   }
+  ],
+  "q4_s152_noglossary": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 7,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "critical",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 5
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 2,
+     "understandable": 2,
+     "pleasant_to_read": 4,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "critical",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 4,
+     "pleasant_to_read": 4,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   }
+  ],
+  "q4_s152_glossary": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 7,
+     "pleasant_to_read": 6,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 6
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 6,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   }
+  ],
+  "q9_trained": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 9,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 10
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 10
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 4,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 7,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 10
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   }
+  ],
+  "q9_s424": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 7
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 10
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 7,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 5,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 7,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "critical",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   }
+  ],
+  "q9_rerun_h100": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 9,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 5,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 10
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 4,
+     "understandable": 5,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   }
+  ],
+  "q9_mtp_h100": [
+   {
+    "paper": "PMC12995867",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC12995867",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 6,
+     "understandable": 7,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC13376281",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 3,
+     "understandable": 4,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "critical",
+     "critical",
+     "critical",
+     "major",
+     "major",
+     "minor",
+     "major",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "opening",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "introduction_rest",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 8
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "methods",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 9,
+     "understandable": 9,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "results",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 8,
+     "understandable": 8,
+     "pleasant_to_read": 7,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   },
+   {
+    "paper": "PMC10175599",
+    "unit": "discussion",
+    "status": "ok",
+    "scores": {
+     "faithful_and_exact": 7,
+     "understandable": 8,
+     "pleasant_to_read": 8,
+     "structure_and_voice": 9
+    },
+    "issues": [
+     "major",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "major",
+     "minor",
+     "minor",
+     "minor",
+     "minor",
+     "minor"
+    ]
+   }
+  ]
+ },
+ "train": {
+  "q08": {
+   "run": "qwen35-0.8b-glossary-scratch",
+   "method": "full",
+   "gpu": "NVIDIA GeForce RTX 3090",
+   "hours": 11.58,
+   "steps": 1275,
+   "conversations": 20394,
+   "train_tokens": 190064707,
+   "trainable": 752393024,
+   "parameters": 752393024,
+   "validation": [
+    {
+     "step": 0,
+     "loss": 1.0146835059973085,
+     "answer_tokens": 0
+    },
+    {
+     "step": 106,
+     "loss": 0.6971722735772847,
+     "answer_tokens": 4214716
+    },
+    {
+     "step": 212,
+     "loss": 0.663855801652162,
+     "answer_tokens": 8493857
+    },
+    {
+     "step": 318,
+     "loss": 0.6441840687030799,
+     "answer_tokens": 12697612
+    },
+    {
+     "step": 424,
+     "loss": 0.6319263367120754,
+     "answer_tokens": 16911240
+    },
+    {
+     "step": 530,
+     "loss": 0.6201943155606676,
+     "answer_tokens": 21155406
+    },
+    {
+     "step": 636,
+     "loss": 0.6142848535597094,
+     "answer_tokens": 25466039
+    },
+    {
+     "step": 742,
+     "loss": 0.6041265791967422,
+     "answer_tokens": 29678100
+    },
+    {
+     "step": 848,
+     "loss": 0.5993244002747788,
+     "answer_tokens": 34084514
+    },
+    {
+     "step": 954,
+     "loss": 0.5937594923534238,
+     "answer_tokens": 38254754
+    },
+    {
+     "step": 1060,
+     "loss": 0.5890146775377867,
+     "answer_tokens": 42535908
+    },
+    {
+     "step": 1166,
+     "loss": 0.5739121358329924,
+     "answer_tokens": 46815525
+    },
+    {
+     "step": 1272,
+     "loss": 0.5556738011855161,
+     "answer_tokens": 51032946
+    },
+    {
+     "step": 1275,
+     "loss": 0.5553703307687013,
+     "answer_tokens": 51154739
+    }
+   ]
+  },
+  "q4": {
+   "run": "qwen35-4b-glossary-scratch",
+   "method": "lora",
+   "gpu": "NVIDIA GeForce RTX 3090",
+   "hours": 38.22,
+   "steps": 1275,
+   "conversations": 20394,
+   "train_tokens": 190064707,
+   "trainable": 64929792,
+   "parameters": 4205751296,
+   "validation": [
+    {
+     "step": 0,
+     "loss": 0.7319795834791852,
+     "answer_tokens": 0
+    },
+    {
+     "step": 106,
+     "loss": 0.4669189757509399,
+     "answer_tokens": 4214716
+    },
+    {
+     "step": 212,
+     "loss": 0.4465240258935381,
+     "answer_tokens": 8493857
+    },
+    {
+     "step": 318,
+     "loss": 0.434400756618642,
+     "answer_tokens": 12697612
+    },
+    {
+     "step": 424,
+     "loss": 0.42713691393265835,
+     "answer_tokens": 16911240
+    },
+    {
+     "step": 530,
+     "loss": 0.42203222115972294,
+     "answer_tokens": 21155406
+    },
+    {
+     "step": 636,
+     "loss": 0.41836816284790834,
+     "answer_tokens": 25466039
+    },
+    {
+     "step": 742,
+     "loss": 0.4143299480736231,
+     "answer_tokens": 29678100
+    },
+    {
+     "step": 848,
+     "loss": 0.41208667189500897,
+     "answer_tokens": 34084514
+    },
+    {
+     "step": 954,
+     "loss": 0.4104633769986461,
+     "answer_tokens": 38254754
+    },
+    {
+     "step": 1060,
+     "loss": 0.40817029181777226,
+     "answer_tokens": 42535908
+    },
+    {
+     "step": 1166,
+     "loss": 0.4018399623023419,
+     "answer_tokens": 46815525
+    },
+    {
+     "step": 1272,
+     "loss": 0.3950288377611402,
+     "answer_tokens": 51032946
+    },
+    {
+     "step": 1275,
+     "loss": 0.3949259566838939,
+     "answer_tokens": 51154739
+    }
+   ]
+  },
+  "q9": {
+   "run": "qwen35-9b-full-glossary",
+   "method": "full",
+   "gpu": "1 x NVIDIA B300 SXM6 PC",
+   "hours": 6.0,
+   "steps": 1275,
+   "conversations": 20394,
+   "train_tokens": 190064707,
+   "trainable": 8953803264,
+   "parameters": 8953803264,
+   "validation": [
+    {
+     "step": 0,
+     "loss": 0.6590962694867987,
+     "answer_tokens": 0
+    },
+    {
+     "step": 106,
+     "loss": 0.41628211069125154,
+     "answer_tokens": 4214716
+    },
+    {
+     "step": 212,
+     "loss": 0.4001746771471898,
+     "answer_tokens": 8493857
+    },
+    {
+     "step": 318,
+     "loss": 0.38923796176890524,
+     "answer_tokens": 12697612
+    },
+    {
+     "step": 424,
+     "loss": 0.3825442142478747,
+     "answer_tokens": 16911240
+    },
+    {
+     "step": 530,
+     "loss": 0.3783836883128542,
+     "answer_tokens": 21155406
+    },
+    {
+     "step": 636,
+     "loss": 0.37435709976932,
+     "answer_tokens": 25466039
+    },
+    {
+     "step": 742,
+     "loss": 0.3704179504983515,
+     "answer_tokens": 29678100
+    },
+    {
+     "step": 848,
+     "loss": 0.36720740590275464,
+     "answer_tokens": 34084514
+    },
+    {
+     "step": 954,
+     "loss": 0.3668323935443296,
+     "answer_tokens": 38254754
+    },
+    {
+     "step": 1060,
+     "loss": 0.3628855781593757,
+     "answer_tokens": 42535908
+    },
+    {
+     "step": 1166,
+     "loss": 0.35620912610802574,
+     "answer_tokens": 46815525
+    },
+    {
+     "step": 1272,
+     "loss": 0.3479247459778004,
+     "answer_tokens": 51032946
+    },
+    {
+     "step": 1275,
+     "loss": 0.3478266666313941,
+     "answer_tokens": 51154739
+    }
+   ]
+  },
+  "q4_first": {
+   "run": "qwen35-4b",
+   "method": "lora",
+   "gpu": "NVIDIA GeForce RTX 3090",
+   "hours": 24.44,
+   "steps": 923,
+   "conversations": 14768,
+   "train_tokens": 115150691,
+   "trainable": 64929792,
+   "parameters": 4205751296,
+   "validation": [
+    {
+     "step": 0,
+     "loss": 0.7268443955719758,
+     "answer_tokens": 0
+    },
+    {
+     "step": 0,
+     "loss": 0.7268443955719758,
+     "answer_tokens": 0
+    },
+    {
+     "step": 76,
+     "loss": 0.47700878963541554,
+     "answer_tokens": 3007681
+    },
+    {
+     "step": 152,
+     "loss": 0.4563125215731459,
+     "answer_tokens": 6080287
+    },
+    {
+     "step": 228,
+     "loss": 0.4433364409118578,
+     "answer_tokens": 9152278
+    },
+    {
+     "step": 304,
+     "loss": 0.4350998797401194,
+     "answer_tokens": 12135600
+    },
+    {
+     "step": 380,
+     "loss": 0.43093692904483405,
+     "answer_tokens": 15199351
+    },
+    {
+     "step": 456,
+     "loss": 0.42503226985642284,
+     "answer_tokens": 18285188
+    },
+    {
+     "step": 532,
+     "loss": 0.42109612878123137,
+     "answer_tokens": 21310388
+    },
+    {
+     "step": 608,
+     "loss": 0.4192119854604679,
+     "answer_tokens": 24355953
+    },
+    {
+     "step": 684,
+     "loss": 0.41631807089382844,
+     "answer_tokens": 27447830
+    },
+    {
+     "step": 760,
+     "loss": 0.4150163106156725,
+     "answer_tokens": 30538776
+    },
+    {
+     "step": 836,
+     "loss": 0.41057933151343906,
+     "answer_tokens": 33461438
+    },
+    {
+     "step": 912,
+     "loss": 0.4035664431457578,
+     "answer_tokens": 36460951
+    },
+    {
+     "step": 923,
+     "loss": 0.4029557529336455,
+     "answer_tokens": 36898299
+    }
+   ]
+  }
+ },
+ "speed": {
+  "typical_words": 7100.0,
+  "test_words": 4459.666666666667,
+  "gpu_per_hour": {
+   "rtx6000": 1.8,
+   "h100": 4.5
+  },
+  "api_prices": {
+   "opus": [
+    4.0,
+    20.0,
+    "Claude Opus 5.5 (platform.claude.com pricing)"
+   ],
+   "astra": [
+    10.0,
+    50.0,
+    "GPT-6 Astra (developers.openai.com)"
+   ],
+   "luna": [
+    0.1,
+    0.5,
+    "GPT-6 Luna (developers.openai.com)"
+   ]
+  },
+  "rows": [
+   {
+    "model": "our 0.8b",
+    "where": "rtx6000",
+    "seconds": [
+     9.33743691444397,
+     14.127570152282715,
+     14.401803731918335
+    ],
+    "papers_per_hour": 1661.5216414014235,
+    "words_per_paper": 7118.3125,
+    "usd_per_word": 1.521911689431352e-07,
+    "failed_calls": 10,
+    "calls": 640
+   },
+   {
+    "model": "our 0.8b",
+    "where": "h100",
+    "seconds": [
+     6.948613166809082,
+     9.597376346588135,
+     10.176519393920898
+    ],
+    "papers_per_hour": 3117.1140598192605,
+    "words_per_paper": 7118.3125,
+    "usd_per_word": 2.0280692010020754e-07,
+    "failed_calls": 11,
+    "calls": 640
+   },
+   {
+    "model": "our 4b",
+    "where": "rtx6000",
+    "seconds": [
+     22.4813072681427,
+     33.546955823898315,
+     34.912683725357056
+    ],
+    "seconds_mtp": [
+     15.275287389755249,
+     23.029852151870728,
+     23.585739135742188
+    ],
+    "papers_per_hour": 502.3927293111327,
+    "words_per_paper": 7118.3125,
+    "usd_per_word": 5.03329180690824e-07,
+    "failed_calls": 4,
+    "calls": 640
+   },
+   {
+    "model": "our 4b",
+    "where": "h100",
+    "seconds": [
+     13.444560527801514,
+     26.595736026763916,
+     20.77214479446411
+    ],
+    "seconds_mtp": [
+     7.72295069694519,
+     11.267184495925903
+    ],
+    "papers_per_hour": 1063.8986109998925,
+    "words_per_paper": 7118.3125,
+    "usd_per_word": 5.942035223439747e-07,
+    "failed_calls": 4,
+    "calls": 640
+   },
+   {
+    "model": "our 9b",
+    "where": "rtx6000",
+    "seconds": [
+     36.91198134422302,
+     55.18926525115967,
+     56.76873755455017
+    ],
+    "seconds_mtp": [
+     24.175387144088745,
+     30.704404830932617,
+     33.03768277168274
+    ],
+    "papers_per_hour": 392.01741997793806,
+    "words_per_paper": 7118.3125,
+    "usd_per_word": 6.450451126468571e-07,
+    "failed_calls": 5,
+    "calls": 640
+   },
+   {
+    "model": "our 9b",
+    "where": "h100",
+    "seconds": [
+     20.40664267539978,
+     30.219558715820312,
+     31.80076575279236
+    ],
+    "seconds_mtp": [
+     11.3905770778656,
+     16.677876949310303,
+     16.552101612091064
+    ],
+    "papers_per_hour": 806.8114882782412,
+    "words_per_paper": 7118.3125,
+    "usd_per_word": 7.835440016131552e-07,
+    "failed_calls": 4,
+    "calls": 640
+   },
+   {
+    "model": "opus",
+    "where": "API",
+    "seconds": [
+     72.61152076721191,
+     84.86619830131531,
+     92.18337202072144
+    ],
+    "usd_per_test_paper": 0.612372,
+    "usd_per_word": 0.00013731340159952164
+   },
+   {
+    "model": "astra",
+    "where": "API",
+    "seconds": [
+     105.86244368553162,
+     286.90078043937683,
+     510.39155173301697
+    ],
+    "usd_per_test_paper": 0.7575533333333333,
+    "usd_per_word": 0.00016986770311682486
+   },
+   {
+    "model": "luna",
+    "where": "API",
+    "seconds": [
+     58.99456024169922,
+     92.61912989616394,
+     94.14497327804565
+    ],
+    "usd_per_test_paper": 0.0067319,
+    "usd_per_word": 1.5095074370281783e-06
+   }
+  ]
+ },
+ "data": {
+  "examples": 21069,
+  "papers": 4416,
+  "papers_opus": 2934,
+  "papers_astra": 1482,
+  "corpus": 5000,
+  "test_papers": 3,
+  "test_units": 15
+ }
+}

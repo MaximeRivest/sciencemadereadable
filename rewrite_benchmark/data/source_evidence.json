@@ -1,0 +1,36 @@
+{
+  "paper_id": "10.1371/journal.pone.0300008",
+  "status": "Manually transcribed and checked against publisher XML and Figure 1; still eligible for human correction. These notes are evidence context, not model scores.",
+  "figure_1": {
+    "url": "https://journals.plos.org/plosone/article/figure/image?size=large&id=10.1371/journal.pone.0300008.g001",
+    "local_image": "research/article-tokens/pine-nut-figure-1.png",
+    "description": "The original regression tree is an image. The following labels were transcribed from that image, not inferred from the flawed adjoining prose.",
+    "n": 328,
+    "nodes": [
+      {"path": "healthy nuts <=78.5", "n": 96, "edible_share_of_cone_weight_percent": 2.60},
+      {"path": "healthy nuts <=45.5", "n": 34, "edible_share_of_cone_weight_percent": 1.83},
+      {"path": "45.5 < healthy nuts <=78.5", "n": 62, "edible_share_of_cone_weight_percent": 3.02},
+      {"path": "healthy nuts >78.5", "n": 232, "edible_share_of_cone_weight_percent": 4.04},
+      {"path": "healthy nuts >78.5; edible share of seed-with-shell weight <=21.0%", "n": 128, "edible_share_of_cone_weight_percent": 3.64},
+      {"path": "healthy nuts >78.5; edible share of seed-with-shell weight <=21.0%; seed-with-shell share of cone weight <=18.6%", "n": 41, "edible_share_of_cone_weight_percent": 3.00},
+      {"path": "healthy nuts >78.5; edible share of seed-with-shell weight <=21.0%; seed-with-shell share of cone weight >18.6%", "n": 87, "edible_share_of_cone_weight_percent": 3.94},
+      {"path": "healthy nuts >78.5; edible share of seed-with-shell weight >21.0%", "n": 104, "edible_share_of_cone_weight_percent": 4.54},
+      {"path": "healthy nuts >78.5; edible share of seed-with-shell weight >21.0%; seed-with-shell share of cone weight <=20.8%", "n": 78, "edible_share_of_cone_weight_percent": 4.35},
+      {"path": "healthy nuts >78.5; edible share of seed-with-shell weight >21.0%; seed-with-shell share of cone weight >20.8%", "n": 26, "edible_share_of_cone_weight_percent": 5.10}
+    ]
+  },
+  "issues_to_handle_explicitly": [
+    {"id": "abstract-seeds-vs-nuts", "locator": "abstract versus Results/Table 4", "observation": "The abstract calls 125 versus 89 pine nuts. Table 4 identifies these as seeds still in shells (SN); healthy edible nuts (PN) average 112.9 versus 76.1.", "policy": "A correction supported by Table 4 is permitted, but flag the discrepancy separately."},
+    {"id": "damage-formula", "locator": "Methods/Table 3/DS", "observation": "The publisher XML prints DS = ((SN×PN)/SN×100, with a multiplication and an unmatched bracket. This is not a usable percentage-of-damage formula.", "policy": "Flag the apparent source error. Do not assert which formula the researchers actually used. A proposed intended formula must be labelled as an interpretation, not an established fact."},
+    {"id": "tree-values-swapped", "locator": "Results second paragraph versus Figure 1", "observation": "The prose pairs 4.04% and 2.60% with below and above 78.5 nuts in an order that conflicts with Figure 1. The image labels <=78.5 as 2.60% and >78.5 as 4.04%.", "policy": "Follow the figure's evidence if correcting, and disclose the conflict. The 39.4% comparison is 1.83% versus 3.02%, not 1.83% versus 2.60%."},
+    {"id": "reported-method-ambiguity", "locator": "Methods measurement paragraph and Table 3 footnotes", "observation": "The prose says all seeds/nuts were counted and weighed in 2017–2020 while table footnotes identify samples of 20 for some individual measurements. Do not invent the missing raw-data structure or resolve ambiguous sampling details more confidently than the source allows.", "policy": "Preserve the qualification and flag uncertainty if necessary."}
+  ],
+  "shared_source_rules": [
+    "560 cones collected across the entire study is not the same sample size as the 328 cones labelled in Figure 1.",
+    "The study's edible-share denominator is freshly weighed cone mass; the edible nuts were dried before weighing.",
+    "An 11.9% relative increase from 3.62% to 4.05% is not an 11.9-percentage-point increase.",
+    "Observing heavier cones with larger edible shares does not establish that adding water or fertilizer causes the improvement.",
+    "A non-significant site interaction does not prove the relationship is identical at every site.",
+    "Whole-paper tables and citations remain available alongside rewritten prose. Detailed table cells may be retained by a clear table reference; central numerical findings and methodological qualifications must not vanish."
+  ]
+}

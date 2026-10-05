@@ -1,0 +1,6 @@
+.venv/
+data/
+runs/
+logs/
+tools/
+exports/

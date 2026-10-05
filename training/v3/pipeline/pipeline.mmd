@@ -1,0 +1,59 @@
+flowchart TD
+    subgraph IN["Inputs"]
+        P["50 CC BY training papers<br/>(3,000–7,000 words, 11 subfields,<br/>no validation or test papers)"]
+        OLD["Old Opus training answers"]
+        WIKI["Offline Wikipedia + Wiktionary"]
+        SHEETS["Always-available sheets:<br/>statistics · methods (152) · units"]
+        KID["Shared reader definition:<br/>curious 14-year-old + school-science list"]
+    end
+    subgraph PAPER["Per paper"]
+        G1["Find candidate terms<br/>(abbreviations, hard words, multi-word terms)"]
+        G2["Look up each term<br/>(reference text)"]
+        G3["Opus: sort terms<br/>content · wording · known · name<br/>+ category and plain name"]
+        G4["Opus: meaning check<br/>drop entries about another meaning"]
+        R{"25% of papers:<br/>rename species?"}
+        RN["Invented names for every genus and species,<br/>same in paper, answer and glossary"]
+    end
+    subgraph PART["Per part (opening first, then 4 sections in parallel)"]
+        D{"What does the student get?"}
+        D1["15%: no glossary"]
+        D2["85%: 0–40% of entries withheld"]
+        W["Opus writes the part fresh<br/>(writing brief + delight brief + source rules)<br/>old answer used only as a draft"]
+        FC1{"Form OK?<br/>prose only, same paragraphs,<br/>clean ⟦markers⟧"}
+        TC["Term check<br/>bare · late · wrong explanations"]
+        TF["Opus: fix terms<br/>explain from G/P/K · ⟦marker⟧ · or drop"]
+        FJ["Judge: faithfulness problems"]
+        FF["Opus: fix faithfulness<br/>(restore details, conclusions, hedges)"]
+        RT["Opus: read-through<br/>flow only, no new information"]
+        OUTP["v3 training answer<br/>(with ⟦markers⟧)"]
+    end
+    subgraph MEAS["Measure: old vs new, as the reader will see it"]
+        FILL["Opus: explain the ⟦markers⟧<br/>(the later explanation step)"]
+        J["Benchmark judge<br/>faithful · understandable · pleasant · structure"]
+        B["Blind head-to-head<br/>both orders, win must hold"]
+        T["Term check + readability<br/>sentence length · word age · grade"]
+    end
+    REP["Report + pilot50/<paper&gt;.json<br/>(resumable, stops at 90% weekly allowance)"]
+    VIEW["viewer.py → inspection page"]
+    P --> G1 --> G2 --> G3 --> G4 --> R
+    WIKI --> G2
+    KID --> G3
+    R -- yes --> RN --> D
+    R -- no --> D
+    OLD --> W
+    D --> D1 --> W
+    D --> D2 --> W
+    SHEETS --> W
+    KID --> W
+    W --> FC1
+    FC1 -- "no (retry, up to 3×)" --> W
+    FC1 -- yes --> TC --> TF --> FJ --> FF --> RT --> OUTP
+    OUTP --> FILL --> J
+    FILL --> B
+    OLD --> J
+    OLD --> B
+    OUTP --> T
+    J --> REP
+    B --> REP
+    T --> REP
+    REP --> VIEW

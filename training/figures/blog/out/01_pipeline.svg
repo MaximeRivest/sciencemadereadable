@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="864pt" height="540pt" viewBox="0 0 864 540" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-04T21:01:09.769129</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 540 
+L 864 540 
+L 864 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 45.41184 290.412 
+L 176.98176 290.412 
+Q 193.22496 290.412 193.22496 276.372 
+L 193.22496 141.588 
+Q 193.22496 127.548 176.98176 127.548 
+L 45.41184 127.548 
+Q 29.16864 127.548 29.16864 141.588 
+L 29.16864 276.372 
+Q 29.16864 290.412 45.41184 290.412 
+z
+" clip-path="url(#pddfdc6b593)" style="fill: #eef3f8; stroke: #c9d1d9; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 236.26944 290.412 
+L 367.83936 290.412 
+Q 384.08256 290.412 384.08256 276.372 
+L 384.08256 141.588 
+Q 384.08256 127.548 367.83936 127.548 
+L 236.26944 127.548 
+Q 220.02624 127.548 220.02624 141.588 
+L 220.02624 276.372 
+Q 220.02624 290.412 236.26944 290.412 
+z
+" clip-path="url(#pddfdc6b593)" style="fill: #f6efe7; stroke: #c9d1d9; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 427.12704 290.412 
+L 558.69696 290.412 
+Q 574.94016 290.412 574.94016 276.372 
+L 574.94016 141.588 
+Q 574.94016 127.548 558.69696 127.548 
+L 427.12704 127.548 
+Q 410.88384 127.548 410.88384 141.588 
+L 410.88384 276.372 
+Q 410.88384 290.412 427.12704 290.412 
+z
+" clip-path="url(#pddfdc6b593)" style="fill: #eef6f1; stroke: #c9d1d9; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 622.04544 290.412 
+L 802.34496 290.412 
+Q 818.58816 290.412 818.58816 276.372 
+L 818.58816 141.588 
+Q 818.58816 127.548 802.34496 127.548 
+L 622.04544 127.548 
+Q 605.80224 127.548 605.80224 141.588 
+L 605.80224 276.372 
+Q 605.80224 290.412 622.04544 290.412 
+z
+" clip-path="url(#pddfdc6b593)" style="fill: #f3eef8; stroke: #c9d1d9; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 215.96544 465.912 
+L 574.94016 465.912 
+Q 591.18336 465.912 591.18336 451.872 
+L 591.18336 366.228 
+Q 591.18336 352.188 574.94016 352.188 
+L 215.96544 352.188 
+Q 199.72224 352.188 199.72224 366.228 
+L 199.72224 451.872 
+Q 199.72224 465.912 215.96544 465.912 
+z
+" clip-path="url(#pddfdc6b593)" style="fill: #fffbe6; stroke: #e3d48a; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 14.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #1f2328" transform="translate(65.492347 179.328018)">5,000 open</text>
+    <text style="font-weight: 700; font-size: 14.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #1f2328" transform="translate(83.117777 196.73085)">papers</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 11.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #6a737d" transform="translate(63.795237 226.363037)">PubMed Central,</text>
+    <text style="font-size: 11.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #6a737d" transform="translate(72.130941 240.166182)">CC BY licence</text>
+   </g>
+   <g id="text_3">
+    <text style="font-weight: 700; font-size: 14.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #1f2328" transform="translate(237.437642 179.32915)">Frontier models</text>
+    <text style="font-weight: 700; font-size: 14.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #1f2328" transform="translate(248.797486 196.733115)">rewrite them</text>
+   </g>
+   <g id="text_4">
+    <text style="font-size: 11.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #6a737d" transform="translate(257.398462 226.363037)">4,416 papers →</text>
+    <text style="font-size: 11.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #6a737d" transform="translate(252.360923 240.166182)">21,069 examples</text>
+   </g>
+   <g id="text_5">
+    <text style="font-weight: 700; font-size: 14.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #1f2328" transform="translate(429.441648 179.32915)">Small Qwen 3.5</text>
+    <text style="font-weight: 700; font-size: 14.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #1f2328" transform="translate(439.913367 196.733115)">models learn</text>
+   </g>
+   <g id="text_6">
+    <text style="font-size: 11.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #6a737d" transform="translate(446.487937 226.363037)">0.8B, 4B and 9B</text>
+    <text style="font-size: 11.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #6a737d" transform="translate(426.525555 240.166182)">one pass over the data</text>
+   </g>
+   <g id="text_7">
+    <text style="font-weight: 700; font-size: 14.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #1f2328" transform="translate(661.584536 179.32915)">Opus judges</text>
+    <text style="font-weight: 700; font-size: 14.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #1f2328" transform="translate(657.174497 196.733115)">every rewrite</text>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 11.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #6a737d" transform="translate(631.718559 226.363037)">3 held-out papers, 15 parts,</text>
+    <text style="font-size: 11.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #6a737d" transform="translate(660.505395 240.166182)">4 scores out of 10</text>
+   </g>
+   <g id="patch_7">
+    <path d="M 196.850731 208.98 
+Q 206.21899 208.98 213.351181 208.98 
+" style="fill: none; stroke: #1f2328; stroke-width: 2; stroke-linecap: round"/>
+    <path d="M 208.151181 206.38 
+L 213.351181 208.98 
+L 208.151181 211.58 
+z
+" style="fill: #1f2328; stroke: #1f2328; stroke-width: 2; stroke-linecap: round"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 387.705059 208.98 
+Q 397.481133 208.98 405.021139 208.98 
+" style="fill: none; stroke: #1f2328; stroke-width: 2; stroke-linecap: round"/>
+    <path d="M 399.821139 206.38 
+L 405.021139 208.98 
+L 399.821139 211.58 
+z
+" style="fill: #1f2328; stroke: #1f2328; stroke-width: 2; stroke-linecap: round"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 578.563353 208.98 
+Q 590.371631 208.98 599.943841 208.98 
+" style="fill: none; stroke: #1f2328; stroke-width: 2; stroke-linecap: round"/>
+    <path d="M 594.743841 206.38 
+L 599.943841 208.98 
+L 594.743841 211.58 
+z
+" style="fill: #1f2328; stroke: #1f2328; stroke-width: 2; stroke-linecap: round"/>
+   </g>
+   <g id="text_9">
+    <text style="font-weight: 700; font-size: 13.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: middle; fill: #1f2328" x="395.4528" y="384.48" transform="rotate(-0 395.4528 384.48)">A reference glossary for every passage</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 11.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #6a737d" transform="translate(214.003464 430.346855)">definitions of the paper's terms from an offline Wikipedia copy,</text>
+    <text style="font-size: 11.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; fill: #6a737d" transform="translate(267.734519 444.15)">given to the writers and to the small models</text>
+   </g>
+   <g id="patch_10">
+    <path d="M 293.9328 347.377989 
+Q 293.9328 323.054033 293.9328 300.518931 
+" style="fill: none; stroke: #b8a540; stroke-width: 1.6; stroke-linecap: round"/>
+    <path d="M 291.3328 305.718931 
+L 293.9328 300.518931 
+L 296.5328 305.718931 
+z
+" style="fill: #b8a540; stroke: #b8a540; stroke-width: 1.6; stroke-linecap: round"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 488.8512 347.377989 
+Q 488.8512 323.054033 488.8512 300.518931 
+" style="fill: none; stroke: #b8a540; stroke-width: 1.6; stroke-linecap: round"/>
+    <path d="M 486.2512 305.718931 
+L 488.8512 300.518931 
+L 491.4512 305.718931 
+z
+" style="fill: #b8a540; stroke: #b8a540; stroke-width: 1.6; stroke-linecap: round"/>
+   </g>
+  </g>
+  <g id="text_11">
+   <text style="font-weight: 700; font-size: 20px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #1f2328" x="34.56" y="39.496875" transform="rotate(-0 34.56 39.496875)">How we built small science translators</text>
+  </g>
+  <g id="text_12">
+   <text style="font-size: 13px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #6a737d" x="34.56" y="61.177969" transform="rotate(-0 34.56 61.177969)">Big models write the examples, small open models learn from them, and a judge scores everyone the same way</text>
+  </g>
+  <g id="text_13">
+   <text style="font-size: 10.5px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #6a737d" x="34.56" y="527.757539" transform="rotate(-0 34.56 527.757539)">Rewrites keep the authors' voice and every result, in words a curious 14-year-old can follow.</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pddfdc6b593">
+   <rect x="25.92" y="75.6" width="812.16" height="421.2"/>
+  </clipPath>
+ </defs>
+</svg>

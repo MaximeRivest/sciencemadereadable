@@ -1,0 +1,25 @@
+body.stats main { max-width: 980px; margin: 0 auto; padding: 30px 24px 60px; display: block; }
+body.stats h1 { font: 500 34px/1.2 var(--serif); }
+body.stats h2 { font: 500 22px/1.2 var(--serif); margin: 34px 0 12px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.card b { display: block; font: 600 28px/1.1 var(--serif); }
+.card span { font-size: 13px; color: var(--muted); }
+.bars { display: flex; gap: 6px; align-items: flex-end; height: 160px; }
+.bar { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; font-size: 11px; color: var(--muted); }
+.bar span { display: block; width: 100%; height: 0; min-height: 2px; background: var(--accent); border-radius: 4px 4px 0 0; }
+.bar em { font-style: normal; order: -1; }
+body.stats table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+body.stats th, body.stats td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+body.stats th { color: var(--muted); font-weight: 600; }
+.bar span.h0 { height: 0%; }
+.bar span.h1 { height: 10%; }
+.bar span.h2 { height: 20%; }
+.bar span.h3 { height: 30%; }
+.bar span.h4 { height: 40%; }
+.bar span.h5 { height: 50%; }
+.bar span.h6 { height: 60%; }
+.bar span.h7 { height: 70%; }
+.bar span.h8 { height: 80%; }
+.bar span.h9 { height: 90%; }
+.bar span.h10 { height: 100%; }
