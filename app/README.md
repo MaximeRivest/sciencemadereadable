@@ -96,7 +96,7 @@ support of the last 24 hours. Settings in `support.json` (not published; `suppor
 - **Sponsor of the day:** a paid day waits in `sponsors.json` until approved:
   `.venv/bin/python app/tools/sponsor_day.py` (list), `... approve cs_... [DAY]`, `... refuse cs_...`.
   Approved names go into `support.json`'s `sponsors_by_day` and show that day only.
-- Rewrite costs: `daily_cost` in `support.json` (108 with the H100).
+- `daily_cost` in `support.json`: what a rented H100 day costs (108), the unit the window speaks in.
 
 ## Usage counts
 

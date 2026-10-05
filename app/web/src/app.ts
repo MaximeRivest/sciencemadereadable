@@ -375,8 +375,8 @@ function drawSupport() {
   const cost = sup?.daily_cost ?? 108;
   const st = stripeLinks();
   const hours = (amount || 10) / (cost / 24);
-  $("#impact").textContent = amount === 0 ? "Any amount helps: $4.50 keeps the GPU running for an hour."
-    : `${usd(amount)} keeps the GPU running for about ${hours < 1.5 ? `${Math.round(hours * 60)} minutes` : `${Math.round(hours)} hours`}: ` +
+  $("#impact").textContent = amount === 0 ? "Any amount helps: $4.50 pays for an hour of a rented H100."
+    : `${usd(amount)} pays for about ${hours < 1.5 ? `${Math.round(hours * 60)} minutes` : `${Math.round(hours)} hours`} of a rented H100: ` +
       `time to make up to ${(Math.round(hours * PAPERS_PER_HOUR / 100) * 100).toLocaleString("en-US")} papers readable.`;
   const label = amount ? `Support with ${usd(amount)}` : "Support with any amount";
   const card = st[amount ? String(amount) : "custom"];
@@ -407,7 +407,7 @@ function drawSupport() {
     const got = sup!.day_dollars!, n = sup!.day_count!;
     $("#meter-text").textContent = got > 0 ? `${usd(got)} from ${n} ${n === 1 ? "supporter" : "supporters"} in the last 24 hours`
       : "No support yet in the last 24 hours";
-    $("#meter-cost").textContent = `the GPU costs ${usd(cost)} a day`;
+    $("#meter-cost").textContent = `a rented-GPU day costs ${usd(cost)}`;
     ($("#meter-fill") as HTMLElement).style.width = `${Math.min(100, Math.max(got > 0 ? 3 : 0, (got / cost) * 100))}%`;
     const notes: string[] = [];
     if (sup!.monthly_supporters) notes.push(`${sup!.monthly_supporters} ${sup!.monthly_supporters === 1 ? "person supports" : "people support"} it every month.`);
@@ -451,7 +451,7 @@ new IntersectionObserver((entries) => {
   if (!paper || !saved[chosen.id] || document.body.dataset.view !== "reader") return;
   sessionStorage.setItem("thanked", "1");
   if (sup?.daily_cost) $("#thanks-text").textContent =
-    `This rewrite was free for you. The GPU that writes them costs ${usd(sup.daily_cost)} a day, and readers keep it running.`;
+    `This rewrite was free for you. Busy days need a rented GPU, about ${usd(sup.daily_cost)} a day, and readers pay for them.`;
   $("#thanks").hidden = false;
   track("thanks_shown", {});
 }, { rootMargin: "0px 0px -20% 0px" }).observe($("#credit"));

@@ -93,8 +93,9 @@
   <form method="dialog">
     <h2>Keep science readable, and free</h2>
     <p class="from">Hi, I'm Maxime. I trained these models and built this site on my own, so that anyone, at any age,
-      can read real science in plain words. No ads, no accounts, no paywall. What it does cost is the graphics card
-      that writes the rewrites.</p>
+      can read real science in plain words. No ads, no accounts, no paywall. Day to day, the rewrites run on a graphics
+      card in my home. When many people read at once, I rent a fast one (an Nvidia H100, about $108 a day) so nobody
+      waits. Your support pays for those days.</p>
     <div id="meter" class="meter" hidden>
       <div class="meter-line"><span id="meter-text"></span><span id="meter-cost" class="quiet"></span></div>
       <div class="meter-bar"><i id="meter-fill"></i></div>
@@ -116,7 +117,7 @@
     <p class="give-alt"><a id="give-monthly" class="ghost-link" target="_blank" rel="noopener">or $3 a month</a><span id="gh-alt"></span></p>
     <p id="pay-note" class="quiet small"></p>
     <div class="org">
-      <b>Sponsor a whole day</b> · $110 covers the GPU for a day, and your name or your organization's is shown on
+      <b>Sponsor a whole day</b> · $110 pays for a day of a rented H100, and your name or your organization's is shown on
       this site that day: "Today's rewrites are sponsored by …".
       <a id="give-day" target="_blank" rel="noopener">Sponsor a day</a><span id="day-note"></span>
     </div>
@@ -143,9 +144,9 @@
       the authors' own voice, keeping every result, number and caveat, but in words anyone can follow.</p>
     <p><b>The rewriting is done by small open models we trained</b> (Qwen 3.5 with 9, 4 and 0.8 billion parameters). They
       learned from about 4,400 papers rewritten by Claude Opus and GPT-6 Astra, with plain definitions of each paper's terms
-      looked up in Wikipedia. They are small enough to run on a gaming graphics card at home, which is where they ran until launch; today they
-      run on one rented Nvidia H100. When many people are reading, a paper may wait in line, and the page says when the
-      GPU is offline.</p>
+      looked up in Wikipedia. They are small enough to run on a gaming graphics card, and that is where they run: an RTX 3090 in my home. On busy
+      days a rented Nvidia H100 joins it. When many people are reading, a paper may wait in line, and the page says when
+      the GPU is offline.</p>
     <p><b>How good is it?</b> On our test papers, a judge model scored our 9B 7.8 out of 10, a little above GPT-6 Luna (7.5),
       below Claude Opus (8.5); it costs about half a cent per paper. It still makes mistakes more often than the big
       models, so check the original before relying on a detail. With your own API key you can compare with six commercial models.</p>
