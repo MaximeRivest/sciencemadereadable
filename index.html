@@ -17,6 +17,7 @@
   <form class="search mini" role="search"><input id="search-results" type="search" placeholder="Search open papers" aria-label="Search open papers"></form>
   <span class="nav-right">
     <span id="gpu" class="gpu">Home GPU</span>
+    <a href="?library" id="open-library">Library</a>
     <a href="#" id="open-support" class="support-link">♥ Support</a>
     <a href="#" id="open-settings">Settings</a>
     <a href="#" id="open-about">About</a>
@@ -30,10 +31,26 @@
     <input type="search" placeholder="What are you curious about? Bees, coral reefs, microplastics…" aria-label="Search" autofocus>
     <button>Search</button>
   </form>
+  <section id="now-wrap" hidden>
+    <h3 class="now-head"><span class="live-dot"></span>Being made readable right now</h3>
+    <div id="now"></div>
+  </section>
   <div id="examples-wrap" hidden>
     <p class="quiet small">Or start with one of these</p>
     <div id="examples"></div>
   </div>
+  <section id="recent-wrap" hidden>
+    <h3 class="now-head">Just made readable</h3>
+    <div id="recent"></div>
+    <a href="?library" id="library-link" class="more">Browse all papers →</a>
+  </section>
+</main>
+
+<main id="library-view" class="view">
+  <h1 class="lib-title">The library</h1>
+  <p class="quiet lib-sub">Every paper already made readable. They open instantly.</p>
+  <input id="lib-filter" type="search" placeholder="Filter by words in the title or journal" aria-label="Filter">
+  <div id="library"></div>
 </main>
 
 <main id="results-view" class="view">
