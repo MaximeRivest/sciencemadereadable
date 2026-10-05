@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://pmc-oa-opendata.s3.amazonaws.com; connect-src 'self' https:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Science, made readable</title>
+<meta name="description" content="Real research papers, rewritten in plain words by small open AI models running on a home GPU.">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+</head>
+<body data-view="home">
+
+<nav class="top">
+  <a id="brand" href="./">made readable</a>
+  <form class="search mini" role="search"><input id="search-results" type="search" placeholder="Search open papers" aria-label="Search open papers"></form>
+  <span class="nav-right">
+    <span id="gpu" class="gpu">Home GPU</span>
+    <a href="#" id="open-support" class="support-link">♥ Support</a>
+    <a href="#" id="open-settings">Settings</a>
+    <a href="#" id="open-about">About</a>
+  </span>
+</nav>
+
+<main id="home" class="view">
+  <h1 class="hero">Science, made readable.</h1>
+  <p class="hero-sub">Real research papers, rewritten in plain words: every finding kept, nothing dumbed down.</p>
+  <form class="search big" role="search">
+    <input type="search" placeholder="What are you curious about? Bees, coral reefs, microplastics…" aria-label="Search" autofocus>
+    <button>Search</button>
+  </form>
+  <div id="examples-wrap" hidden>
+    <p class="quiet small">Or start with one of these</p>
+    <div id="examples"></div>
+  </div>
+</main>
+
+<main id="results-view" class="view">
+  <div id="results"></div>
+</main>
+
+<main id="reader-view" class="view">
+  <div class="toolbar">
+    <label class="written">Written by
+      <select id="model" aria-label="Model"></select>
+    </label>
+    <span id="model-score" class="quiet small"></span>
+    <button id="go" hidden>Make it readable</button>
+    <span id="status" role="status"></span>
+    <label class="side"><input id="side" type="checkbox" checked> Original alongside</label>
+  </div>
+  <div id="progress" class="progress" hidden></div>
+  <article id="paper"></article>
+  <p id="thanks" class="thanks" hidden>✦ This rewrite was free for you, but it ran on a real graphics card. If it helped,
+    <a href="#" id="open-support-3">you can chip in for the next one</a>.</p>
+  <p id="credit" class="credit"></p>
+</main>
+
+<footer>A free demo by Maxime Rivest · the small models run on a gaming graphics card at home · <a href="#" id="open-about-2">How it works</a> · <a href="#" id="open-support-2">♥ Support it</a></footer>
+
+<dialog id="settings">
+  <form method="dialog" autocomplete="off">
+    <h2>Your keys</h2>
+    <p class="quiet small">Only needed for the big commercial models. Keys stay in your browser and go straight to Anthropic or
+      OpenAI, never to us. You pay your provider for what you use (about $0.01 to $1.20 a paper).</p>
+    <label>Anthropic (Claude Opus, Sonnet)<input id="key-anthropic" type="password" placeholder="sk-ant-…"></label>
+    <label>OpenAI (GPT-6 Astra, Sol, Luna; GPT-5.6 Terra)<input id="key-openai" type="password" placeholder="sk-…"></label>
+    <label class="check"><input id="remember" type="checkbox"> Remember on this device</label>
+    <menu><button value="cancel" formnovalidate>Cancel</button><button value="ok" class="primary">Save</button></menu>
+  </form>
+</dialog>
+
+<dialog id="support">
+  <form method="dialog">
+    <h2>Keep science readable, and free</h2>
+    <p>This site is free, with no ads and no accounts. The rewriting runs on a graphics card in my home, and on launch
+      days on a rented one, so every paper someone reads has a small real cost.</p>
+    <ul class="costs">
+      <li><b>about half a cent</b> rewrites one paper on a rented GPU</li>
+      <li><b>$5</b> rewrites about 1,000 papers</li>
+      <li><b>about $110</b> keeps a fast rented GPU (an H100) running for a whole day, so nobody waits</li>
+    </ul>
+    <p>If this helped you, a student or your kids understand real science, you can help keep it going.</p>
+    <div class="give">
+      <a id="give-github" class="primary-btn" target="_blank" rel="noopener">Give on GitHub Sponsors</a>
+      <a id="give-card" class="primary-btn ghost" target="_blank" rel="noopener" hidden>Give by card</a>
+    </div>
+    <p class="quiet small">GitHub Sponsors takes one-time or monthly gifts and passes 100% to me. Organizations: sponsor a launch
+      day or more GPU time, and your name goes on the About page. Reach me on X, <a href="https://x.com/MaximeRivest" target="_blank" rel="noopener">@MaximeRivest</a>.</p>
+    <menu><button value="ok">Close</button></menu>
+  </form>
+</dialog>
+
+<dialog id="about">
+  <form method="dialog">
+    <h2>How it works</h2>
+    <p>Scientific papers are written for other scientists. This page rewrites a whole paper for a curious 14-year-old: in
+      the authors' own voice, keeping every result, number and caveat, but in words anyone can follow.</p>
+    <p><b>The rewriting is done by small open models we trained</b> (Qwen 3.5 with 9, 4 and 0.8 billion parameters). They
+      learned from about 4,400 papers rewritten by Claude Opus and GPT-6 Astra, with plain definitions of each paper's terms
+      looked up in Wikipedia. They run on one consumer graphics card (an RTX 3090) in my home, so a paper may wait in line,
+      and the page may say the home GPU is offline.</p>
+    <p><b>How good is it?</b> On our test papers, a judge model scored our 9B 7.8 out of 10, a little above GPT-6 Luna (7.5),
+      below Claude Opus (8.5); it costs about half a cent per paper. It still makes mistakes more often than the big
+      models, so check the original before relying on a detail. With your own API key you can compare with six commercial models.</p>
+    <p><b>Which papers?</b> Open-access research articles in PubMed Central under the CC BY licence, which allows
+      republishing an adapted version with credit. Figures and tables are always the original ones.</p>
+    <p class="quiet small">A demo, not a product. We count visits on our own server, without cookies: each visitor is an anonymous
+      code that changes every day, and what you search for is never stored. If your browser asks not to be tracked, nothing is
+      counted. Rewrites made by our models are kept so the next reader gets them instantly.</p>
+    <menu><button value="ok" class="primary">Close</button></menu>
+  </form>
+</dialog>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
