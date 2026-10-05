@@ -23,6 +23,15 @@ support = json.loads((DEMO / "support.json").read_text()) if (DEMO / "support.js
 stripe = support.get("stripe", {}) if support.get("stripe_mode") == "live" else {}
 config = {"api": api, "support": {"github": "https://github.com/sponsors/MaximeRivest", "stripe": stripe}}
 (SITE / "config.js").write_text(f"window.SRL_CONFIG = {json.dumps(config)};\n")
+# Each version's files under their own address (?v=fingerprint): a browser that kept yesterday's
+# script for a few minutes (GitHub Pages lets it) never runs it with today's page.
+import hashlib
+page = (SITE / "index.html").read_text()
+for f in ("config.js", "app.js", "style.css"):
+    v = hashlib.sha256((SITE / f).read_bytes()).hexdigest()[:10]
+    assert page.count(f'"{f}"') == 1, f
+    page = page.replace(f'"{f}"', f'"{f}?v={v}"')
+(SITE / "index.html").write_text(page)
 if domain:
     (SITE / "CNAME").write_text(domain + "\n")
 (SITE / ".nojekyll").write_text("")
