@@ -46,6 +46,7 @@ TypeScript library, which is not on npm yet: clone it next to this folder first.
 
 ```
 git clone https://github.com/MaximeRivest/functai ../functai
+(cd ../functai/ts && npm install)
 cd app && npm install && node tools/build.mjs
 npm run worker                              # takes jobs, runs the model through vLLM (app/worker/)
 ```
