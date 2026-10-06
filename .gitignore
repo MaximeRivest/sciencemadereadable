@@ -71,6 +71,9 @@ training/hf/qwen3.5-*/
 training/tools/
 training/rent/*.log
 training/v3/pilot*/
+training/notes/out/
+training/notes/bundle/out/
+training/notes/bundle/glossary_cache.json
 training/**/*.gguf
 training/**/*.safetensors
 training/**/*.pt
