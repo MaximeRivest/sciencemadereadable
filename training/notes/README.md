@@ -81,6 +81,8 @@ bundle/       round 4: the dense bundle
   pilot.py      runs it (same 5 papers), one folder per try: out/4a, out/4b, out/4c;
                 also the code checks of the output's form (placeholders, citations, prose only)
   rejudge.py    judges a finished try again with the current judge, without rewriting
+  produce.py    the 300-paper training-data run (Opus and Astra, 150 each), every call saved:
+                select / run opus / run astra / status; data in out/data300/ (not in git)
   structure.py  4d: headings, paragraphs, citations [n] and placeholder places, by code from the XML
   checks.py     4d: code checks of each paragraph's facts (numbers, citations, hedge words)
   cache.py      4d: the shared glossary cache (glossary_cache.json)
@@ -264,3 +266,24 @@ judge now also sees the rest of the paper and, from 4b's re-judging on, its capt
   agree and why the trace counts exist.
 - **Numbers kept** counts every number of the original, including section numbers ("5.
   Conclusions"); dropping those is intended, so 93% here can mean nothing was lost.
+
+## The 300-paper training-data run (started 2026-10-06)
+
+`bundle/produce.py` makes training data with the 4e recipe, plus a check-and-revise loop on
+the written text: code form check and trace; if anything is found, the teacher revises the
+part once, and both checks run again. 300 papers (3,000-7,000 words, all 11 subfields, none
+of the validation, test, rounds 1-4 or prompt-example papers; 25% with invented species
+names), 150 written entirely by Opus and 150 entirely by Astra, so the two teachers can be
+compared and mixed.
+
+Everything is kept in `bundle/out/data300/<teacher>/<paper_id>/` (see the docstring of
+`produce.py`): the selection record, the paper's structure, every model call with its full
+inputs and output (`calls.jsonl`), the bundle at every stage, every draft, check and
+revision of the text. That is enough to train the writer (bundle -> text), a bundle-maker
+(paragraph -> facts; paper -> things and glossary) and checkers, without calling a model again.
+
+Limits: Opus stops starting papers at 97% of the weekly Claude allowance and waits when the
+5-hour window is full; Astra stops at 97% of the weekly Codex allowance or the moment the
+credit balance drops, so it never spends credits. `produce.py status` shows progress, limits
+and the stop reason (also in `out/data300/STATUS-<teacher>.txt`). Rerunning `produce.py run
+<teacher>` after a reset continues where it stopped.
