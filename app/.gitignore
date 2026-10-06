@@ -10,3 +10,4 @@ worker_token
 site/
 jobs.json
 jobs.tmp
+checks.jsonl

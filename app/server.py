@@ -7,6 +7,10 @@ GET /api/paper?doi=...   the paper as our models read it: sections (split exactl
                          benchmark used. Used by the worker (on this machine). Only CC BY papers.
 GET /api/rewrites?doi=   the saved rewrites of a paper, by model (examples, and our models' jobs).
 GET /api/examples        the papers with saved rewrites ready to read (no key needed).
+GET /api/check?ids=PMC1,PMC2,...   which search results can be opened: "ok", or why not ("licence",
+                         "layout", "no full text"), by the same rules as opening the paper. Kept forever
+                         in app/checks.jsonl. Answers as soon as one is known, with all known then;
+                         the page asks again for the rest ("?": couldn't be checked).
 GET /api/status          is the home GPU worker online, how long is the queue.
 GET /api/now             what is being rewritten right now (titles, progress) and the latest finished.
 GET /api/support         what the GPU costs a day, support of the last 24 h (Stripe, GitHub Sponsors), the
@@ -37,6 +41,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
+from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait as wait_all
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -176,6 +181,78 @@ def paper(doi: str) -> dict:
         "fetched": time.strftime("%Y-%m-%d"),
     }
     cached.write_text(json.dumps(out, ensure_ascii=False))
+    return out
+
+
+# ---------------------------------------------------------------- can it be opened? (search results)
+# The page opens a paper itself (Europe PMC XML, web/src/jats.ts). These are the same rules, in the
+# corpus's Python (tools/check_jats.ts: identical on 500/500 papers), run here so a phone doesn't
+# download every result's full text (~200 kB each) just to grey some out. A verdict never changes.
+CHECKS_FILE = HERE / "checks.jsonl"
+CHECKS: dict[str, str] = {}
+CHECKS_LOCK = threading.Lock()
+CHECKING: dict[str, Future] = {}           # pmcid → the fetch under way (two readers, one fetch)
+CHECK_POOL = ThreadPoolExecutor(8)          # at most 8 full texts fetched from Europe PMC at once
+CHECK_ASKS: dict[str, list[float]] = {}     # address → times of its uncached checks (last minute)
+PMCID = re.compile(r"^PMC\d{1,10}$")
+if CHECKS_FILE.exists():
+    for _line in CHECKS_FILE.read_text().splitlines():
+        try:
+            _c = json.loads(_line)
+            CHECKS[_c["pmcid"]] = _c["verdict"]
+        except (ValueError, KeyError):
+            pass
+
+
+def verdict(pmcid: str) -> str | None:
+    """"ok", or why the page would refuse it; None when Europe PMC didn't answer (ask again later)."""
+    try:
+        raw = fetch(f"{EPMC}/{pmcid}/fullTextXML", timeout=20)
+    except urllib.error.HTTPError as e:
+        if e.code != 404:
+            return None
+        v = "no full text"
+    except (urllib.error.URLError, TimeoutError, OSError):
+        return None
+    else:
+        try:
+            root = ET.fromstring(raw)
+            v = "licence" if not license_ok(root) else "layout" if not split_sections(root) else "ok"
+        except ET.ParseError:
+            v = "no full text"   # the page couldn't read it either
+    with CHECKS_LOCK:
+        CHECKS[pmcid] = v
+        with CHECKS_FILE.open("a") as f:
+            f.write(json.dumps({"pmcid": pmcid, "verdict": v}) + "\n")
+    return v
+
+
+def check_many(ids: list[str], who: str, seconds: float = 2.5) -> dict[str, str]:
+    """The verdicts known now; if none is, waits (up to `seconds`) for the first to come, and returns every
+    one ready by then. The page asks again for the rest, so each verdict reaches it as soon as it is known.
+    "?": it couldn't be checked (Europe PMC didn't answer, or this address asked for too many)."""
+    out, waiting = {}, {}
+    now = time.time()
+    with CHECKS_LOCK:
+        recent = [t for t in CHECK_ASKS.get(who, []) if now - t < 60]
+        for p in ids:
+            if p in CHECKS:
+                out[p] = CHECKS[p]
+            elif p in CHECKING:
+                waiting[p] = CHECKING[p]
+            elif len(recent) < 90:   # a few searches a minute; past that, results show unchecked
+                recent.append(now)
+                fut = CHECKING[p] = CHECK_POOL.submit(verdict, p)
+                fut.add_done_callback(lambda _f, p=p: CHECKING.pop(p, None))
+                waiting[p] = fut
+            else:
+                out[p] = "?"
+        CHECK_ASKS[who] = recent
+    if waiting and not out:
+        wait_all(waiting.values(), timeout=seconds, return_when=FIRST_COMPLETED)
+    for p, fut in waiting.items():
+        if fut.done():
+            out[p] = (fut.exception() is None and fut.result()) or "?"
     return out
 
 
@@ -439,6 +516,12 @@ class Handler(SimpleHTTPRequestHandler):
                                         "worker_online": worker_online()})
         if u.path == "/api/library":
             return self.send_json(200, library())
+        if u.path == "/api/check":
+            raw = (urllib.parse.parse_qs(u.query).get("ids") or [""])[0]
+            ids = list(dict.fromkeys(p.strip().upper() for p in raw.split(",") if p.strip()))[:25]
+            if not ids or not all(PMCID.match(p) for p in ids):
+                return self.send_json(400, {"error": "send ids=PMC…,PMC… (at most 25)"})
+            return self.send_json(200, check_many(ids, self.client()))
         if u.path == "/api/support":
             return self.send_json(200, support_state(private=not isinstance(self, PublicHandler)))
         if u.path == "/api/status":
@@ -601,7 +684,7 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_json(200, {"ok": True})
 
 
-PUBLIC = {("GET", "/api/support"), ("GET", "/api/now"), ("GET", "/api/library"), ("GET", "/api/status"), ("GET", "/api/rewrites"), ("GET", "/api/examples"), ("GET", "/api/jobs"),
+PUBLIC = {("GET", "/api/check"), ("GET", "/api/support"), ("GET", "/api/now"), ("GET", "/api/library"), ("GET", "/api/status"), ("GET", "/api/rewrites"), ("GET", "/api/examples"), ("GET", "/api/jobs"),
           ("POST", "/api/jobs"), ("POST", "/api/event"), ("POST", "/api/worker/next")}
 
 

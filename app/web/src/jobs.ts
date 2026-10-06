@@ -11,6 +11,27 @@ export async function status(): Promise<Status | null> {
   try { return await (await fetch(`${API}/api/status`)).json(); } catch { return null; }
 }
 
+/**
+ * Can these search results be opened? Each one's verdict as our server learns it, checked with the
+ * page's own rules: "ok", or why not ("licence", "layout", "no full text"); "?" when it can't tell
+ * (the result then shows as usual). The server answers as soon as any verdict is ready; we ask again
+ * for the rest. Unreachable server, or past `seconds`: the rest come back "?".
+ */
+export async function openable(pmcids: string[], each: (pmcid: string, verdict: string) => void, seconds = 20) {
+  const left = new Set(pmcids);
+  const until = Date.now() + seconds * 1000;
+  while (left.size && Date.now() < until) {
+    let got: Record<string, string>;
+    try {
+      const r = await fetch(`${API}/api/check?ids=${[...left].join(",")}`);
+      if (!r.ok) break;
+      got = await r.json();
+    } catch { break; }
+    for (const [p, v] of Object.entries(got)) if (left.delete(p)) each(p, v);
+  }
+  for (const p of left) each(p, "?");
+}
+
 /** The file name the server and the site use for a paper's saved rewrites. */
 export async function key(doi: string): Promise<string> {
   const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(doi.toLowerCase()));

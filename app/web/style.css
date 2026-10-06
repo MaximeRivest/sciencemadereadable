@@ -69,6 +69,12 @@ form.search.big input { font-size: 18px; padding: 16px 24px; }
 .hit-title { display: block; font: 19px/1.35 var(--serif); color: var(--ink); }
 .hit:hover .hit-title { color: var(--accent); }
 .hit-meta { display: block; font-size: 13.5px; color: var(--faint); margin-top: 4px; }
+.hit.off .hit-title { color: var(--faint); }
+.hit.off:hover .hit-title { color: var(--muted); }
+.checking { font-size: 14px; padding: 14px 0; animation: breathe 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .checking { animation: none; } }
+.hit-why { display: block; font-size: 13.5px; color: var(--muted); margin-top: 6px; }
+.hit-orig { white-space: nowrap; text-decoration: underline; text-underline-offset: 2px; }
 
 /* reader */
 .toolbar { position: sticky; top: 0; z-index: 3; display: flex; flex-wrap: wrap; align-items: center; gap: 14px;

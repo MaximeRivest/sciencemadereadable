@@ -1,8 +1,8 @@
 import { MODELS, type ModelInfo } from "./models.ts";
 import { rewrite, type Keys } from "./pipeline.ts";
-import { open, search, PaperError, type Paper } from "./paper.ts";
+import { open, search, PaperError, type Hit, type Paper } from "./paper.ts";
 import { Reader } from "./reader.ts";
-import { activeJob, examples, follow, library, now, savedRewrites, status, supportState, type LibraryItem, type Status, type Support } from "./jobs.ts";
+import { activeJob, examples, follow, library, now, openable, savedRewrites, status, supportState, type LibraryItem, type Status, type Support } from "./jobs.ts";
 import { ProgressPanel } from "./progress.ts";
 import { track } from "./track.ts";
 
@@ -48,29 +48,96 @@ function show(view: "home" | "results" | "reader" | "library") {
   window.scrollTo(0, 0);
 }
 
+/** Why a search result can't be opened, in the reader's words (the same refusals as opening it). */
+const CANT: Record<string, string> = {
+  licence: "Can't be opened here: its licence doesn't allow a full rewrite.",
+  layout: "Can't be opened here: it isn't laid out as introduction, methods and results, the shape our models learned.",
+  "no full text": "Can't be opened here: Europe PMC has no full text for it.",
+};
+// Results appear one by one as their check comes back, never moving once shown (no misclicks):
+// in Europe PMC's order, each once it and the ones above it are checked; the ones that can't be
+// opened gather greyed at the bottom. A paper still unchecked after HOLD_MS stops holding the
+// rest back: it shows as usual and greys out in place if refused later.
+const HOLD_MS = 1500;
+let searchRun = 0;
+
 async function runSearch(q: string) {
   q = q.trim();
   if (!q) return;
   if (/^(10\.\d{4,9}\/|pmc\d+$|https?:\/\/(dx\.)?doi\.org\/)/i.test(q)) return go(`?paper=${encodeURIComponent(q)}`);
   go(`?q=${encodeURIComponent(q)}`, false);
   show("results");
+  const run = ++searchRun;   // a newer search makes this one's late answers moot
   const box = $("#results");
   box.innerHTML = `<p class="quiet">Looking for open papers…</p>`;
+  let hits: Hit[];
   try {
-    const hits = await search(q);
-    track("search", { n: hits.length });
-    box.innerHTML = hits.length ? "" : `<p class="quiet">Nothing open to read for that. Try other words.</p>`;
-    for (const h of hits) {
-      const a = document.createElement("a");
-      a.className = "hit";
-      a.href = `?paper=${encodeURIComponent(h.doi || h.pmcid)}`;
-      a.innerHTML = `<span class="hit-title">${esc(h.title)}</span><span class="hit-meta">${esc([h.journal, h.year].filter(Boolean).join(" · "))}</span>`;
-      a.onclick = (e) => { e.preventDefault(); go(a.getAttribute("href")!); };
-      box.appendChild(a);
-    }
+    hits = await search(q);
   } catch {
-    box.innerHTML = `<p class="quiet">The search didn't answer. Try again in a moment.</p>`;
+    if (run === searchRun) box.innerHTML = `<p class="quiet">The search didn't answer. Try again in a moment.</p>`;
+    return;
   }
+  if (run !== searchRun) return;
+  if (!hits.length) {
+    track("search", { n: 0 });
+    box.innerHTML = `<p class="quiet">Nothing open to read for that. Try other words.</p>`;
+    return;
+  }
+  box.innerHTML = "";
+  const good = box.appendChild(document.createElement("div"));
+  const note = box.appendChild(document.createElement("p"));
+  note.className = "quiet checking";
+  const refusedBox = box.appendChild(document.createElement("div"));
+  const verdicts = new Map<string, string>();   // pmcid → "ok", "?" (couldn't tell) or why not
+  const rows = new Map<string, HTMLAnchorElement>();
+  let next = 0, holding = true;
+
+  const row = (h: Hit) => {
+    const a = document.createElement("a");
+    a.className = "hit";
+    a.href = `?paper=${encodeURIComponent(h.doi || h.pmcid)}`;
+    a.innerHTML = `<span class="hit-title">${esc(h.title)}</span><span class="hit-meta">${esc([h.journal, h.year].filter(Boolean).join(" · "))}</span>`;
+    a.onclick = (e) => { if (a.classList.contains("off")) return; e.preventDefault(); go(a.getAttribute("href")!); };
+    rows.set(h.pmcid, a);
+    return a;
+  };
+  const grey = (a: HTMLAnchorElement, h: Hit, why: string) => {   // the reason; the link goes to the original
+    a.classList.add("off");
+    a.href = h.doi ? `https://doi.org/${h.doi}` : `https://europepmc.org/article/PMC/${h.pmcid}`;
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.title = "Opens the original paper in a new tab";
+    a.insertAdjacentHTML("beforeend", `<span class="hit-why">${esc(CANT[why] ?? "Can't be opened here.")} ` +
+      `<span class="hit-orig">Read the original ↗</span></span>`);
+  };
+  const refused = (v?: string) => Boolean(v && v !== "ok" && v !== "?");
+  const draw = () => {
+    for (; next < hits.length; next++) {
+      const h = hits[next], v = verdicts.get(h.pmcid);
+      if (v === undefined && holding) break;
+      const a = row(h);
+      if (refused(v)) { grey(a, h, v!); refusedBox.appendChild(a); } else good.appendChild(a);
+    }
+    const left = hits.length - verdicts.size;
+    const ok = hits.filter((h) => !refused(verdicts.get(h.pmcid))).length;
+    note.textContent = left ? (good.childElementCount ? `Checking ${left} more…` : "Checking which papers we can open…")
+      : ok ? "" : "None of these can be opened here. Try other words.";
+    note.hidden = !note.textContent;
+  };
+  draw();
+  const timer = setTimeout(() => { if (run === searchRun) { holding = false; draw(); } }, HOLD_MS);
+  const byId = new Map(hits.map((h) => [h.pmcid, h]));
+  await openable(hits.map((h) => h.pmcid), (pmcid, v) => {
+    const h = byId.get(pmcid);
+    if (run !== searchRun || !h) return;
+    verdicts.set(pmcid, v);
+    const shown = rows.get(pmcid);   // shown before its answer came (not held): greyed where it is
+    if (shown && refused(v)) grey(shown, h, v);
+    draw();
+  });
+  clearTimeout(timer);
+  if (run !== searchRun) return;
+  track("search", { n: hits.length, ok: hits.filter((h) => !refused(verdicts.get(h.pmcid))).length });
 }
 
 async function openPaper(id: string) {
