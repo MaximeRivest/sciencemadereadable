@@ -1,7 +1,9 @@
 /**
- * Finding and opening papers, all from the browser: Europe PMC for search, metadata and the full
- * text (JATS XML); PubMed Central's open-access copy on AWS for the figure images.
+ * Finding and opening papers. Search: our own semantic index (the queue server's /api/search), Europe PMC
+ * when ours doesn't answer. Metadata and the full text (JATS XML): Europe PMC, from the browser; figure
+ * images: PubMed Central's open-access copy on AWS.
  */
+import { API } from "./jobs.ts";
 import { layout, licenseOk, sectionNodes, splitSections, type Mark } from "./jats.ts";
 
 const EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest";
@@ -22,8 +24,23 @@ const clean = (s?: string) => {
   return (new DOMParser().parseFromString(once, "text/html").body.textContent ?? "").replace(/\s+/g, " ").trim();
 };
 
-/** Open-access, CC BY research papers with full text: the ones we can rewrite and show. */
+/** Open-access, CC BY research papers with full text: the ones we can rewrite and show. Ours first
+ *  (finds papers by meaning), Europe PMC's keyword search if ours fails or is slow. */
 export async function search(q: string, signal?: AbortSignal): Promise<Hit[]> {
+  try {
+    const r = await fetch(`${API}/api/search?${new URLSearchParams({ q })}`,
+      { signal: AbortSignal.any([AbortSignal.timeout(7000), ...(signal ? [signal] : [])]) });
+    if (r.ok) {
+      const hits: Hit[] = (await r.json()).hits ?? [];
+      if (hits.length) return hits;
+    }
+  } catch (e) {
+    if (signal?.aborted) throw e;
+  }
+  return searchEuropePMC(q, signal);
+}
+
+async function searchEuropePMC(q: string, signal?: AbortSignal): Promise<Hit[]> {
   const query = `(${q}) AND OPEN_ACCESS:y AND HAS_FT:y AND LICENSE:"cc by" AND PUB_TYPE:"research-article"`;
   const url = `${EPMC}/search?${new URLSearchParams({ query, format: "json", resultType: "lite", pageSize: "15" })}`;
   const d = await (await fetch(url, { signal })).json();

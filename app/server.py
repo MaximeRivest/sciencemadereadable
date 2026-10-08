@@ -7,6 +7,10 @@ GET /api/paper?doi=...   the paper as our models read it: sections (split exactl
                          benchmark used. Used by the worker (on this machine). Only CC BY papers.
 GET /api/rewrites?doi=   the saved rewrites of a paper, by model (examples, and our models' jobs).
 GET /api/examples        the papers with saved rewrites ready to read (no key needed).
+GET /api/search?q=...       semantic search over the papers we can open (our index on this machine:
+                         CC BY research articles with PMC full text). Answers {"hits": [...]}; the page
+                         falls back to Europe PMC when this fails. At most 30 searches a minute per
+                         address. The words searched are not stored.
 GET /api/check?ids=PMC1,PMC2,...   which search results can be opened: "ok", or why not ("licence",
                          "layout", "no full text"), by the same rules as opening the paper. Kept forever
                          in app/checks.jsonl. Answers as soon as one is known, with all known then;
@@ -516,6 +520,23 @@ class Handler(SimpleHTTPRequestHandler):
                                         "worker_online": worker_online()})
         if u.path == "/api/library":
             return self.send_json(200, library())
+        if u.path == "/api/search":
+            q = (urllib.parse.parse_qs(u.query).get("q") or [""])[0].strip()
+            if not 2 <= len(q) <= 300:
+                return self.send_json(400, {"error": "send q= (2 to 300 characters)"})
+            now, who_ = time.time(), self.client()
+            with SEARCHES_LOCK:
+                recent = [t for t in SEARCHES.get(who_, []) if now - t < 60]
+                SEARCHES[who_] = recent + [now]
+                if len(SEARCHES) > 10000:   # forget idle addresses
+                    for k in [k for k, v in SEARCHES.items() if now - v[-1] > 60]:
+                        del SEARCHES[k]
+            if len(recent) >= 30:
+                return self.send_json(429, {"error": "Too many searches at once. Wait a minute."})
+            try:
+                return self.send_json(200, {"hits": our_search(q)})
+            except Exception as e:   # noqa: BLE001  the page falls back to Europe PMC
+                return self.send_json(502, {"error": f"search unavailable ({type(e).__name__})"})
         if u.path == "/api/check":
             raw = (urllib.parse.parse_qs(u.query).get("ids") or [""])[0]
             ids = list(dict.fromkeys(p.strip().upper() for p in raw.split(",") if p.strip()))[:25]
@@ -684,7 +705,26 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_json(200, {"ok": True})
 
 
-PUBLIC = {("GET", "/api/check"), ("GET", "/api/support"), ("GET", "/api/now"), ("GET", "/api/library"), ("GET", "/api/status"), ("GET", "/api/rewrites"), ("GET", "/api/examples"), ("GET", "/api/jobs"),
+SEARCH_API = os.environ.get("SRL_SEARCH_API", "http://127.0.0.1:8810")
+SEARCHES: dict[str, list[float]] = {}
+SEARCHES_LOCK = threading.Lock()
+
+
+def our_search(q: str) -> list[dict]:
+    """The scholarsreadinglist search service, collection 'smr', mapped to the page's Hit shape."""
+    url = f"{SEARCH_API}/search?" + urllib.parse.urlencode({"q": q, "k": 15, "collection": "smr", "abstracts": "false"})
+    with urllib.request.urlopen(url, timeout=6) as r:
+        d = json.load(r)
+    hits = []
+    for x in d["results"]:
+        names = [a for a in (x.get("authors") or "").split(" | ") if a]
+        authors = ", ".join(names[:6]) + (", et al." if (x.get("authors_count") or 0) > 6 else "")
+        hits.append({"pmcid": x["pmcid"], "doi": x.get("doi"), "title": (x.get("title") or "").strip().rstrip("."),
+                     "authors": authors, "journal": x.get("venue"), "year": str(x["year"]) if x.get("year") else None})
+    return [h for h in hits if h["pmcid"]]
+
+
+PUBLIC = {("GET", "/api/search"), ("GET", "/api/check"), ("GET", "/api/support"), ("GET", "/api/now"), ("GET", "/api/library"), ("GET", "/api/status"), ("GET", "/api/rewrites"), ("GET", "/api/examples"), ("GET", "/api/jobs"),
           ("POST", "/api/jobs"), ("POST", "/api/event"), ("POST", "/api/worker/next")}
 
 
