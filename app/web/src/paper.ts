@@ -24,19 +24,27 @@ const clean = (s?: string) => {
   return (new DOMParser().parseFromString(once, "text/html").body.textContent ?? "").replace(/\s+/g, " ").trim();
 };
 
+/** How the last search was answered: our index by meaning or by exact words, or Europe PMC. */
+export const lastSearch: { by: "semantic" | "keyword" | "europepmc"; matches: number | null } = { by: "semantic", matches: null };
+
 /** Open-access, CC BY research papers with full text: the ones we can rewrite and show. Ours first
- *  (finds papers by meaning), Europe PMC's keyword search if ours fails or is slow. */
+ *  (by meaning; by exact words when the query has quotes, AND / OR / NOT, brackets or word*),
+ *  Europe PMC's keyword search if ours fails or is slow. */
 export async function search(q: string, signal?: AbortSignal): Promise<Hit[]> {
   try {
     const r = await fetch(`${API}/api/search?${new URLSearchParams({ q })}`,
       { signal: AbortSignal.any([AbortSignal.timeout(7000), ...(signal ? [signal] : [])]) });
     if (r.ok) {
-      const hits: Hit[] = (await r.json()).hits ?? [];
-      if (hits.length) return hits;
+      const d = await r.json();
+      lastSearch.by = d.mode === "keyword" ? "keyword" : "semantic";
+      lastSearch.matches = d.matches ?? null;
+      return d.hits ?? [];
     }
   } catch (e) {
     if (signal?.aborted) throw e;
   }
+  lastSearch.by = "europepmc";
+  lastSearch.matches = null;
   return searchEuropePMC(q, signal);
 }
 

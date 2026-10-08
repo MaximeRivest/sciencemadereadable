@@ -1,6 +1,6 @@
 import { MODELS, type ModelInfo } from "./models.ts";
 import { rewrite, type Keys } from "./pipeline.ts";
-import { open, search, PaperError, type Hit, type Paper } from "./paper.ts";
+import { lastSearch, open, search, PaperError, type Hit, type Paper } from "./paper.ts";
 import { Reader } from "./reader.ts";
 import { activeJob, examples, follow, library, now, openable, savedRewrites, status, supportState, type LibraryItem, type Status, type Support } from "./jobs.ts";
 import { ProgressPanel } from "./progress.ts";
@@ -84,6 +84,12 @@ async function runSearch(q: string) {
     return;
   }
   box.innerHTML = "";
+  const how = box.appendChild(document.createElement("p"));
+  how.className = "quiet search-how";
+  how.textContent = lastSearch.by === "keyword"
+    ? `Exact words: ${(lastSearch.matches ?? hits.length).toLocaleString()} open papers match. Best matches first.`
+    : lastSearch.by === "semantic" ? "Found by meaning. For exact words, use quotes or AND / OR / NOT." : "";
+  how.hidden = !how.textContent;
   const good = box.appendChild(document.createElement("div"));
   const note = box.appendChild(document.createElement("p"));
   note.className = "quiet checking";
@@ -137,7 +143,7 @@ async function runSearch(q: string) {
   });
   clearTimeout(timer);
   if (run !== searchRun) return;
-  track("search", { n: hits.length, ok: hits.filter((h) => !refused(verdicts.get(h.pmcid))).length });
+  track("search", { n: hits.length, ok: hits.filter((h) => !refused(verdicts.get(h.pmcid))).length, src: lastSearch.by });
 }
 
 async function openPaper(id: string) {

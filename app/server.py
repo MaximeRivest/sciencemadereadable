@@ -7,8 +7,10 @@ GET /api/paper?doi=...   the paper as our models read it: sections (split exactl
                          benchmark used. Used by the worker (on this machine). Only CC BY papers.
 GET /api/rewrites?doi=   the saved rewrites of a paper, by model (examples, and our models' jobs).
 GET /api/examples        the papers with saved rewrites ready to read (no key needed).
-GET /api/search?q=...       semantic search over the papers we can open (our index on this machine:
-                         CC BY research articles with PMC full text). Answers {"hits": [...]}; the page
+GET /api/search?q=...       search over the papers we can open (our index on this machine: CC BY
+                         research articles with PMC full text): by meaning, or by exact words when the
+                         query uses quotes, AND / OR / NOT, brackets or word*. Answers
+                         {"hits": [...], "mode": "semantic"|"keyword", "matches": n}; the page
                          falls back to Europe PMC when this fails. At most 30 searches a minute per
                          address. The words searched are not stored.
 GET /api/check?ids=PMC1,PMC2,...   which search results can be opened: "ok", or why not ("licence",
@@ -534,7 +536,7 @@ class Handler(SimpleHTTPRequestHandler):
             if len(recent) >= 30:
                 return self.send_json(429, {"error": "Too many searches at once. Wait a minute."})
             try:
-                return self.send_json(200, {"hits": our_search(q)})
+                return self.send_json(200, our_search(q))
             except Exception as e:   # noqa: BLE001  the page falls back to Europe PMC
                 return self.send_json(502, {"error": f"search unavailable ({type(e).__name__})"})
         if u.path == "/api/check":
@@ -714,9 +716,10 @@ SEARCHES: dict[str, list[float]] = {}
 SEARCHES_LOCK = threading.Lock()
 
 
-def our_search(q: str) -> list[dict]:
+def our_search(q: str) -> dict:
     """The scholarsreadinglist search service, collection 'smr', mapped to the page's Hit shape."""
-    url = f"{SEARCH_API}/search?" + urllib.parse.urlencode({"q": q, "k": 15, "collection": "smr", "abstracts": "false"})
+    url = f"{SEARCH_API}/search?" + urllib.parse.urlencode({"q": q, "k": 15, "collection": "smr", "mode": "auto",
+                                                            "abstracts": "false"})
     with urllib.request.urlopen(url, timeout=6) as r:
         d = json.load(r)
     hits = []
@@ -725,7 +728,7 @@ def our_search(q: str) -> list[dict]:
         authors = ", ".join(names[:6]) + (", et al." if (x.get("authors_count") or 0) > 6 else "")
         hits.append({"pmcid": x["pmcid"], "doi": x.get("doi"), "title": (x.get("title") or "").strip().rstrip("."),
                      "authors": authors, "journal": x.get("venue"), "year": str(x["year"]) if x.get("year") else None})
-    return [h for h in hits if h["pmcid"]]
+    return {"hits": [h for h in hits if h["pmcid"]], "mode": d.get("mode", "semantic"), "matches": d.get("matches")}
 
 
 PUBLIC = {("GET", "/api/search"), ("GET", "/api/check"), ("GET", "/api/support"), ("GET", "/api/now"), ("GET", "/api/library"), ("GET", "/api/status"), ("GET", "/api/rewrites"), ("GET", "/api/examples"), ("GET", "/api/jobs"),
