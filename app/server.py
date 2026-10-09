@@ -19,6 +19,9 @@ GET /api/check?ids=PMC1,PMC2,...   which search results can be opened: "ok", or 
                          in app/checks.jsonl. Answers as soon as one is known, with all known then;
                          the page asks again for the rest ("?": couldn't be checked).
 GET /api/status          is the home GPU worker online, how long is the queue.
+GET /api/data/...        the data API (search/srl_search, release in DATA.md), read-only, as is: search,
+                         similar/REF, works/REF, map/place, map/regions, map/counts, map/tiles/RELEASE/..., walk.
+                         Per-address limits; tiles are immutable (cached a year).
 GET /api/now             what is being rewritten right now (titles, progress) and the latest finished.
 GET /api/support         what the GPU costs a day, support of the last 24 h (Stripe, GitHub Sponsors), the
                          Stripe links, today's sponsor.
@@ -523,6 +526,8 @@ class Handler(SimpleHTTPRequestHandler):
                                         "worker_online": worker_online()})
         if u.path == "/api/library":
             return self.send_json(200, library())
+        if u.path.startswith("/api/data/"):
+            return self.data_proxy(u)
         if u.path == "/api/search":
             args = urllib.parse.parse_qs(u.query)
             q = (args.get("q") or [""])[0].strip()
@@ -570,6 +575,38 @@ class Handler(SimpleHTTPRequestHandler):
 
     def body_json(self, limit=4_000_000):
         return json.loads(self.rfile.read(min(int(self.headers.get("Content-Length") or 0), limit)) or b"{}")
+
+    def data_proxy(self, u):
+        """Read-only pass-through to the data API, for the routes in DATA_ROUTES only."""
+        route = DATA_ROUTES.match(u.path)
+        if not route or len(u.query) > 2000 or ".." in urllib.parse.unquote(u.path):
+            return self.send_json(404, {"error": "not found"})
+        tiles = route.group(1).startswith("map/tiles/")
+        now, who_ = time.time(), ("t:" if tiles else "d:") + self.client()
+        with SEARCHES_LOCK:
+            recent = [t for t in SEARCHES.get(who_, []) if now - t < 60]
+            SEARCHES[who_] = recent + [now]
+        if len(recent) >= (1200 if tiles else 60):
+            return self.send_json(429, {"error": "Too many requests. Wait a minute."})
+        req = urllib.request.Request(SEARCH_API + u.path[len("/api/data"):] + (("?" + u.query) if u.query else ""))
+        if tiles and self.headers.get("Range"):
+            req.add_header("Range", self.headers["Range"])
+        try:
+            with urllib.request.urlopen(req, timeout=60 if route.group(1) == "walk" else 15) as r:
+                status, body, ctype = r.status, r.read(), r.headers.get("Content-Type", "application/json")
+                crange = r.headers.get("Content-Range")
+        except urllib.error.HTTPError as e:
+            status, body, ctype, crange = e.code, e.read(), e.headers.get("Content-Type", "application/json"), None
+        except OSError as e:
+            return self.send_json(502, {"error": f"data service unavailable ({type(e).__name__})"})
+        self.send_response(status)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(body)))
+        if crange:
+            self.send_header("Content-Range", crange)
+        self.send_header("Cache-Control", "public, max-age=31536000, immutable" if tiles and status < 300 else "no-store")
+        self.end_headers()
+        self.wfile.write(body)
 
     def client(self) -> str:
         # behind tailscale serve / a tunnel, the reader's address is in X-Forwarded-For
@@ -716,6 +753,8 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 SEARCH_API = os.environ.get("SRL_SEARCH_API", "http://127.0.0.1:8810")
+DATA_ROUTES = re.compile(r"^/api/data/(search|walk|map/place|map/regions|map/counts|similar/[\w./:%-]{2,300}|works/[\w./:%-]{2,300}"
+                         r"|map/tiles/[\w-]{1,40}/(?:index\.json|\d{1,2}/\d{1,6}/\d{1,6}\.(?:pts|ids)))$")
 SEARCHES: dict[str, list[float]] = {}
 SEARCHES_LOCK = threading.Lock()
 
@@ -747,7 +786,7 @@ class PublicHandler(Handler):
 
     def allowed(self, method: str) -> bool:
         path = urllib.parse.urlparse(self.path).path
-        return ((method, path) in PUBLIC or (method == "GET" and path.startswith("/api/jobs/"))
+        return ((method, path) in PUBLIC or (method == "GET" and path.startswith(("/api/jobs/", "/api/data/")))
                 or (method == "POST" and path.startswith("/api/worker/jobs/")))
 
     def do_GET(self):
