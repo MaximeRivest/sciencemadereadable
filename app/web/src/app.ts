@@ -1,6 +1,6 @@
 import { MODELS, type ModelInfo } from "./models.ts";
 import { rewrite, type Keys } from "./pipeline.ts";
-import { lastSearch, open, search, PaperError, type Hit, type Paper } from "./paper.ts";
+import { lastSearch, looksExact, open, search, PaperError, type Hit, type Paper } from "./paper.ts";
 import { Reader } from "./reader.ts";
 import { activeJob, examples, follow, library, now, openable, savedRewrites, status, supportState, type LibraryItem, type Status, type Support } from "./jobs.ts";
 import { ProgressPanel } from "./progress.ts";
@@ -61,35 +61,71 @@ const CANT: Record<string, string> = {
 const HOLD_MS = 1500;
 let searchRun = 0;
 
+// ---------------------------------------------------------------- search options
+// "" = the reader hasn't chosen: the toggle follows what they type (quotes, AND/OR/NOT → exact words).
+const opts: { by: "" | "meaning" | "words"; since: string } = { by: "", since: "" };
+const typed = () => ($("#search-results") as HTMLInputElement).value;
+
+function drawOpts(text = typed()) {
+  const shown = opts.by || (looksExact(text) ? "words" : "meaning");
+  for (const b of document.querySelectorAll<HTMLButtonElement>(".seg button"))
+    b.setAttribute("aria-checked", String(b.dataset.by === shown));
+  for (const s of document.querySelectorAll<HTMLSelectElement>(".search-opts .since")) s.value = opts.since;
+}
+function searchUrl(q: string) {
+  const p = new URLSearchParams({ q });
+  if (opts.by) p.set("by", opts.by);
+  if (opts.since) p.set("since", opts.since);
+  return `?${p}`;
+}
+function rerun() {
+  const q = typed().trim() || new URLSearchParams(location.search).get("q") || "";
+  if (q && document.body.dataset.view === "results") runSearch(q);
+}
+
 async function runSearch(q: string) {
   q = q.trim();
   if (!q) return;
   if (/^(10\.\d{4,9}\/|pmc\d+$|https?:\/\/(dx\.)?doi\.org\/)/i.test(q)) return go(`?paper=${encodeURIComponent(q)}`);
-  go(`?q=${encodeURIComponent(q)}`, false);
+  go(searchUrl(q), false);
+  ($("#search-results") as HTMLInputElement).value = q;
+  drawOpts(q);
   show("results");
   const run = ++searchRun;   // a newer search makes this one's late answers moot
   const box = $("#results");
   box.innerHTML = `<p class="quiet">Looking for open papers…</p>`;
   let hits: Hit[];
   try {
-    hits = await search(q);
+    hits = await search(q, opts);
   } catch {
     if (run === searchRun) box.innerHTML = `<p class="quiet">The search didn't answer. Try again in a moment.</p>`;
     return;
   }
   if (run !== searchRun) return;
+  const switchTo = (by: "meaning" | "words", label: string) => {
+    const a = document.createElement("a");
+    a.textContent = label;
+    a.onclick = () => { opts.by = by; runSearch(q); };
+    return a;
+  };
   if (!hits.length) {
-    track("search", { n: 0 });
-    box.innerHTML = `<p class="quiet">Nothing open to read for that. Try other words.</p>`;
+    track("search", { n: 0, src: lastSearch.by });
+    box.innerHTML = "";
+    const p = box.appendChild(document.createElement("p"));
+    p.className = "quiet";
+    if (lastSearch.by === "keyword") p.append("No open paper contains all these words. Try fewer words, or ", switchTo("meaning", "search by meaning"), ".");
+    else p.textContent = opts.since ? "Nothing open to read for that in these years. Try “Any year” or other words." : "Nothing open to read for that. Try other words.";
     return;
   }
   box.innerHTML = "";
   const how = box.appendChild(document.createElement("p"));
   how.className = "quiet search-how";
-  how.textContent = lastSearch.by === "keyword"
-    ? `Exact words: ${(lastSearch.matches ?? hits.length).toLocaleString()} open papers match. Best matches first.`
-    : lastSearch.by === "semantic" ? "Found by meaning. For exact words, use quotes or AND / OR / NOT." : "";
-  how.hidden = !how.textContent;
+  if (lastSearch.by === "keyword")
+    how.append(`${(lastSearch.matches ?? hits.length).toLocaleString()} open papers contain these words; best matches first. `,
+      switchTo("meaning", "Search by meaning instead"));
+  else if (lastSearch.by === "semantic")
+    how.append("Closest in meaning first. ", switchTo("words", "Only papers with these exact words"));
+  else how.textContent = "Our search is busy, so these come from Europe PMC's word search.";
   const good = box.appendChild(document.createElement("div"));
   const note = box.appendChild(document.createElement("p"));
   note.className = "quiet checking";
@@ -398,7 +434,12 @@ function route() {
   if (q.has("support")) setTimeout(() => openSupport("link"), 300);
   if (q.has("library")) return openLibrary();
   if (q.get("paper")) return openPaper(q.get("paper")!);
-  if (q.get("q")) { ($("#search-results") as HTMLInputElement).value = q.get("q")!; return runSearch(q.get("q")!); }
+  if (q.get("q")) {
+    const by = q.get("by");
+    opts.by = by === "words" || by === "meaning" ? by : "";
+    opts.since = /^\d{4}$/.test(q.get("since") ?? "") ? q.get("since")! : "";
+    return runSearch(q.get("q")!);
+  }
   show("home");
   refreshNow();
   nowTimer = window.setInterval(() => { if (document.visibilityState === "visible") refreshNow(); }, 4000);
@@ -406,8 +447,33 @@ function route() {
 
 // ---------------------------------------------------------------- start
 for (const f of document.querySelectorAll<HTMLFormElement>("form.search")) {
-  f.onsubmit = (e) => { e.preventDefault(); runSearch((f.querySelector("input") as HTMLInputElement).value); };
+  const input = f.querySelector("input") as HTMLInputElement;
+  f.onsubmit = (e) => { e.preventDefault(); runSearch(input.value); };
+  input.addEventListener("input", () => { if (!opts.by) drawOpts(input.value); });
 }
+for (const b of document.querySelectorAll<HTMLButtonElement>(".seg button"))
+  b.onclick = () => {
+    opts.by = b.dataset.by as "meaning" | "words";
+    const home = document.body.dataset.view === "home";
+    drawOpts(home ? ($("form.search.big input") as HTMLInputElement).value : typed());
+    if (home) { const q = ($("form.search.big input") as HTMLInputElement).value.trim(); if (q) runSearch(q); }
+    else rerun();
+  };
+for (const s of document.querySelectorAll<HTMLSelectElement>(".search-opts .since"))
+  s.onchange = () => { opts.since = s.value; drawOpts(); rerun(); };
+for (const t of document.querySelectorAll<HTMLButtonElement>(".tips-toggle"))
+  t.onclick = () => {
+    const panel = t.parentElement!.nextElementSibling as HTMLElement;
+    panel.hidden = !panel.hidden;
+    t.setAttribute("aria-expanded", String(!panel.hidden));
+  };
+for (const tip of document.querySelectorAll<HTMLButtonElement>(".tip"))
+  tip.onclick = () => {
+    opts.by = tip.dataset.by as "meaning" | "words";
+    ($("form.search.big input") as HTMLInputElement).value = tip.dataset.q!;
+    runSearch(tip.dataset.q!);
+  };
+drawOpts("");
 $("#brand").onclick = (e) => { e.preventDefault(); go(""); };
 for (const id of ["#open-library", "#library-link"]) $(id).onclick = (e) => { e.preventDefault(); go("?library"); };
 $("#lib-filter").oninput = drawLibrary;

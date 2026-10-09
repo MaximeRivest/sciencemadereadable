@@ -30,9 +30,16 @@ export const lastSearch: { by: "semantic" | "keyword" | "europepmc"; matches: nu
 /** Open-access, CC BY research papers with full text: the ones we can rewrite and show. Ours first
  *  (by meaning; by exact words when the query has quotes, AND / OR / NOT, brackets or word*),
  *  Europe PMC's keyword search if ours fails or is slow. */
-export async function search(q: string, signal?: AbortSignal): Promise<Hit[]> {
+export interface SearchOptions { by?: "meaning" | "words" | ""; since?: string }
+
+/** Did the reader type search syntax (quotes, AND/OR/NOT, brackets, word*, -word, title:)? Same rule as the server. */
+export const looksExact = (q: string) => /"|\b(AND|OR|NOT)\b|[()*]|(^|\s)[-+]\w|\b(title|abstract|keywords):/.test(q);
+
+export async function search(q: string, opts: SearchOptions = {}, signal?: AbortSignal): Promise<Hit[]> {
+  const params = new URLSearchParams({ q, mode: opts.by === "words" ? "keyword" : opts.by === "meaning" ? "semantic" : "auto" });
+  if (opts.since) params.set("year_from", opts.since);
   try {
-    const r = await fetch(`${API}/api/search?${new URLSearchParams({ q })}`,
+    const r = await fetch(`${API}/api/search?${params}`,
       { signal: AbortSignal.any([AbortSignal.timeout(7000), ...(signal ? [signal] : [])]) });
     if (r.ok) {
       const d = await r.json();
@@ -45,11 +52,12 @@ export async function search(q: string, signal?: AbortSignal): Promise<Hit[]> {
   }
   lastSearch.by = "europepmc";
   lastSearch.matches = null;
-  return searchEuropePMC(q, signal);
+  return searchEuropePMC(q, opts.since, signal);
 }
 
-async function searchEuropePMC(q: string, signal?: AbortSignal): Promise<Hit[]> {
-  const query = `(${q}) AND OPEN_ACCESS:y AND HAS_FT:y AND LICENSE:"cc by" AND PUB_TYPE:"research-article"`;
+async function searchEuropePMC(q: string, since?: string, signal?: AbortSignal): Promise<Hit[]> {
+  const years = since ? ` AND PUB_YEAR:[${since} TO 3000]` : "";
+  const query = `(${q}) AND OPEN_ACCESS:y AND HAS_FT:y AND LICENSE:"cc by" AND PUB_TYPE:"research-article"${years}`;
   const url = `${EPMC}/search?${new URLSearchParams({ query, format: "json", resultType: "lite", pageSize: "15" })}`;
   const d = await (await fetch(url, { signal })).json();
   return (d.resultList?.result ?? []).filter((r: any) => r.pmcid).map((r: any) => ({

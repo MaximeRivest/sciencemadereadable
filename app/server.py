@@ -7,7 +7,8 @@ GET /api/paper?doi=...   the paper as our models read it: sections (split exactl
                          benchmark used. Used by the worker (on this machine). Only CC BY papers.
 GET /api/rewrites?doi=   the saved rewrites of a paper, by model (examples, and our models' jobs).
 GET /api/examples        the papers with saved rewrites ready to read (no key needed).
-GET /api/search?q=...       search over the papers we can open (our index on this machine: CC BY
+GET /api/search?q=...&mode=auto|semantic|keyword&year_from=YYYY
+                         search over the papers we can open (our index on this machine: CC BY
                          research articles with PMC full text): by meaning, or by exact words when the
                          query uses quotes, AND / OR / NOT, brackets or word*. Answers
                          {"hits": [...], "mode": "semantic"|"keyword", "matches": n}; the page
@@ -523,9 +524,12 @@ class Handler(SimpleHTTPRequestHandler):
         if u.path == "/api/library":
             return self.send_json(200, library())
         if u.path == "/api/search":
-            q = (urllib.parse.parse_qs(u.query).get("q") or [""])[0].strip()
-            if not 2 <= len(q) <= 300:
-                return self.send_json(400, {"error": "send q= (2 to 300 characters)"})
+            args = urllib.parse.parse_qs(u.query)
+            q = (args.get("q") or [""])[0].strip()
+            mode = (args.get("mode") or ["auto"])[0]
+            year = (args.get("year_from") or [""])[0]
+            if not 2 <= len(q) <= 300 or mode not in ("auto", "semantic", "keyword") or (year and not (year.isdigit() and 1800 <= int(year) <= 2100)):
+                return self.send_json(400, {"error": "send q= (2 to 300 characters), optional mode=auto|semantic|keyword, year_from=YYYY"})
             now, who_ = time.time(), self.client()
             with SEARCHES_LOCK:
                 recent = [t for t in SEARCHES.get(who_, []) if now - t < 60]
@@ -536,7 +540,7 @@ class Handler(SimpleHTTPRequestHandler):
             if len(recent) >= 30:
                 return self.send_json(429, {"error": "Too many searches at once. Wait a minute."})
             try:
-                return self.send_json(200, our_search(q))
+                return self.send_json(200, our_search(q, mode, int(year) if year else None))
             except Exception as e:   # noqa: BLE001  the page falls back to Europe PMC
                 return self.send_json(502, {"error": f"search unavailable ({type(e).__name__})"})
         if u.path == "/api/check":
@@ -716,10 +720,12 @@ SEARCHES: dict[str, list[float]] = {}
 SEARCHES_LOCK = threading.Lock()
 
 
-def our_search(q: str) -> dict:
+def our_search(q: str, mode: str = "auto", year_from: int | None = None) -> dict:
     """The scholarsreadinglist search service, collection 'smr', mapped to the page's Hit shape."""
-    url = f"{SEARCH_API}/search?" + urllib.parse.urlencode({"q": q, "k": 15, "collection": "smr", "mode": "auto",
-                                                            "abstracts": "false"})
+    params = {"q": q, "k": 15, "collection": "smr", "mode": mode, "abstracts": "false"}
+    if year_from:
+        params["year_from"] = year_from
+    url = f"{SEARCH_API}/search?" + urllib.parse.urlencode(params)
     with urllib.request.urlopen(url, timeout=6) as r:
         d = json.load(r)
     hits = []
