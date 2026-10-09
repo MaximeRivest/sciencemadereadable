@@ -113,7 +113,9 @@ for theme in ("light", "dark"):
     out.resize((480, 480), Image.LANCZOS).save(OUT / f"science-map-{theme}-small.webp", quality=70, method=6)
     print(theme, f"{(OUT / f'science-map-{theme}.webp').stat().st_size / 1e6:.2f} MB")
 
+hexs = lambda c: "#%02x%02x%02x" % tuple(int(round(max(0, min(1, v)) * 255)) for v in c)
+PAL = {th: palette(th) for th in ("light", "dark")}
 regions = [{"name": f["name"], "domain": f["domain"], "x": f["anchor"]["x"], "y": f["anchor"]["y"],
-            "dots": int(sum(f["per_year"]))}
-           for f in fields if f["domain"]]
+            "dots": int(sum(f["per_year"])), "light": hexs(PAL["light"][i]), "dark": hexs(PAL["dark"][i])}
+           for i, f in enumerate(fields) if f["domain"]]
 (OUT / "regions.json").write_text(json.dumps({"atlas": meta["id"], "fields": regions}, indent=1))

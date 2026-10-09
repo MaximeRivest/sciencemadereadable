@@ -1,7 +1,8 @@
 import { MODELS, type ModelInfo } from "./models.ts";
 import { rewrite, type Keys } from "./pipeline.ts";
 import { lastSearch, looksExact, open, place, search, similar, work, PaperError, type Hit, type Paper } from "./paper.ts";
-import { currentHere, currentQuestion, focus, hot, initMap, mapView, setHere, setResults, type Spot } from "./atlas.ts";
+import { focus, focusPoint, hot, initMap, mapView, setHere, setResults, setWalk, useContext, type Line, type Spot } from "./atlas.ts";
+import { API } from "./jobs.ts";
 import { Reader } from "./reader.ts";
 import { activeJob, examples, follow, library, now, openable, savedRewrites, status, supportState, type LibraryItem, type Status, type Support } from "./jobs.ts";
 import { ProgressPanel } from "./progress.ts";
@@ -199,15 +200,30 @@ async function openWork(ref: string) {
   try {
     d = await work(ref);
   } catch (e: any) {
-    if (run === workRun) box.innerHTML = `<p class="quiet center">${esc(e?.message ?? "We couldn't open this study.")}</p>`;
-    return;
+    // Not in our details (no English abstract in OpenAlex: some publishers withhold them). The citation index
+    // still knows it: a short page from the walk, and the walk itself.
+    try {
+      const w = await fetchWalk(ref), n = w.nodes[w.focus];
+      d = { id: n.id, title: plain(n.title) || "(no title)", year: n.year, type: n.type, citations: n.cited_by,
+            authorsLine: "", venue: n.subfield || n.topic || "", openalex: `https://openalex.org/${n.id}`,
+            abstract: "", smr: false, partial: true };
+    } catch {
+      if (run === workRun) box.innerHTML = `<p class="quiet center">${esc(e?.message ?? "We couldn't open this study.")}</p>`;
+      return;
+    }
   }
   if (run !== workRun) return;
   document.title = `${d.title} · made readable`;
   track("open", { doi: d.doi ?? d.id, src: "work" });
   const original = d.doi ? `https://doi.org/${d.doi}` : d.url || d.openalex;
   const readable = Boolean(d.smr);
-  const cta = readable
+  const scholar = `https://scholar.google.com/scholar?q=${encodeURIComponent(d.title)}`;
+  const cta = d.partial
+    ? `<b>We only know this study through citations.</b> OpenAlex has no abstract for it in English, so we can't
+       search it by meaning or rewrite it. Its citation walk is below.<br>
+       <a class="btn" href="${esc(d.openalex)}" target="_blank" rel="noopener">See it on OpenAlex ↗</a>
+       <a class="btn ghost" href="${esc(scholar)}" target="_blank" rel="noopener">Find it on Google Scholar ↗</a>`
+    : readable
     ? `<b>This study can be read in plain words.</b> Every finding kept, nothing dumbed down.<br>
        <a class="btn" href="?paper=${encodeURIComponent(d.doi || d.pmcid)}" data-go>Read it in plain words</a>
        <a class="btn ghost" href="${esc(original)}" target="_blank" rel="noopener">The original ↗</a>`
@@ -230,12 +246,17 @@ async function openWork(ref: string) {
       ${d.pmcid ? `<a href="https://pmc.ncbi.nlm.nih.gov/articles/${esc(d.pmcid)}/" target="_blank" rel="noopener">PubMed Central ↗</a>` : ""}
       ${d.license ? `<span class="quiet">Licence: ${esc(d.license)}</span>` : ""}
     </div>
+    <section class="walk" id="walk"><h2>Its citation walk</h2><p class="loading-line">Following its citations…</p></section>
     <div class="w-related" id="w-related"></div>
     <p class="you-are-here">You are here, on the map of science.<br>Click the map to look around.</p>`;
   $("#w-back").onclick = () => history.length > 1 ? history.back() : go("");
   for (const a of box.querySelectorAll<HTMLAnchorElement>("a[data-go]")) a.onclick = (e) => { e.preventDefault(); go(a.getAttribute("href")!); };
+  setWalk([], []);
   const pos = await place([d.id]);
   if (run === workRun && pos[d.id]) setHere(pos[d.id]);
+  const ok = await showWalk(d.id, () => run === workRun);
+  if (ok || run !== workRun) return;
+  // no walk (no references we know): the studies closest in meaning instead
   const rel = await similar(d.id, 6);
   if (run !== workRun || !rel.length) return;
   const r = $("#w-related");
@@ -243,10 +264,136 @@ async function openWork(ref: string) {
   for (const h of rel) r.appendChild(row(h));
 }
 
+// ---------------------------------------------------------------- the citation walk
+// From one study: the work it builds on, the studies citing the same work (its conversation), and what that
+// conversation relies on that this study doesn't cite (read next). Each step opens another study: a walk.
+const walkCache = new Map<string, Promise<any>>();
+function fetchWalk(ref: string): Promise<any> {
+  let p = walkCache.get(ref);
+  if (!p) {
+    p = fetch(`${API}/api/data/walk?id=${encodeURIComponent(ref)}&k=30`, { signal: AbortSignal.timeout(45000) })
+      .then(async (r) => { const d = await r.json(); if (!r.ok || d.error) throw new Error(d.error || d.detail || "walk failed"); return d; });
+    p.catch(() => walkCache.delete(ref));
+    walkCache.set(ref, p);
+  }
+  return p;
+}
+
+const plain = (s?: string) => (s ?? "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+const asHit = (n: any): Hit => ({ id: n.id, pmcid: "", title: plain(n.title) || "(no title)", year: n.year ? String(n.year) : undefined,
+  readable: Boolean(n.readable), x: n.x, y: n.y, citations: n.cited_by });
+
+async function showWalk(ref: string, current: () => boolean): Promise<boolean> {
+  const box = document.querySelector("#walk") as HTMLElement | null;
+  let d: any;
+  try { d = await fetchWalk(ref); } catch (e: any) {
+    if (current() && box) box.remove();
+    return false;
+  }
+  if (!current() || !box) return true;
+  const N = d.nodes, col = (c: string) => (d.columns[c] ?? []).map((id: string) => N[id]).filter(Boolean);
+  const k = (d.similar ?? []).length;
+  const refs = [...col("refs"), ...col("refs_out")];
+  const conv = col("similar");
+  const next = [...col("candidates").sort((a: any, b: any) => Number(b.answer) - Number(a.answer)), ...col("candidates_out")];
+  // on the map
+  const spots: Spot[] = [];
+  const add = (n: any, kind: Spot["kind"]) => { if (n.x != null) spots.push({ id: n.id, x: n.x, y: n.y, kind, readable: n.readable,
+    strong: Boolean(n.answer), title: plain(n.title), meta: [n.year, n.cited_by ? `cited ${Number(n.cited_by).toLocaleString()} times` : ""].filter(Boolean).join(" · ") }); };
+  refs.forEach((n: any) => add(n, "ref")); conv.forEach((n: any) => add(n, "similar")); next.forEach((n: any) => add(n, "next"));
+  const f = N[d.focus], lines: Line[] = [];
+  for (const l of d.links ?? []) {
+    const s = N[l.s], e = N[l.t];
+    if (!s || !e || s.x == null || e.x == null) continue;
+    if (l.kind === "x-ref" || (l.kind === "y-cand" && e.answer)) lines.push({ x1: s.x, y1: s.y, x2: e.x, y2: e.y, kind: l.kind });
+  }
+  setWalk(spots, lines);
+  if (f?.x != null) setHere({ x: f.x, y: f.y });
+
+  const group = (title: string, cls: string, why: string, list: any[], note: (n: any) => string) => {
+    if (!list.length) return null;
+    const g = document.createElement("div");
+    g.className = "walk-group";
+    g.innerHTML = `<h3><span class="lg ${cls}"></span>${esc(title)}</h3><p class="why">${esc(why)}</p>`;
+    const items = document.createElement("div");
+    g.appendChild(items);
+    const draw = (n: number) => {
+      items.replaceChildren();
+      for (const node of list.slice(0, n)) {
+        const a = row(asHit(node));
+        a.href = `?work=${encodeURIComponent(node.id)}`;
+        const meta = a.querySelector(".hit-meta")!;
+        meta.insertAdjacentHTML("afterbegin", esc(note(node)) + " ");
+        if (node.answer) meta.insertAdjacentHTML("beforeend", ` <span class="badge-best">most relied on</span>`);
+        if (node.outlier) meta.insertAdjacentHTML("beforeend", ` <span class="badge-classic" title="${esc(node.outlier)}">widely cited classic</span>`);
+        items.appendChild(a);
+      }
+      if (list.length > n) {
+        const more = document.createElement("button");
+        more.type = "button"; more.className = "more"; more.textContent = `Show all ${list.length}`;
+        more.onclick = () => draw(list.length);
+        items.appendChild(more);
+      }
+    };
+    draw(5);
+    return g;
+  };
+  const of = (n: number | undefined) => n ? `cited by ${n} of the ${k} ·` : "";
+  box.innerHTML = `<h2>Its citation walk</h2>
+    <p class="walk-intro">${k} studies cite much of the same work as this one: its conversation. Here is what they build on,
+      and what they lead to. Open any of them to keep walking.</p>
+    <div class="walk-actions"><button type="button" id="walk-map">See the walk on the map</button></div>`;
+  ($("#walk-map") as HTMLButtonElement).onclick = () => go(`?map&work=${encodeURIComponent(ref)}`);
+  const parts = [
+    group("Builds on", "k-ref", "The work this study cites that its conversation also cites, most shared first.", refs,
+      (n) => of(n.ref_support).replace(/ · $/, "")),
+    group("Same conversation", "k-similar", "Studies citing the same work as this one, most overlap first.", conv,
+      (n) => n.shared ? `shares ${n.shared} references ·` : ""),
+    group("Read next", "k-next", "What the conversation relies on that this study doesn't cite.", next,
+      (n) => of(n.support).replace(/ · $/, "")),
+  ];
+  for (const p of parts) if (p) box.appendChild(p);
+  if (f?.subfield) fieldTrend(box, f.subfield, f.year);
+  return true;
+}
+
+let countsP: Promise<any> | null = null;
+async function fieldTrend(box: HTMLElement, sub: string, year?: number) {
+  countsP ??= fetch(`${API}/api/data/map/counts`).then((r) => r.json()).catch(() => { countsP = null; return null; });
+  const c = await countsP;
+  const i = c?.subfields?.indexOf(sub) ?? -1;
+  if (i < 0) return;
+  const from = c.years.indexOf(1950), years: number[] = c.years.slice(from), vals: number[] = c.counts.slice(from).map((r: number[]) => r[i]);
+  const last = c.years.length - 2;   // the current year is partial
+  const total = c.counts.reduce((s: number, r: number[]) => s + r[i], 0);
+  const max = Math.max(...vals.slice(0, -1), 1);
+  const pts = vals.slice(0, -1).map((v, j) => `${(j / (vals.length - 2)) * 100},${30 - (v / max) * 30}`).join(" ");
+  const yi = year ? years.indexOf(year) : -1;
+  const el = document.createElement("div");
+  el.className = "field-trend";
+  el.innerHTML = `<svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}"/>` +
+    (yi >= 0 && yi < vals.length - 1 ? `<circle cx="${(yi / (vals.length - 2)) * 100}" cy="${30 - (vals[yi] / max) * 30}" r="2.2"/>` : "") +
+    `</svg><span>${esc(sub)}: about ${Math.round(total / 1000).toLocaleString()} thousand studies, ` +
+    `${c.counts[last][i].toLocaleString()} in ${c.years[last]}. Since 1950 · ● this study's year.</span>`;
+  box.querySelector(".walk-intro")?.after(el);
+}
+
 // ---------------------------------------------------------------- the map, whole
-function openExplore() {
+function openExplore(work?: string | null) {
   show("explore");
-  focus(currentQuestion() ?? currentHere());
+  if (work && document.querySelector("#walk") === null) {
+    // a shared link to a walk on the map: fetch it, then centre on the study
+    fetchWalk(work).then((d) => { showWalkOnMapOnly(d); focus(focusPoint()); }).catch(() => focus(focusPoint()));
+    return;
+  }
+  focus(focusPoint());
+}
+function showWalkOnMapOnly(d: any) {
+  const host = document.createElement("section");
+  host.id = "walk";
+  host.hidden = true;
+  document.body.appendChild(host);
+  return showWalk(d.focus, () => true).finally(() => host.remove());
 }
 
 async function openPaper(id: string) {
@@ -267,13 +414,17 @@ async function openPaper(id: string) {
   document.title = `${paper.title} · made readable`;
   track("open", { doi: paper.doi });
   setHere(null);
+  setWalk([], []);
   place([paper.doi]).then((pos) => { if (paper && pos[paper.doi]) setHere(pos[paper.doi]); });
   $("#thanks").hidden = true;
   reader = new Reader($("#paper"), paper);
   reader.set({}, []);
   $("#credit").innerHTML = `Original: <a href="${esc(paper.url)}" target="_blank" rel="noopener">${esc(paper.title)}</a>, ` +
     `${esc(paper.authors)} (${esc(paper.journal)}, ${esc(paper.year)}), CC BY. The rewrite is an adaptation: the language was ` +
-    `simplified by a language model and not checked by a person, so it may contain mistakes.`;
+    `simplified by a language model and not checked by a person, so it may contain mistakes.` +
+    `<p class="walk-link"><a href="?work=${encodeURIComponent(paper.doi)}" id="to-walk">Its citation walk: what it builds on, ` +
+    `and what to read next →</a></p>`;
+  ($("#to-walk") as HTMLAnchorElement).onclick = (e) => { e.preventDefault(); go(`?work=${encodeURIComponent(paper!.doi)}`); };
   saved = await savedRewrites(paper.doi);
   for (const m of MODELS) {
     const mine = localStorage.getItem(`rewrite:${paper.doi}:${m.id}`);
@@ -502,7 +653,10 @@ function route() {
   clearInterval(nowTimer);
   if (q.has("support")) setTimeout(() => openSupport("link"), 300);
   if (q.has("library")) return openLibrary();
-  if (q.has("map")) return openExplore();
+  if (q.has("map")) {
+    if (q.get("work") || q.get("paper")) useContext("walk"); else if (q.get("q")) useContext("results");
+    return openExplore(q.get("work"));
+  }
   if (q.get("work")) return openWork(q.get("work")!);
   if (q.get("paper")) return openPaper(q.get("paper")!);
   if (q.get("q")) {
@@ -556,7 +710,9 @@ if (matchMedia("(max-width: 560px)").matches)
   for (const i of document.querySelectorAll<HTMLInputElement>("form.search input")) i.placeholder = "Curious about…?";
 $("#readable-only").onclick = () => { opts.readable = !opts.readable; drawOpts(); rerun(); };
 initMap({
-  explore: () => go(`?map${location.search.includes("q=") ? "&" + location.search.slice(1).replace(/(^|&)map(&|$)/, "$1") : ""}`),
+  api: API,
+  // keep what was on screen in the address (?q=, ?work=, ?paper=), so Back and a shared link return to it
+  explore: () => go(`?map${location.search.length > 1 ? "&" + location.search.slice(1) : ""}`),
   open: (s) => { const h = lastHits.find((x) => key(x) === s.id); go(h ? href(h) : `?work=${encodeURIComponent(s.id)}`); },
 });
 $("#brand").onclick = (e) => { e.preventDefault(); go(""); };

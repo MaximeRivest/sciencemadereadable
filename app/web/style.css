@@ -448,3 +448,66 @@ body[data-view="explore"] .dot::after { content: ""; position: absolute; inset: 
   #explore-ui p { background: color-mix(in srgb, var(--card) 85%, transparent); border: 1px solid var(--line);
                   border-radius: 12px; padding: 8px 12px; backdrop-filter: blur(6px); text-shadow: none; }
 }
+
+/* ---------------------------------------------------------------- every study as dots, walks, picking */
+#tiles { position: absolute; inset: 0; pointer-events: none; }
+#tiles canvas.tile { position: absolute; image-rendering: auto; }
+#world.deep .map-img { opacity: .55 !important; }
+#world.deeper .map-img { opacity: 0 !important; }
+#world.deep #labels { display: none; }
+/* the dots keep their size on screen whatever the zoom */
+#dots > * { scale: calc(1 / var(--z, 1)); }
+#links { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+#links line { stroke-width: var(--sw, .002); opacity: .6; }
+#links .ln-x-ref { stroke: #6a8fd8; }
+#links .ln-y-cand { stroke: var(--accent); stroke-dasharray: var(--dash, .004 .005); opacity: .5; }
+.dot.k-ref { background: #6a8fd8; box-shadow: 0 0 0 2px rgba(255,255,255,.7), 0 0 10px 3px rgba(106,143,216,.5); }
+.dot.k-similar { background: var(--gold); }
+.dot.k-next { background: var(--accent); box-shadow: 0 0 0 2px rgba(255,255,255,.7), 0 0 10px 3px color-mix(in srgb, var(--accent) 55%, transparent); }
+.dot.strong { width: 12px; height: 12px; margin: -6px 0 0 -6px; }
+.dot.here { background: #fff; box-shadow: 0 0 0 3px var(--ink), 0 0 16px 6px var(--gold-glow); z-index: 4; }
+body[data-view="work"] .dot:not(.here) { opacity: .75; }
+.picked { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%;
+          border: 2px solid var(--ink); box-shadow: 0 0 0 2px var(--paper); z-index: 5; pointer-events: none; }
+#pick { position: fixed; z-index: 31; left: 50%; transform: translateX(-50%); top: 72px; width: min(520px, calc(100vw - 24px));
+        background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px;
+        box-shadow: 0 10px 40px rgba(0,0,0,.25); font-size: 14.5px; }
+#pick .pick-body b { display: block; font: 500 16.5px/1.35 var(--serif); margin-bottom: 3px; }
+#pick .ok { color: var(--accent); }
+#pick .pick-actions { display: flex; gap: 8px; margin-top: 10px; }
+#pick button { padding: 6px 16px; font-size: 14px; }
+body:not([data-view="explore"]) #pick { display: none; }
+#ex-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
+#ex-legend .lg { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: -6px; }
+.lg.k-ref { background: #6a8fd8; } .lg.k-similar { background: var(--gold); } .lg.k-next { background: var(--accent); }
+.lg.here { background: #fff; box-shadow: 0 0 0 2px var(--ink); }
+
+/* ---------------------------------------------------------------- the citation walk on a study's page */
+.walk { margin-top: 38px; }
+.walk h2 { font: 500 24px/1.25 var(--serif); margin: 0 0 6px; }
+.walk .walk-intro { color: var(--muted); font-size: 15px; margin: 0 0 14px; }
+.walk .walk-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.walk .walk-actions button { font-size: 14px; padding: 6px 14px; }
+.walk-group { margin-top: 26px; }
+.walk-group h3 { font: 600 13px/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; margin: 0 0 4px;
+                 display: flex; align-items: center; gap: 8px; }
+.walk-group h3 .lg { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.walk-group .why { color: var(--muted); font-size: 14px; margin: 0 0 4px; }
+.walk-group .hit { padding: 11px 0; }
+.walk-group .hit-title { font-size: 16.5px; }
+.walk-group .more { border: 0; background: none; color: var(--accent); padding: 8px 0; font-size: 14px; }
+.badge-classic { font-size: 11.5px; border-radius: 999px; padding: 0 8px; border: 1px dashed var(--line); color: var(--faint); }
+.badge-best { font-size: 11.5px; border-radius: 999px; padding: 0 8px; color: var(--paper); background: var(--accent); }
+.loading-line { color: var(--faint); font-size: 14.5px; animation: breathe 1.6s ease-in-out infinite; }
+.field-trend { margin-top: 18px; display: flex; gap: 14px; align-items: center; color: var(--muted); font-size: 13.5px; }
+.field-trend svg { width: 160px; height: 38px; flex: none; overflow: visible; }
+.field-trend polyline { fill: none; stroke: var(--accent); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.field-trend circle { fill: var(--gold); }
+.walk-link { margin-top: 10px; font-size: 14.5px; }
+#explore-ui p { background: color-mix(in srgb, var(--card) 86%, transparent); border: 1px solid var(--line);
+                border-radius: 12px; padding: 8px 12px; backdrop-filter: blur(6px); text-shadow: none; }
+@media (max-width: 820px) {
+  #pick { top: 140px; }
+  /* once zoomed in, the explanation has done its job: room for the map */
+  body.map-zoomed #explore-ui p:first-child { display: none; }
+}

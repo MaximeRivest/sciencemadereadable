@@ -6,182 +6,234 @@
    "domain": "Life Sciences",
    "x": 0.6705729166666666,
    "y": 0.59765625,
-   "dots": 65870
+   "dots": 65870,
+   "light": "#196b33",
+   "dark": "#49d475"
   },
   {
    "name": "Arts and Humanities",
    "domain": "Social Sciences",
    "x": 0.2721354166666667,
    "y": 0.2903645833333333,
-   "dots": 52892
+   "dots": 52892,
+   "light": "#633f21",
+   "dark": "#c78957"
   },
   {
    "name": "Biochemistry, Genetics and Molecular Biology",
    "domain": "Life Sciences",
    "x": 0.72265625,
    "y": 0.80078125,
-   "dots": 75769
+   "dots": 75769,
+   "light": "#228f4e",
+   "dark": "#6ddd9b"
   },
   {
    "name": "Business, Management and Accounting",
    "domain": "Social Sciences",
    "x": 0.4830729166666667,
    "y": 0.22005208333333334,
-   "dots": 34371
+   "dots": 34371,
+   "light": "#855a2c",
+   "dark": "#d2a778"
   },
   {
    "name": "Chemical Engineering",
    "domain": "Physical Sciences",
    "x": 0.8684895833333334,
    "y": 0.5950520833333334,
-   "dots": 3978
+   "dots": 3978,
+   "light": "#1b4c6a",
+   "dark": "#4b9fd2"
   },
   {
    "name": "Chemistry",
    "domain": "Physical Sciences",
    "x": 0.8841145833333334,
    "y": 0.6888020833333334,
-   "dots": 29338
+   "dots": 29338,
+   "light": "#23608d",
+   "dark": "#6faddb"
   },
   {
    "name": "Computer Science",
    "domain": "Physical Sciences",
    "x": 0.59765625,
    "y": 0.11067708333333333,
-   "dots": 94344
+   "dots": 94344,
+   "light": "#1e4e78",
+   "dark": "#599cd5"
   },
   {
    "name": "Decision Sciences",
    "domain": "Social Sciences",
    "x": 0.51171875,
    "y": 0.17578125,
-   "dots": 13167
+   "dots": 13167,
+   "light": "#705225",
+   "dark": "#cba163"
   },
   {
    "name": "Dentistry",
    "domain": "Health Sciences",
    "x": 0.5299479166666666,
    "y": 0.60546875,
-   "dots": 4925
+   "dots": 4925,
+   "light": "#6e1b17",
+   "dark": "#d94c45"
   },
   {
    "name": "Earth and Planetary Sciences",
    "domain": "Physical Sciences",
    "x": 0.6158854166666666,
    "y": 0.4283854166666667,
-   "dots": 25765
+   "dots": 25765,
+   "light": "#27609b",
+   "dark": "#7cadde"
   },
   {
    "name": "Economics, Econometrics and Finance",
    "domain": "Social Sciences",
    "x": 0.4309895833333333,
    "y": 0.19921875,
-   "dots": 36692
+   "dots": 36692,
+   "light": "#917130",
+   "dark": "#d6bb84"
   },
   {
    "name": "Energy",
    "domain": "Physical Sciences",
    "x": 0.8763020833333334,
    "y": 0.5716145833333334,
-   "dots": 7371
+   "dots": 7371,
+   "light": "#214f85",
+   "dark": "#669ad9"
   },
   {
    "name": "Engineering",
    "domain": "Physical Sciences",
    "x": 0.69140625,
    "y": 0.41015625,
-   "dots": 175694
+   "dots": 175694,
+   "light": "#1c3e6f",
+   "dark": "#5187d3"
   },
   {
    "name": "Environmental Science",
    "domain": "Physical Sciences",
    "x": 0.6184895833333334,
    "y": 0.5299479166666666,
-   "dots": 60618
+   "dots": 60618,
+   "light": "#254e93",
+   "dark": "#749bdc"
   },
   {
    "name": "Health Professions",
    "domain": "Health Sciences",
    "x": 0.38671875,
    "y": 0.5455729166666666,
-   "dots": 24781
+   "dots": 24781,
+   "light": "#932f1e",
+   "dark": "#e07a69"
   },
   {
    "name": "Immunology and Microbiology",
    "domain": "Life Sciences",
    "x": 0.58203125,
    "y": 0.86328125,
-   "dots": 13161
+   "dots": 13161,
+   "light": "#1c794b",
+   "dark": "#57d897"
   },
   {
    "name": "Materials Science",
    "domain": "Physical Sciences",
    "x": 0.8268229166666666,
    "y": 0.5768229166666666,
-   "dots": 38334
+   "dots": 38334,
+   "light": "#1f3e7d",
+   "dark": "#5e86d7"
   },
   {
    "name": "Mathematics",
    "domain": "Physical Sciences",
    "x": 0.8033854166666666,
    "y": 0.16276041666666666,
-   "dots": 20484
+   "dots": 20484,
+   "light": "#284ba0",
+   "dark": "#819de0"
   },
   {
    "name": "Medicine",
    "domain": "Health Sciences",
    "x": 0.4518229166666667,
    "y": 0.7486979166666666,
-   "dots": 219718
+   "dots": 219718,
+   "light": "#7c3019",
+   "dark": "#dc7353"
   },
   {
    "name": "Neuroscience",
    "domain": "Life Sciences",
    "x": 0.47265625,
    "y": 0.4856770833333333,
-   "dots": 20462
+   "dots": 20462,
+   "light": "#259d6c",
+   "dark": "#7be0b7"
   },
   {
    "name": "Nursing",
    "domain": "Health Sciences",
    "x": 0.7174479166666666,
    "y": 0.64453125,
-   "dots": 5989
+   "dots": 5989,
+   "light": "#a14a21",
+   "dark": "#e39a77"
   },
   {
    "name": "Pharmacology, Toxicology and Pharmaceutics",
    "domain": "Life Sciences",
    "x": 0.7825520833333334,
    "y": 0.66015625,
-   "dots": 5273
+   "dots": 5273,
+   "light": "#208766",
+   "dark": "#65dbb5"
   },
   {
    "name": "Physics and Astronomy",
    "domain": "Physical Sciences",
    "x": 0.8997395833333334,
    "y": 0.2591145833333333,
-   "dots": 65723
+   "dots": 65723,
+   "light": "#233c8a",
+   "dark": "#6c87da"
   },
   {
    "name": "Psychology",
    "domain": "Social Sciences",
    "x": 0.41015625,
    "y": 0.46484375,
-   "dots": 35048
+   "dots": 35048,
+   "light": "#7d672a",
+   "dark": "#cfb770"
   },
   {
    "name": "Social Sciences",
    "domain": "Social Sciences",
    "x": 0.3528645833333333,
    "y": 0.24869791666666666,
-   "dots": 141713
+   "dots": 141713,
+   "light": "#685c23",
+   "dark": "#c9b55c"
   },
   {
    "name": "Veterinary",
    "domain": "Health Sciences",
    "x": 0.59765625,
    "y": 0.6575520833333334,
-   "dots": 2023
+   "dots": 2023,
+   "light": "#8a4a1c",
+   "dark": "#df9561"
   }
  ]
 }
