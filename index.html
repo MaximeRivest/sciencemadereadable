@@ -6,69 +6,54 @@
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Science, made readable</title>
-<meta name="description" content="Real research papers, rewritten in plain words by small open AI models we trained.">
-<link rel="stylesheet" href="style.css?v=3ef165dd97">
-<script src="config.js?v=9f33887f77"></script>
+<meta name="description" content="Search all of science, see where it sits on the map of research, and read open papers rewritten in plain words.">
+<link rel="stylesheet" href="style.css?v=7e6111dc0a">
+<script src="theme.js?v=daa32516ad"></script>
+<script src="config.js?v=6e53bdb24f"></script>
 </head>
 <body data-view="home">
 
 <nav class="top">
   <a id="brand" href="./">made readable</a>
-  <form class="search mini" role="search"><input id="search-results" type="search" placeholder="Search open papers" aria-label="Search open papers"></form>
+  <form class="search mini" role="search"><input id="search-results" type="search" placeholder="Search all of science" aria-label="Search all of science"></form>
   <span class="nav-right">
     <span id="gpu" class="gpu">GPU</span>
     <a href="?library" id="open-library">Library</a>
     <a href="#" id="open-support" class="support-link">♥ Support</a>
     <a href="#" id="open-settings">Settings</a>
     <a href="#" id="open-about">About</a>
+    <button id="theme" type="button" aria-label="Switch between light and dark" title="Light or dark">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+    </button>
   </span>
 </nav>
 
 <main id="home" class="view">
   <h1 class="hero">Science, made readable.</h1>
-  <p class="hero-sub">Real research papers, rewritten in plain words: every finding kept, nothing dumbed down.</p>
   <form class="search big" role="search">
-    <input type="search" placeholder="What are you curious about? Bees, coral reefs, microplastics…" aria-label="Search" autofocus>
+    <input type="search" placeholder="What are you curious about?" aria-label="Search all of science" autofocus>
     <button>Search</button>
   </form>
-  <div class="search-opts">
-    <span class="seg" role="radiogroup" aria-label="Search by">
-      <button type="button" role="radio" data-by="meaning" title="Finds papers about what you mean, even with other words">By meaning</button>
-      <button type="button" role="radio" data-by="words" title="Finds papers containing your words; supports quotes, AND, OR, NOT">Exact words</button>
-    </span>
-    <select class="since" aria-label="Published">
-      <option value="">Any year</option><option value="2024">Since 2024</option>
-      <option value="2020">Since 2020</option><option value="2015">Since 2015</option>
-    </select>
-    <button type="button" class="tips-toggle" aria-expanded="false">How to search</button>
-  </div>
-  <div class="search-tips" hidden>
-    <p class="tips-head">Ask in your own words <span class="quiet">· finds papers by meaning</span></p>
-    <p><button type="button" class="tip" data-by="meaning" data-q="Why do we need sleep?">Why do we need sleep?</button>
-       <button type="button" class="tip" data-by="meaning" data-q="Can exercise help with depression?">Can exercise help with depression?</button></p>
-    <p class="tips-head">Or look for exact words <span class="quiet">· click to try</span></p>
-    <ul>
-      <li><button type="button" class="tip" data-by="words" data-q='"gut microbiome" autism'><code>"gut microbiome" autism</code></button> a phrase in quotes, and another word</li>
-      <li><button type="button" class="tip" data-by="words" data-q="sleep AND (teens OR adolescents) NOT caffeine"><code>sleep AND (teens OR adolescents) NOT caffeine</code></button> combine, exclude</li>
-      <li><button type="button" class="tip" data-by="words" data-q="microplastic*"><code>microplastic*</code></button> any ending: microplastic, microplastics…</li>
-      <li><button type="button" class="tip" data-by="words" data-q="title:coral bleaching"><code>title:coral bleaching</code></button> "coral" in the title, "bleaching" anywhere</li>
-    </ul>
-    <p class="quiet">Have a DOI or a PubMed Central ID (PMC…)? Paste it to open that paper.</p>
-  </div>
-  <section id="now-wrap" hidden>
-    <h3 class="now-head"><span class="live-dot"></span>Being made readable right now</h3>
-    <div id="now"></div>
-  </section>
-  <div id="examples-wrap" hidden>
-    <p class="quiet small">Or start with one of these</p>
-    <div id="examples"></div>
-  </div>
-  <section id="recent-wrap" hidden>
-    <h3 class="now-head">Just made readable</h3>
-    <div id="recent"></div>
-    <a href="?library" id="library-link" class="more">Browse all papers →</a>
-  </section>
 </main>
+
+<div id="map" role="button" tabindex="0" aria-label="The map of science: open it">
+  <div id="world">
+    <div id="globe">
+      <img class="map-img light" src="map/science-map-light-small.webp" alt="">
+      <img class="map-img dark" src="map/science-map-dark-small.webp" alt="">
+      <div id="labels"></div>
+      <div id="dots"></div>
+    </div>
+  </div>
+  <div id="map-tag">where these studies sit in science · open the map</div>
+</div>
+<div id="map-tip" hidden></div>
+<div id="explore-ui">
+  <p>The map of science: 128 million studies, 1800 to today. Studies about similar things sit close together;
+     colours are fields. Scroll or pinch to zoom, drag to move.</p>
+  <button type="button" id="ex-reset">Whole map</button><button type="button" id="ex-back">Back</button>
+</div>
 
 <main id="library-view" class="view">
   <h1 class="lib-title">The library</h1>
@@ -87,6 +72,8 @@
       <option value="">Any year</option><option value="2024">Since 2024</option>
       <option value="2020">Since 2020</option><option value="2015">Since 2015</option>
     </select>
+    <button type="button" class="chip" id="readable-only" aria-pressed="false"
+            title="Only studies we can rewrite in plain words">Readable only</button>
     <button type="button" class="tips-toggle" aria-expanded="false">How to search</button>
   </div>
   <div class="search-tips" hidden>
@@ -103,6 +90,10 @@
     <p class="quiet">Have a DOI or a PubMed Central ID (PMC…)? Paste it to open that paper.</p>
   </div>
   <div id="results"></div>
+</main>
+
+<main id="work-view" class="view">
+  <div id="work"></div>
 </main>
 
 <main id="reader-view" class="view">
@@ -197,8 +188,12 @@
     <p><b>How good is it?</b> On our test papers, a judge model scored our 9B 7.8 out of 10, a little above GPT-6 Luna (7.5),
       below Claude Opus (8.5); it costs about half a cent per paper. It still makes mistakes more often than the big
       models, so check the original before relying on a detail. With your own API key you can compare with six commercial models.</p>
-    <p><b>Which papers?</b> Open-access research articles in PubMed Central under the CC BY licence, which allows
-      republishing an adapted version with credit. Figures and tables are always the original ones.</p>
+    <p><b>What can I search?</b> About 200 million studies: every English title and abstract in OpenAlex, the open
+      catalogue of the world's research. Search by meaning (we read your question like the studies) or by exact words.
+      Each study sits on the map of science, near the studies most like it.</p>
+    <p><b>Which can be made readable?</b> Open-access research articles in PubMed Central under the CC BY licence,
+      which allows republishing an adapted version with credit (about 5 million). Figures and tables are always the
+      original ones. For the others we show what is known and link to the original.</p>
     <p class="quiet small">A demo, not a product. We count visits on our own server, without cookies: each visitor is an anonymous
       code that changes every day, and what you search for is never stored. If your browser asks not to be tracked, nothing is
       counted. Rewrites made by our models are kept so the next reader gets them instantly.</p>
@@ -206,6 +201,6 @@
   </form>
 </dialog>
 
-<script type="module" src="app.js?v=41b21b9a50"></script>
+<script type="module" src="app.js?v=c8e0b95f92"></script>
 </body>
 </html>

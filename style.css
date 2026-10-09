@@ -4,10 +4,11 @@
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
-@media (prefers-color-scheme: dark) {
-  :root { --paper: #161513; --ink: #ece8df; --muted: #a39d92; --faint: #77726a; --line: #2e2c28;
-          --accent: #6cc39a; --accent-soft: #1f2d26; --card: #1d1c19; }
-}
+:root { --gold: #f2a33a; --gold-glow: rgba(242, 163, 58, .55); --explore: #f2eee5; --ease: cubic-bezier(.3, .7, .2, 1); }
+/* light or dark: theme.js sets data-theme before the first paint (the device's, or the reader's choice) */
+:root[data-theme="dark"] { --paper: #161513; --ink: #ece8df; --muted: #a39d92; --faint: #77726a; --line: #2e2c28;
+  --accent: #6cc39a; --accent-soft: #1f2d26; --card: #1d1c19; --explore: #10100f; color-scheme: dark; }
+html, body, nav.top, input[type=search], .search-tips, dialog { transition: background-color .5s, color .5s, border-color .5s; }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { background: var(--paper); }
@@ -20,7 +21,7 @@ a { color: var(--accent); }
 /* views */
 .view { display: none; width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 24px; flex: 1; }
 body[data-view="home"] #home, body[data-view="results"] #results-view, body[data-view="reader"] #reader-view,
-body[data-view="library"] #library-view { display: block; }
+body[data-view="library"] #library-view, body[data-view="work"] #work-view { display: block; }
 body[data-view="home"] nav.top .search, body[data-view="home"] nav.top #brand { visibility: hidden; }
 
 /* top bar */
@@ -47,9 +48,11 @@ button { font: inherit; cursor: pointer; border-radius: 999px; border: 1px solid
 button.primary, #go, form.search.big button { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
 select { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; }
 
-/* home */
-#home { text-align: center; padding-top: 12vh; max-width: 760px; }
-.hero { font: 500 clamp(40px, 7vw, 68px)/1.05 var(--serif); margin: 0 0 18px; letter-spacing: -.01em; }
+/* home: the title and the search in the middle, the map rising below */
+#home { position: relative; z-index: 5; text-align: center; padding-top: calc(50vh - 170px); max-width: 760px; }
+body[data-view="home"] { overflow: hidden; }
+body[data-view="home"] footer, body[data-view="explore"] footer, body[data-view="home"] #sotd-bar { display: none; }
+.hero { font: 500 clamp(40px, 7vw, 66px)/1.05 var(--serif); margin: 0 0 34px; letter-spacing: -.01em; }
 .hero-sub { font: 20px/1.5 var(--serif); color: var(--muted); margin: 0 auto 36px; max-width: 560px; }
 form.search.big { display: flex; gap: 10px; }
 form.search.big input { box-shadow: 0 10px 40px rgba(60, 50, 30, .08); }
@@ -64,7 +67,8 @@ form.search.big input { font-size: 18px; padding: 16px 24px; }
 .ex-orig { display: block; font-size: 13px; color: var(--faint); margin-top: 6px; }
 
 /* results */
-#results-view { max-width: 780px; padding-top: 24px; }
+#results-view { max-width: 1100px; padding-top: 24px; position: relative; z-index: 4; }
+#results-view > * { max-width: 680px; }
 .hit { display: block; text-decoration: none; padding: 16px 0; border-bottom: 1px solid var(--line); }
 .hit-title { display: block; font: 19px/1.35 var(--serif); color: var(--ink); }
 .hit:hover .hit-title { color: var(--accent); }
@@ -141,7 +145,6 @@ dialog menu { display: flex; justify-content: flex-end; gap: 10px; padding: 0; m
   .row .o { display: none; }
   .paper-head, .credit { margin-left: 0; }
   .side { display: none; }
-  form.search.mini { display: none; }
   .nav-right .gpu { display: none; }
 }
 
@@ -295,3 +298,124 @@ body.solo .thanks { margin-left: auto; margin-right: auto; }
 .tip code { font: 13px ui-monospace, "SF Mono", Menlo, monospace; }
 .search-how { font-size: 13.5px; margin: 4px 0 4px; }
 .search-how a { cursor: pointer; }
+
+/* ---------------------------------------------------------------- theme button */
+#theme { border: 1px solid var(--line); background: var(--card); color: var(--muted); border-radius: 999px;
+         width: 34px; height: 34px; padding: 0; display: grid; place-items: center; }
+#theme:hover { color: var(--ink); border-color: var(--accent); }
+#theme svg { width: 17px; height: 17px; }
+:root[data-theme="dark"] #theme .sun, :root:not([data-theme="dark"]) #theme .moon { display: none; }
+nav.top { position: relative; z-index: 10; }
+
+/* ---------------------------------------------------------------- the map of science: one element, placed by the view */
+#map { position: fixed; z-index: 1; border-radius: 50%; cursor: pointer; outline: none;
+       transition: top .8s var(--ease), left .8s var(--ease), width .8s var(--ease), height .8s var(--ease); }
+#map:focus-visible { box-shadow: 0 0 0 4px var(--accent-soft); }
+#world { position: absolute; inset: 0; transform-origin: 0 0; }
+#globe { position: absolute; inset: 0; transition: transform 1.4s var(--ease); }
+/* light mode turns the globe 45° counterclockwise: its blue / violet / green side faces up (the gold sat
+   badly on cream); upright in the explorer so the names read */
+:root:not([data-theme="dark"]) body:not([data-view="explore"]) #globe { transform: rotate(-45deg); }
+.map-img { position: absolute; inset: 0; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none;
+           transition: filter .8s, opacity .8s; }
+:root:not([data-theme="dark"]) .map-img.dark, :root[data-theme="dark"] .map-img.light { opacity: 0 !important; }
+#map::before { content: ""; position: absolute; inset: -6%; border-radius: 50%; pointer-events: none; transition: opacity .8s;
+  background: radial-gradient(circle closest-side, transparent 78%, color-mix(in srgb, var(--accent) 18%, transparent) 84%, transparent 93%); }
+:root:not([data-theme="dark"]) #world::before { content: ""; position: absolute; inset: 2%; border-radius: 50%;
+  background: radial-gradient(circle closest-side, #e9ece6 0%, #eef0ea 70%, transparent 100%); }
+
+/* home: a planet rising from the bottom edge */
+body[data-view="home"] #map { --s: max(1250px, 125vw); width: var(--s); height: var(--s);
+  left: calc(50vw - var(--s) / 2); top: max(64vh, 540px); }
+@media (max-width: 700px) { body[data-view="home"] #map { --s: 190vw; top: 74vh; } }
+/* results: a quiet globe beside the list; the results glow on it */
+body[data-view="results"] #map { --s: min(400px, 34vw); width: var(--s); height: var(--s);
+  left: min(calc(50vw + 250px), calc(100vw - var(--s) - 32px)); top: 120px; }
+body[data-view="results"] .map-img, body[data-view="work"] .map-img, body[data-view="reader"] .map-img,
+body[data-view="library"] .map-img { filter: grayscale(1) contrast(1.1); opacity: .42; }
+/* a study: a small "you are here"; the reader and the library: a small round map button */
+body[data-view="work"] #map { --s: 170px; width: var(--s); height: var(--s); left: calc(100vw - 200px); top: calc(100vh - 200px); }
+body[data-view="reader"] #map, body[data-view="library"] #map { --s: 56px; width: var(--s); height: var(--s);
+  left: calc(100vw - 76px); top: calc(100vh - 76px); }
+@media (max-width: 1100px) {
+  body[data-view="results"] #map, body[data-view="work"] #map { --s: 56px; left: calc(100vw - 76px); top: calc(100vh - 76px); } }
+/* explore: the whole map */
+body[data-view="explore"] { background: var(--explore); overflow: hidden; }
+body[data-view="explore"] #map { --s: min(96vh, 96vw); width: var(--s); height: var(--s); border-radius: 0; cursor: grab;
+  left: calc(50vw - var(--s) / 2); top: calc(50vh - var(--s) / 2 + 20px); }
+body[data-view="explore"] #map::before { opacity: 0; }
+#map.dragging { cursor: grabbing; }
+#map-tag { position: absolute; left: 50%; bottom: -30px; transform: translateX(-50%); font-size: 12.5px; color: var(--faint);
+           white-space: nowrap; pointer-events: none; }
+body:not([data-view="results"]) #map-tag { display: none; }
+@media (max-width: 1100px) { #map-tag { display: none; } }
+
+.dot { position: absolute; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: var(--gold);
+       box-shadow: 0 0 0 2px rgba(255, 255, 255, .7), 0 0 14px 4px var(--gold-glow); transition: transform .2s; z-index: 2; }
+.dot.hot { transform: scale(1.9); z-index: 3; }
+.dot.readable { background: #ffd36b; }
+.dot.here { width: 12px; height: 12px; margin: -6px 0 0 -6px; transform: scale(1.4); }
+body[data-view="work"] .dot:not(.here) { opacity: .3; box-shadow: none; }
+.qmark { position: absolute; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%; z-index: 2; box-sizing: border-box;
+         border: 2px dashed var(--gold); animation: spin 12s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#labels span { position: absolute; transform: translate(-50%, -50%); font: 600 calc(12px / var(--z, 1)) var(--sans);
+               color: var(--ink); opacity: .8; text-shadow: 0 0 4px var(--explore), 0 0 10px var(--explore), 0 0 2px var(--explore);
+               white-space: nowrap; pointer-events: none; letter-spacing: .02em; }
+body:not([data-view="explore"]) #labels { display: none; }
+#world:not(.zoomed) #labels .small { display: none; }
+#map-tip { position: fixed; z-index: 30; pointer-events: none; max-width: 340px; background: var(--card); color: var(--ink);
+           border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: 13.5px; box-shadow: 0 8px 30px rgba(0,0,0,.25); }
+#map-tip span { color: var(--muted); }
+#map-tip .ok { color: var(--accent); }
+#explore-ui { position: fixed; z-index: 6; left: 24px; bottom: 22px; color: var(--muted); font-size: 13px; max-width: 430px;
+              text-shadow: 0 0 6px var(--explore); }
+#explore-ui p { margin: 0 0 8px; }
+#explore-ui button { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px;
+                     padding: 4px 12px; font-size: 13px; margin-right: 6px; }
+body:not([data-view="explore"]) #explore-ui { display: none; }
+
+/* ---------------------------------------------------------------- results */
+.hit-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.badge-ok, .badge-orig { font-size: 11.5px; border-radius: 999px; padding: 0 8px; border: 1px solid var(--line); color: var(--muted); }
+.badge-ok { color: var(--accent); border-color: currentColor; background: var(--accent-soft); }
+.pin { color: var(--gold); font-size: 11px; }
+.chip { border: 1px solid var(--line); background: var(--card); color: var(--muted); border-radius: 999px; padding: 3px 11px; font-size: 13.5px; }
+.chip[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+
+/* ---------------------------------------------------------------- a study (any study, readable or not) */
+#work-view { max-width: 760px; padding-top: 30px; padding-bottom: 220px; position: relative; z-index: 4; }
+.back { border: 0; background: none; color: var(--muted); padding: 0; font-size: 14px; }
+.back:hover { color: var(--ink); }
+#work h1 { font: 500 clamp(26px, 3.4vw, 34px)/1.25 var(--serif); margin: 14px 0 10px; }
+.w-by { color: var(--muted); font-size: 14.5px; }
+.w-where { color: var(--faint); font-size: 14px; margin-top: 2px; }
+.w-cta { margin-top: 24px; padding: 16px 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); font-size: 15px; }
+.w-cta .btn { display: inline-block; margin: 10px 10px 0 0; border-radius: 999px; padding: 9px 18px; font-weight: 600;
+              text-decoration: none; background: var(--accent); color: #fff; border: 0; }
+.w-cta .btn.ghost { background: none; color: var(--accent); border: 1px solid var(--line); font-weight: 500; }
+.w-abs { font: 18px/1.65 var(--serif); margin-top: 24px; }
+.w-abs-head { font: 600 13px/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); margin-top: 30px; }
+.w-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; margin-top: 18px; }
+.w-related { margin-top: 36px; }
+.w-related .hit-title { font-size: 17px; }
+.you-are-here { position: fixed; z-index: 3; right: 30px; bottom: 208px; width: 170px; font-size: 12px; line-height: 1.4;
+                color: var(--faint); text-align: center; }
+body:not([data-view="work"]) .you-are-here { display: none; }
+@media (max-width: 1100px) { .you-are-here { display: none !important; } }
+
+@media (prefers-reduced-motion: reduce) { #map, .map-img, #globe { transition: none !important; } .qmark { animation: none; } }
+/* beside text the map is a control: above the (wide, transparent) content boxes, so it can be clicked */
+body[data-view="results"] #map, body[data-view="work"] #map, body[data-view="reader"] #map, body[data-view="library"] #map { z-index: 6; }
+/* small screens: the search gets its own row under the brand and links */
+@media (max-width: 820px) {
+  nav.top { flex-wrap: wrap; row-gap: 10px; }
+  form.search.mini { order: 3; flex-basis: 100%; max-width: none; }
+  body[data-view="home"] form.search.mini { display: none; }
+}
+@media (max-width: 560px) {
+  .nav-right { gap: 12px; }
+  #gpu, #open-settings { display: none; }
+  .support-link { white-space: nowrap; }
+  .search-opts { gap: 8px; }
+}
