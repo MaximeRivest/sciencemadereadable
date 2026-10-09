@@ -514,9 +514,14 @@ body:not([data-view="explore"]) #pick { display: none; }
 
 /* ---------------------------------------------------------------- the explorer's engine (mapgl.ts): canvas + names */
 #gl, #glabels { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; display: none; pointer-events: none; }
-#glabels { overflow: hidden; }
+#glabels { overflow: hidden; z-index: 1; }   /* above the rendered image while it shows */
 body.gl #gl, body.gl #glabels { display: block; }
-body.gl .map-img, body.gl #labels, body.gl #tiles { display: none; }
+/* until the live map is final (atlas.ts "gl-ready"), the rendered image shows and the canvas waits, invisible */
+body.gl #gl { opacity: 0; transition: opacity .6s ease; }
+body.gl.gl-ready #gl { opacity: 1; }
+body.gl.gl-ready .map-img { opacity: 0 !important; transition: opacity .6s ease .45s; }
+body.gl #tiles, body.gl.gl-names #labels { display: none; }
+body.gl:not(.gl-names) #glabels { display: none; }
 body.gl #map::before, body.gl #world::before { opacity: 0; }
 .gl-label { position: absolute; left: 0; top: 0; white-space: nowrap; pointer-events: auto; cursor: pointer;
   font: 600 13px/1.2 var(--sans); color: var(--ink); will-change: transform, opacity; transition: color .2s;

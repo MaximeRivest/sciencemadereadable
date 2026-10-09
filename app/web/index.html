@@ -8,6 +8,9 @@
 <title>Science, made readable</title>
 <meta name="description" content="Search all of science, see where it sits on the map of research, and read open papers rewritten in plain words.">
 <link rel="stylesheet" href="style.css">
+<!-- the sharp map image first: the page shows it while the live map loads (atlas.ts); the theme's own only -->
+<link rel="preload" as="image" href="map/science-map-dark.webp" media="(prefers-color-scheme: dark)" fetchpriority="high">
+<link rel="preload" as="image" href="map/science-map-light.webp" media="(prefers-color-scheme: light)" fetchpriority="high">
 <script src="theme.js"></script>
 <script src="config.js"></script>
 </head>

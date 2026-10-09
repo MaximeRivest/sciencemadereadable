@@ -105,7 +105,7 @@ void main() {
   v_ps = ceil(rr * 2.0 + 2.0);
   gl_PointSize = v_ps;
   v_r = rr;
-  v_w = (0.55 + 0.2 * c) * min(1.0, r / 0.75);           // tiny stars: dimmer, not smaller than a pixel
+  v_w = (0.55 + 0.2 * c) * (r * r) / (rr * rr);          // tiny stars: not smaller than a pixel, same total light
   v_col = texelFetch(u_pal, ivec2(int(a_sub), 0), 0).rgb;
   gl_Position = vec4(px / u_view * 2.0 - 1.0, 0.0, 1.0); gl_Position.y = -gl_Position.y;
 }`;
@@ -212,6 +212,8 @@ export class MapGL {
   hdr: boolean;
   scale: number;
   targets: Record<string, Target> = {};
+  /** The last frame was final: every visible tile loaded and faded in, exposure settled. */
+  complete = false;
   targetKey = "";
 
   constructor(public canvas: HTMLCanvasElement) {
@@ -238,8 +240,19 @@ export class MapGL {
     const r = await fetch(`${base}/map.json`);
     if (!r.ok) throw new Error("no map data");
     this.meta = await r.json();
-    for (const [z, list] of Object.entries(this.meta.density.tiles)) for (const [x, y] of list as number[][]) this.dHave.add(`${z}/${x}/${y}`);
-    for (const [k, n] of Object.entries(this.meta.points.tiles)) this.pHave.set(k, n as number);
+    // which tiles exist: one bit per tile and level (mapdata.py compact()); older map.json: lists
+    const bits = (z: number, b64: string, add: (k: string) => void) => {
+      const raw = atob(b64), side = 1 << z;
+      for (let i = 0; i < raw.length; i++) {
+        const v = raw.charCodeAt(i);
+        if (v) for (let j = 0; j < 8; j++) if (v & (1 << j)) { const t = i * 8 + j; add(`${z}/${t % side}/${Math.floor(t / side)}`); }
+      }
+    };
+    const d = this.meta.density, q = this.meta.points;
+    if (d.mask) for (const [z, m] of Object.entries(d.mask)) bits(+z, m as string, (k) => this.dHave.add(k));
+    else for (const [z, list] of Object.entries(d.tiles)) for (const [x, y] of list as number[][]) this.dHave.add(`${z}/${x}/${y}`);
+    if (q.mask) for (const [z, m] of Object.entries(q.mask)) bits(+z, m as string, (k) => this.pHave.set(k, 1));
+    else for (const [k, n] of Object.entries(q.tiles)) this.pHave.set(k, n as number);
     this.palKey = "";
   }
 
@@ -421,7 +434,7 @@ export class MapGL {
     if (!this.meta) { this.into(null, W, H); gl.clearColor(bg[0], bg[1], bg[2], 1); gl.clear(gl.COLOR_BUFFER_BIT); return; }
     this.palette();
     const b = this.bounds(c, w, h), now = performance.now(), sc = this.scale;
-    let busy = false;
+    let busy = false, pending = false;
     const haze = this.target("haze", W, H), stars = this.target("stars", W, H);
     const lv = (n: number) => this.target(`d${n}`, Math.max(1, Math.ceil(W / 2 ** n)), Math.max(1, Math.ceil(H / 2 ** n)));
     const midL = Math.max(1, Math.min(4, Math.round(Math.log2(3.7 * dpr / 1.7))));
@@ -449,7 +462,7 @@ export class MapGL {
             draws.push({ t: a, sx: wx, sy: wy, ss: ws, uv: [(tx % m) / m, (ty % m) / m, 1 / m], w: 1 - fade });
             break;
           }
-          busy = true;
+          busy = true; pending = true;
         }
         if (t) draws.push({ t, sx: wx, sy: wy, ss: ws, uv: [0, 0, 1], w: fade });
         else missing.push([Math.hypot(wx + ws / 2 - cx, wy + ws / 2 - cy), key]);
@@ -465,12 +478,14 @@ export class MapGL {
         }
     }
     if (missing.length || this.loading.size) busy = true;
+    if (missing.length) pending = true;
 
     if (now - this.lastStats > 180) { this.lastStats = now; this.kTarget = this.exposure(c, dpr, b, L) || this.kTarget; }
     if (!this.k) this.k = this.kTarget;
+    if (!this.k) pending = true;
     else if (this.kTarget) {
       this.k *= Math.exp(Math.log(this.kTarget / this.k) * 0.1);
-      if (Math.abs(Math.log(this.kTarget / this.k)) > 0.01) busy = true;
+      if (Math.abs(Math.log(this.kTarget / this.k)) > 0.01) { busy = true; pending = true; }
     }
 
     const span = c.S * c.z * dpr;
@@ -523,7 +538,7 @@ export class MapGL {
           const t = this.ptiles.get(k);
           if (!t) { pm.push([l * 10 + Math.hypot((tx + .5) / m - cx, (ty + .5) / m - cy), k]); continue; }
           const fade = Math.min(1, (now - t.born) / 400);
-          if (fade < 1) busy = true;
+          if (fade < 1) { busy = true; pending = true; }
           const side = c.S * c.z / m;
           t.shown = Math.min(t.n, Math.ceil(budget * side * side / (Lp + 1)));
           gl.uniform4f(S.u.u_tile, tx / m, ty / m, 1 / m, 0);
@@ -534,7 +549,19 @@ export class MapGL {
     }
     pm.sort((p, q) => p[0] - q[0]);
     for (const [, k] of pm.slice(0, 10)) this.loadPoints(k);
-    if (pm.length) busy = true;
+    if (pm.length) { busy = true; pending = true; }
+    // idle: fetch the next finer level around the middle of the screen, where zooming in usually goes
+    if (!pending && this.loading.size < 3 && L + 1 < this.meta.density.levels) {
+      const m = 2 * n, qx = (b.x1 - b.x0) / 4, qy = (b.y1 - b.y0) / 4;
+      let left = 16;
+      for (let ty = Math.max(0, Math.floor((cy - qy) * m)); ty <= Math.min(m - 1, Math.floor((cy + qy) * m)) && left; ty++)
+        for (let tx = Math.max(0, Math.floor((cx - qx) * m)); tx <= Math.min(m - 1, Math.floor((cx + qx) * m)) && left; tx++) {
+          const k = `${L + 1}/${tx}/${ty}`;
+          if (this.dHave.has(k) && !this.dtiles.has(k)) { this.wantD.add(k); this.loadDensity(k); left--; }
+          else if (this.dtiles.has(k)) this.wantD.add(k);
+        }
+    }
+    this.complete = !pending;
 
     // ------------------------------------------------------------- 2. glow: down chain, blur at two sizes
     gl.disable(gl.BLEND);
@@ -579,7 +606,7 @@ export class MapGL {
     gl.uniform1f(C.u.u_scale, sc);
     // make_map.py: sharp x1.6 + fine blur x1.4 (both "sharp" here), glow 6 px x2.2, glow 22 px x3.0
     // light theme: each star is one grain of ink whatever its light (undo the star gain)
-    gl.uniform1f(C.u.u_grain, this.GRAIN / Math.max(1e-6, this.starGain(c.z)));
+    gl.uniform1f(C.u.u_grain, this.grain(c.z) / Math.max(1e-6, this.starGain(c.z)));
     gl.uniform1f(C.u.u_wSharp, 3.0); gl.uniform1f(C.u.u_wMid, 2.2); gl.uniform1f(C.u.u_wBig, 3.0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     gl.bindVertexArray(null);
@@ -607,14 +634,19 @@ export class MapGL {
     vals.sort((p, q) => p - q);
     const ref = vals[Math.min(vals.length - 1, Math.floor(vals.length * 0.997))];
     // capped: where studies are few, a lone study stays a faint glow (its star carries it), not a bright patch
-    return Math.min(this.EXPOSURE / ref, 60);
+    // EXPOSURE: matched to the homepage image at the whole-map view (measured on 1x and 2x screens), so the
+    // swap from the image to the live map is not a jump; light needs more, low-density screens a little less
+    const e = this.EXPOSURE ?? (this.pal.dark ? 0.5 : 0.7) * Math.pow(dpr / 2, 0.45);
+    return Math.min(e / ref, 60);
   }
-  EXPOSURE = 1.0;
+  EXPOSURE: number | null = null;
   /** Star light: faint far out (the density carries the picture, as on the homepage image), stronger closer in,
    *  where single studies are what there is to see. */
-  STARS = 0.01;
-  GRAIN = 0.28;
-  starGain(z: number) { return Math.min(0.2, this.STARS * Math.pow(Math.max(1, z), 0.6)); }
+  STARS = 0.003;
+  GRAIN = 0.04;
+  starGain(z: number) { return Math.min(0.2, this.STARS * Math.pow(Math.max(1, z), 0.95)); }
+  /** light theme: ink per star; fine dust far out, real dots close in */
+  grain(z: number) { return Math.min(0.28, this.GRAIN * Math.pow(Math.max(1, z), 0.6)); }
 
   /** The star under a screen point (css px), among the stars drawn. */
   nearest(c: Cam, sx: number, sy: number, reach = 14): Star | null {

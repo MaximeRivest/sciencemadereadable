@@ -49,11 +49,12 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
   const map = $("#map");
   // sharp images after the page is up, the current theme first
   const order = document.documentElement.dataset.theme === "dark" ? ["dark", "light"] : ["light", "dark"];
+  const first = new URLSearchParams(location.search).has("map") ? 0 : 400;
   order.forEach((th, n) => setTimeout(() => {
     const im = new Image();
     im.onload = () => { ($(`.map-img.${th}`) as HTMLImageElement).src = im.src; };
     im.src = `map/science-map-${th}.webp`;
-  }, 400 + n * 1500));
+  }, first + n * 1500));
   fetch("map/regions.json").then((r) => r.json()).then((d) => {
     const big = new Set([...d.fields].sort((a: any, b: any) => b.dots - a.dots).slice(0, 10).map((f: any) => f.name));
     const box = $("#labels");
@@ -181,9 +182,9 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
   startEngine();
   // for the browser check (tools/check_site.py) and screenshots
   (window as any).__fly = (x: number, y: number, z: number) => { motion = null; Object.assign(view, viewFor(x, y, z)); apply(); };
-  (window as any).__expose = (k: number, st?: number) => { if (engine) { engine.EXPOSURE = k; if (st != null) engine.STARS = st; engine.lastStats = 0; engine.k = 0; frame(); } };
+  (window as any).__expose = (k: number, st?: number, gr?: number) => { if (engine) { engine.EXPOSURE = k > 0 ? k : null; if (st != null) engine.STARS = st; if (gr != null) engine.GRAIN = gr; engine.lastStats = 0; engine.k = 0; frame(); } };
   (window as any).__mapStats = () => ({ z: view.z, stars: engine ? [...engine.ptiles.values()].reduce((s, t) => s + t.shown, 0) : 0,
-                                        density: engine?.dtiles.size ?? 0, names: labelEls.size });
+                                        density: engine?.dtiles.size ?? 0, names: labelEls.size, complete: engine?.complete ?? false });
 }
 
 // ======================================================================= the engine
@@ -199,9 +200,11 @@ function startEngine() {
     const rel = (await r.json()).release;
     if (!rel) throw new Error("no release");
     base = `${api}/api/data/map/tiles/${rel}/v2`;
+    // names in parallel with the index; the rendered image's own names stay until these arrive
+    labelsReady = fetch(`${base}/labels.json`).then((r) => r.json())
+      .then((l: Label[]) => { labels = l; document.body.classList.add("gl-names"); frame(); }).catch(() => {});
     await engine!.load(base);
     palette();
-    labelsReady = fetch(`${base}/labels.json`).then((r) => r.json()).then((l: Label[]) => { labels = l; frame(); }).catch(() => {});
     glReady = true;
     mapView(document.body.dataset.view ?? "home");
   })().catch(() => { engine = null; });
@@ -341,8 +344,17 @@ function place() {
     const cam: Cam = { S: r.width, ox: r.left + view.x, oy: r.top + view.y, z: view.z };
     engine!.draw(cam, innerWidth, innerHeight);
     drawLabels(cam);
+    // the rendered image stays on screen until the live map is final, then the live map fades in over it
+    // (once per visit of the explorer; after 8 s it shows anyway, e.g. on a slow connection,
+    // (or as soon as you zoom past what the image's 1,400 pixels can show sharply)
+    if (!revealed && (engine!.complete || view.z > 3.5 || performance.now() - exploreSince > 8000)) {
+      revealed = true;
+      document.body.classList.add("gl-ready");
+    }
   }
 }
+
+let revealed = false, exploreSince = 0;
 
 export function resetView() { motion = null; view.z = 1; view.x = 0; view.y = 0; apply(); }
 
@@ -351,7 +363,8 @@ export function mapView(v: string) {
   $("#map-tip").hidden = true;
   if (v === "results") context = "results";
   if (v === "work" || v === "reader") context = "walk";
-  if (v !== "explore") { resetView(); closePick(); hoverRing(null); }
+  if (v !== "explore") { resetView(); closePick(); hoverRing(null); revealed = false; document.body.classList.remove("gl-ready"); }
+  else if (!revealed) exploreSince = performance.now();
   $("#ex-legend").hidden = !(context === "walk" && walkSpots.length);
   settleUntil = performance.now() + 950;   // the box moves to its place for the view (CSS, .8 s): follow it
   draw();
