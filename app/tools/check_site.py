@@ -37,7 +37,9 @@ def until(pg, js: str, timeout: float = 45) -> bool:
 
 
 def zoom(pg) -> float:
-    return float(pg.evaluate('getComputedStyle(document.querySelector("#world")).getPropertyValue("--z")') or 1)
+    # the live map's camera (the CSS world stops following it once the WebGL map has taken over)
+    z = pg.evaluate('window.__mapStats ? window.__mapStats().z : null')
+    return float(z if z is not None else (pg.evaluate('getComputedStyle(document.querySelector("#world")).getPropertyValue("--z")') or 1))
 
 
 def desktop(b, errs):

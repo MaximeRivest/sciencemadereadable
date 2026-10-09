@@ -81,6 +81,7 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
   });
   const onWheel = (e: WheelEvent) => {
     if (document.body.dataset.view !== "explore") return;
+    lastWheel = performance.now();
     e.preventDefault();
     const r = map.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
     const dy = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY;
@@ -107,6 +108,7 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
     if (document.body.dataset.view !== "explore" || (e.target as HTMLElement).classList.contains("dot")) return;
     stopMotion();
     pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    pointersDown = pts.size;
     const label = (e.target as HTMLElement).closest<HTMLElement>(".gl-label");
     down = pts.size === 1 ? { x: e.clientX, y: e.clientY, t: performance.now(), many: false, label } : down && { ...down, many: true };
     track.length = 0;
@@ -127,6 +129,8 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
   });
   const up = (e: PointerEvent) => {
     pts.delete(e.pointerId);
+    pointersDown = pts.size;
+    if (!pts.size) frame();
     g = pts.size ? gesture() : null;
     if (pts.size) return;
     map.classList.remove("dragging");
@@ -183,6 +187,12 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
   // for the browser check (tools/check_site.py) and screenshots
   (window as any).__fly = (x: number, y: number, z: number) => { motion = null; Object.assign(view, viewFor(x, y, z)); apply(); };
   (window as any).__expose = (k: number, st?: number, gr?: number) => { if (engine) { engine.EXPOSURE = k > 0 ? k : null; if (st != null) engine.STARS = st; if (gr != null) engine.GRAIN = gr; engine.lastStats = 0; engine.k = 0; frame(); } };
+  (window as any).__perf = () => engine?.perf;
+  (window as any).__budget = () => engine?.moveBudget;
+  (window as any).__dbg = (o: any) => { if (engine) Object.assign(engine.dbg, o); };
+  (window as any).__redraw = () => { place(); };
+  (window as any).__wall = () => engine?.wall;
+  (window as any).__bakes = (n: number) => { if (engine) engine.BAKES = n; };
   (window as any).__mapStats = () => ({ z: view.z, stars: engine ? [...engine.ptiles.values()].reduce((s, t) => s + t.shown, 0) : 0,
                                         density: engine?.dtiles.size ?? 0, names: labelEls.size, complete: engine?.complete ?? false });
 }
@@ -229,6 +239,7 @@ type Motion = { kind: "zoom"; mx: number; my: number; target: number }
   | { kind: "fly"; from: { x: number; y: number; z: number }; to: { x: number; y: number; z: number }; t0: number; ms: number }
   | { kind: "glide"; dx: number; dy: number; left: number };
 let motion: Motion | null = null;
+let pointersDown = 0, lastWheel = 0, dtLast = 0;
 let raf = 0, settleUntil = 0, lastT = 0;
 
 function stopMotion() { motion = null; }
@@ -279,7 +290,15 @@ function frame() {
   if (raf) return;
   raf = requestAnimationFrame((t) => { raf = 0; tick(t); });
 }
+const tickMs: number[] = [];
+(window as any).__ticks = () => tickMs;
 function tick(t: number) {
+  const t0 = performance.now();
+  tick2(t);
+  tickMs.push(performance.now() - t0); if (tickMs.length > 600) tickMs.splice(0, 300);
+}
+function tick2(t: number) {
+  dtLast = lastT ? t - lastT : 0;
   const dt = Math.min(64, lastT ? t - lastT : 16); lastT = t;
   let moving = false;
   const map = $("#map");
@@ -328,20 +347,33 @@ function clampView() {
   view.y = Math.min(maxY, Math.max(minY, view.y));
 }
 
+let worldKey = "";
 function place() {
   const w = $("#world");
-  w.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.z})`;
-  w.style.setProperty("--z", String(view.z));
+  // the CSS world (images, the small views' dots and lines) only moves while it is what shows: once the live
+  // map has taken over, it sits still (a transform and --z on it restyle every element inside, each frame)
+  const live = glOn() && revealed;
+  const key = live ? "live" : `${view.x},${view.y},${view.z}`;
+  if (key !== worldKey) {
+    worldKey = key;
+    if (!live) { w.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.z})`; w.style.setProperty("--z", String(view.z)); }
+  }
   w.classList.toggle("zoomed", view.z >= 1.6);
   w.classList.toggle("deep", view.z >= 7);
   w.classList.toggle("deeper", view.z >= 24);
   document.body.classList.toggle("map-zoomed", view.z >= 1.6);
   document.body.classList.toggle("gl", glOn());
-  lineWidths();
+  if (!live) lineWidths();
   placeMarks();
   if (glOn()) {
     const r = $("#map").getBoundingClientRect();
     const cam: Cam = { S: r.width, ox: r.left + view.x, oy: r.top + view.y, z: view.z };
+    // moving: a glide/fling/flight, fingers or mouse down, or a wheel step in the last 180 ms
+    const moving = !!motion || pointersDown > 0 || performance.now() - lastWheel < 180;
+    if (engine!.moving && !moving) setTimeout(frame, 0);   // the sharp frame once it stops
+    engine!.moving = moving;
+    if (moving) setTimeout(frame, 200);                       // and when the last wheel step has aged out
+    if (moving && engine!.moving && dtLast > 0 && dtLast < 150) engine!.adaptFrame(dtLast);   // not the first frame after a pause
     engine!.draw(cam, innerWidth, innerHeight);
     drawLabels(cam);
     // the rendered image stays on screen until the live map is final, then the live map fades in over it
@@ -514,32 +546,57 @@ let labels: Label[] = [];
 let labelsReady: Promise<void> | null = null;
 const labelEls = new Map<number, HTMLElement>();
 
+/** Names by zoom octave and place: the names that can show at zoom s sit in octave floor(log2 s) of a 32 x 32
+ *  world grid, so a frame looks only at the cells on screen of one octave (built once, when labels arrive). */
+let labelIndex: Map<number, number[]> | null = null;
+const OCT0 = -2, OCTS = 20, GRID = 32;
+function buildLabelIndex() {
+  labelIndex = new Map();
+  labels.forEach((l, i) => {
+    const o0 = Math.max(0, Math.floor(Math.log2(l.s0)) - OCT0), o1 = Math.min(OCTS - 1, Math.floor(Math.log2(Math.min(l.s1, 2 ** 17))) - OCT0);
+    const cell = Math.min(GRID - 1, Math.max(0, Math.floor(l.y * GRID))) * GRID + Math.min(GRID - 1, Math.max(0, Math.floor(l.x * GRID)));
+    for (let o = o0; o <= o1; o++) { const k = o * GRID * GRID + cell; let a = labelIndex!.get(k); if (!a) labelIndex!.set(k, a = []); a.push(i); }
+  });
+}
+
 function drawLabels(c: Cam) {
   const box = $("#glabels");
-  if (!box) return;
+  if (!box || !labels.length) return;
+  if (!labelIndex) buildLabelIndex();
   const s = c.S * c.z / 1024, W = innerWidth, H = innerHeight, span = c.S * c.z;
-  const dark = document.documentElement.dataset.theme === "dark";
+  const o = Math.floor(Math.log2(s)) - OCT0;
   const seen = new Set<number>();
-  for (let i = 0; i < labels.length; i++) {
-    const l = labels[i];
-    if (s < l.s0 || s >= l.s1) continue;
-    const x = c.ox + l.x * span, y = c.oy + l.y * span;
-    if (x < -300 || y < -40 || x > W + 300 || y > H + 40) continue;
-    const a = Math.min(1, (s / l.s0 - 1) / 0.18 + 0.15, (l.s1 / s - 1) / 0.18);
-    if (a <= 0.02) continue;
-    seen.add(i);
-    let el = labelEls.get(i);
-    if (!el) {
-      el = document.createElement("span");
-      el.className = `gl-label k-${l.k}`;
-      el.textContent = l.t;
-      el.dataset.i = String(i);
-      if (l.full) el.title = l.full;
-      box.appendChild(el);
-      labelEls.set(i, el);
+  // cells on screen, with a margin of half a long name
+  const mx = 300 / span, my = 40 / span;
+  const gx0 = Math.max(0, Math.floor((-c.ox / span - mx) * GRID)), gx1 = Math.min(GRID - 1, Math.floor(((W - c.ox) / span + mx) * GRID));
+  const gy0 = Math.max(0, Math.floor((-c.oy / span - my) * GRID)), gy1 = Math.min(GRID - 1, Math.floor(((H - c.oy) / span + my) * GRID));
+  if (o >= 0 && o < OCTS) for (let gy = gy0; gy <= gy1; gy++) for (let gx = gx0; gx <= gx1; gx++) {
+    const list = labelIndex!.get(o * GRID * GRID + gy * GRID + gx);
+    if (list) for (const i of list) {
+      const l = labels[i];
+      if (s < l.s0 || s >= l.s1) continue;
+      const x = c.ox + l.x * span, y = c.oy + l.y * span;
+      if (x < -300 || y < -40 || x > W + 300 || y > H + 40) continue;
+      const a = Math.min(1, (s / l.s0 - 1) / 0.18 + 0.15, (l.s1 / s - 1) / 0.18);
+      if (a <= 0.02) continue;
+      seen.add(i);
+      let el = labelEls.get(i) as (HTMLElement & { _a?: string; _t?: string }) | undefined;
+      if (!el) {
+        el = document.createElement("span");
+        el.className = `gl-label k-${l.k}`;
+        el.textContent = l.t;
+        el.dataset.i = String(i);
+        if (l.full) el.title = l.full;
+        box.appendChild(el);
+        labelEls.set(i, el);
+      }
+      // write only what changed (style writes are what costs, not the loop)
+      const op = a >= 0.995 ? "1" : a.toFixed(2);
+      if (el._a !== op) { el.style.opacity = op; el._a = op; }
+      const tr = l.k === "paper" ? `translate3d(${x.toFixed(1)}px,${(y + 7).toFixed(1)}px,0) translate(-50%,0)`
+                                 : `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0) translate(-50%,-50%)`;
+      if (el._t !== tr) { el.style.transform = tr; el._t = tr; }
     }
-    el.style.opacity = String(a);
-    el.style.transform = l.k === "paper" ? `translate(${x}px, ${y + 7}px) translate(-50%, 0)` : `translate(${x}px, ${y}px) translate(-50%, -50%)`;
   }
   for (const [i, el] of labelEls) if (!seen.has(i)) { el.remove(); labelEls.delete(i); }
 }

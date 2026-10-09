@@ -595,8 +595,9 @@ class Handler(SimpleHTTPRequestHandler):
             with urllib.request.urlopen(req, timeout=60 if route.group(1) == "walk" else 15) as r:
                 status, body, ctype = r.status, r.read(), r.headers.get("Content-Type", "application/json")
                 crange = r.headers.get("Content-Range")
+                cenc = r.headers.get("Content-Encoding")   # map tiles: stored gzipped, sent as is
         except urllib.error.HTTPError as e:
-            status, body, ctype, crange = e.code, e.read(), e.headers.get("Content-Type", "application/json"), None
+            status, body, ctype, crange, cenc = e.code, e.read(), e.headers.get("Content-Type", "application/json"), None, None
         except OSError as e:
             return self.send_json(502, {"error": f"data service unavailable ({type(e).__name__})"})
         self.send_response(status)
@@ -604,6 +605,8 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         if crange:
             self.send_header("Content-Range", crange)
+        if cenc == "gzip" and tiles:
+            self.send_header("Content-Encoding", "gzip")
         self.send_header("Cache-Control", "public, max-age=31536000, immutable" if tiles and status < 300 else "no-store")
         self.end_headers()
         self.wfile.write(body)

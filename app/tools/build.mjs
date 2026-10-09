@@ -8,7 +8,7 @@ const lm15Browser = {
 };
 const ctx = await esbuild.context({
   entryPoints: ["web/src/app.ts"], bundle: true, format: "esm", platform: "browser", target: "es2022",
-  outfile: "web/app.js", conditions: ["functai-source"], sourcemap: true, minify: true,
+  outfile: "web/app.js", conditions: ["functai-source"], sourcemap: true, minify: !process.env.NOMINIFY,
   plugins: [lm15Browser], logLevel: "warning", nodePaths: ["node_modules"],
 });
 if (process.argv.includes("--watch")) await ctx.watch(); else { await ctx.rebuild(); await ctx.dispose(); }

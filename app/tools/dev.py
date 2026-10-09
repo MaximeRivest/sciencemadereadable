@@ -64,9 +64,11 @@ def make_handler(data: str, queue: str, names: tuple[str, str]):
             self.send_header("Cache-Control", "no-store")
             super().end_headers()
 
-        def send_body(self, code: int, body: bytes, ctype: str):
+        def send_body(self, code: int, body: bytes, ctype: str, headers: dict | None = None):
             self.send_response(code)
             self.send_header("Content-Type", ctype)
+            for k, v in (headers or {}).items():
+                self.send_header(k, v)
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
@@ -93,7 +95,10 @@ def make_handler(data: str, queue: str, names: tuple[str, str]):
                 # does not serve it yet (SMR_MAP_V2_ROOT=/mnt/fast/scholarsreadinglist/release/tiles)
                 f = (MAP_V2_ROOT / m.group(1) / "v2" / m.group(2)).resolve()
                 if MAP_V2_ROOT.resolve() in f.parents and f.is_file():
-                    return self.send_body(200, f.read_bytes(), "application/json" if f.suffix == ".json" else "application/octet-stream")
+                    # d/ and p/ tiles are stored gzipped: say so, the browser inflates them off the main thread
+                    gz = m.group(2)[:2] in ("d/", "p/")
+                    return self.send_body(200, f.read_bytes(), "application/json" if f.suffix == ".json" else "application/octet-stream",
+                                          {"Content-Encoding": "gzip"} if gz else None)
                 return self.send_body(404, b'{"error":"no such tile"}', "application/json")
             if p.startswith("/api/data/"):
                 return self.proxy(data + p[len("/api/data"):], method)

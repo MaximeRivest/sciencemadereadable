@@ -18,15 +18,22 @@ export interface Star { x: number; y: number; info: number; sub: number; key: st
 
 const TILE = 256, SIDE = 258;
 
-type DTile = { key: string; z: number; x: number; y: number; tex: WebGLTexture; col: WebGLTexture;
-               D: Float32Array; sub: Uint8Array; pur: Uint8Array; born: number; colFor: string };
+/** A density tile. The raw planes go to the GPU as they are; one GPU pass ("bake") turns them into a filterable
+ *  light texture (rgb = colour x studies, a = studies), again whenever the palette changes. The CPU keeps only
+ *  the raw counts (exposure, picking): nothing per pixel is computed in JavaScript. */
+type DTile = { key: string; z: number; x: number; y: number; cntTex: WebGLTexture; subTex: WebGLTexture; purTex: WebGLTexture;
+               tex: WebGLTexture; cnt: Uint16Array; sub: Uint8Array; born: number; baked: string };
 type PTile = { key: string; z: number; x: number; y: number; n: number; vao: WebGLVertexArrayObject; buf: WebGLBuffer;
                raw: Uint16Array; born: number; shown: number };
 type Target = { tex: WebGLTexture; fb: WebGLFramebuffer; w: number; h: number };
 
-async function gunzip(b: ArrayBuffer): Promise<ArrayBuffer> {
-  const s = new Blob([b]).stream().pipeThrough(new DecompressionStream("gzip"));
-  return await new Response(s).arrayBuffer();
+/** The body of a fetched .bin. The servers send the tiles with Content-Encoding: gzip, so the browser inflates them
+ *  in its network process, off the thread that draws; a body that still starts with the gzip magic (a server
+ *  that does not say so) is inflated here instead. */
+async function gunzipBody(r: Response): Promise<ArrayBuffer> {
+  const b = await r.arrayBuffer(), h = new Uint8Array(b, 0, Math.min(2, b.byteLength));
+  if (h[0] !== 0x1f || h[1] !== 0x8b) return b;
+  return await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();
 }
 
 function shader(gl: WebGL2RenderingContext, vs: string, fs: string) {
@@ -60,6 +67,25 @@ vec4 cubic(sampler2D t, vec2 uv, vec2 size) {
              mix(texture(t, vec2(c1.x, c0.y)), texture(t, vec2(c0.x, c0.y)), gx), gy);
 }`;
 
+// ------------------------------------------------------------------ 0. bake: raw tile planes -> light texture
+const BAKE_FS = `#version 300 es
+precision highp float; precision highp usampler2D;
+uniform usampler2D u_cnt; uniform usampler2D u_sub; uniform sampler2D u_pur; uniform sampler2D u_fcol;
+uniform vec3 u_grey; uniform float u_logq; uniform float u_lin;
+out vec4 o;
+void main() {
+  ivec2 p = ivec2(gl_FragCoord.xy);
+  float c = float(texelFetch(u_cnt, p, 0).r);
+  if (c <= 0.0) { o = vec4(0.0); return; }
+  float n = exp2(c / u_logq) - 1.0;                        // studies in this pixel
+  vec4 f = texelFetch(u_fcol, ivec2(int(texelFetch(u_sub, p, 0).r), 0), 0);   // its main field's colour
+  float pur = texelFetch(u_pur, p, 0).r;
+  // as make_map.py: one colour per field, paler where fields mix; only-unclassified places muted (x 0.3)
+  vec3 col = f.a > 0.5 ? mix(u_grey, f.rgb, 0.35 + 0.65 * pur) : u_grey * 0.3;
+  o = u_lin > 0.5 ? vec4(col * n, n)                       // float: light adds up under filtering
+                  : vec4(col, log2(1.0 + n) / 16.0);       // 8-bit fallback: colour and log studies
+}`;
+
 // ------------------------------------------------------------------ 1. light: density tiles
 const DENSITY_VS = `#version 300 es
 in vec2 a; uniform vec4 u_rect; uniform vec4 u_uv; uniform vec2 u_view;
@@ -71,21 +97,20 @@ void main() {
 }`;
 const DENSITY_FS = `#version 300 es
 precision highp float;
-in vec2 v_uv; uniform sampler2D u_d; uniform sampler2D u_c;
+in vec2 v_uv; uniform sampler2D u_t;
 uniform float u_area;      // device px per texel, squared
 uniform float u_k;         // exposure: light per (study per device px)
 uniform float u_w;         // weight (cross-fade between a tile and its parent)
 uniform float u_cubic;     // 1 when a texel is several pixels wide
 uniform float u_scale;     // light buffer scale (8-bit fallback)
+uniform float u_lin;       // baked as linear light (float) or colour + log studies (8-bit)
 out vec4 o;
 ${CUBIC}
 void main() {
-  vec2 sz = vec2(258.0);
-  float n = u_cubic > 0.5 ? cubic(u_d, v_uv, sz).r : texture(u_d, v_uv).r;   // studies per texel
-  vec4 c = u_cubic > 0.5 ? cubic(u_c, v_uv, sz) : texture(u_c, v_uv);
-  if (n <= 1e-5 || c.a <= 1e-3) discard;
-  vec3 col = c.rgb / c.a;
-  o = vec4(col * (n / u_area) * u_k * u_w * u_scale, 1.0);
+  vec4 t = u_cubic > 0.5 ? cubic(u_t, v_uv, vec2(258.0)) : texture(u_t, v_uv);
+  vec3 light = u_lin > 0.5 ? t.rgb : t.rgb * (exp2(t.a * 16.0) - 1.0);
+  if (max(light.r, max(light.g, light.b)) <= 1e-6) discard;
+  o = vec4(light / u_area * u_k * u_w * u_scale, 1.0);
 }`;
 
 // ------------------------------------------------------------------ 1. light: stars
@@ -223,7 +248,7 @@ export class MapGL {
     this.hdr = !!gl.getExtension("EXT_color_buffer_float") || !!gl.getExtension("EXT_color_buffer_half_float");
     this.scale = this.hdr ? 1 : 0.125;
     this.progs = {
-      density: shader(gl, DENSITY_VS, DENSITY_FS), stars: shader(gl, STAR_VS, STAR_FS),
+      density: shader(gl, DENSITY_VS, DENSITY_FS), stars: shader(gl, STAR_VS, STAR_FS), bake: shader(gl, FULL_VS, BAKE_FS),
       down: shader(gl, FULL_VS, DOWN_FS), blur: shader(gl, FULL_VS, BLUR_FS), compose: shader(gl, FULL_VS, COMPOSE_FS),
     };
     this.quad = gl.createVertexArray()!;
@@ -233,7 +258,11 @@ export class MapGL {
     gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
     gl.bindVertexArray(null);
     this.palTex = gl.createTexture()!;
+    this.fcolTex = gl.createTexture()!;
+    this.bakeFb = gl.createFramebuffer()!;
   }
+  fcolTex: WebGLTexture;
+  bakeFb: WebGLFramebuffer;
 
   async load(base: string) {
     this.base = base;
@@ -280,28 +309,42 @@ export class MapGL {
     gl.bindTexture(gl.TEXTURE_2D, this.palTex);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 256, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    for (const t of this.dtiles.values()) t.colFor = "";
+    // the field's own colour per subfield code (alpha 0 = unclassified), for the bake
+    const fc = new Uint8Array(256 * 4);
+    this.meta.subfields.forEach((s: any, i: number) => {
+      const c = fields[s.field];
+      if (c) fc.set([c[0] * 255, c[1] * 255, c[2] * 255, 255], i * 4);
+    });
+    gl.bindTexture(gl.TEXTURE_2D, this.fcolTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 256, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, fc);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   }
   private grey() { return this.pal.dark ? [0.62, 0.6, 0.57] : [0.5, 0.49, 0.47]; }
 
-  /** A tile's colour: its dominant field's colour (as make_map.py: one colour per field), paler where fields
-   *  mix; places with only unclassified studies are muted (x 0.3, as make_map.py). */
-  private colourTexture(t: DTile) {
-    if (t.colFor === this.palKey) return;
-    const fields = this.fieldRGB(), grey = this.grey(), subs = this.meta.subfields;
-    const px = new Uint8Array(SIDE * SIDE * 4);
-    for (let i = 0; i < SIDE * SIDE; i++) {
-      if (!t.D[i]) continue;
-      const f = subs[t.sub[i]]?.field ?? 0, c = fields[f];
-      if (!c) { px.set([grey[0] * 0.3 * 255, grey[1] * 0.3 * 255, grey[2] * 0.3 * 255, 255], i * 4); continue; }
-      const p = t.pur[i] / 255, m = 0.35 + 0.65 * p;
-      px.set([(grey[0] + (c[0] - grey[0]) * m) * 255, (grey[1] + (c[1] - grey[1]) * m) * 255,
-              (grey[2] + (c[2] - grey[2]) * m) * 255, 255], i * 4);
+  /** Raw planes -> light texture, on the GPU (one 258 x 258 pass). */
+  private bake(t: DTile) {
+    const gl = this.gl, P = this.progs.bake;
+    gl.bindTexture(gl.TEXTURE_2D, t.tex);
+    if (!t.baked) {   // first bake: allocate
+      if (this.hdr) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, SIDE, SIDE, 0, gl.RGBA, gl.HALF_FLOAT, null);
+      else gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, SIDE, SIDE, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+      this.texParams(gl.LINEAR);
     }
-    const gl = this.gl;
-    gl.bindTexture(gl.TEXTURE_2D, t.col);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, SIDE, SIDE, 0, gl.RGBA, gl.UNSIGNED_BYTE, px);
-    t.colFor = this.palKey;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.bakeFb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t.tex, 0);
+    gl.viewport(0, 0, SIDE, SIDE);
+    gl.disable(gl.BLEND);
+    gl.useProgram(P.p);
+    const units: [string, WebGLTexture][] = [["u_cnt", t.cntTex], ["u_sub", t.subTex], ["u_pur", t.purTex], ["u_fcol", this.fcolTex]];
+    units.forEach(([name, tex], i) => { gl.activeTexture(gl.TEXTURE0 + i); gl.bindTexture(gl.TEXTURE_2D, tex); gl.uniform1i(P.u[name], i); });
+    const g = this.grey();
+    gl.uniform3f(P.u.u_grey, g[0], g[1], g[2]);
+    gl.uniform1f(P.u.u_logq, this.meta.density.log_scale);
+    gl.uniform1f(P.u.u_lin, this.hdr ? 1 : 0);
+    gl.bindVertexArray(this.quad);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    gl.activeTexture(gl.TEXTURE0);
+    t.baked = this.palKey;
   }
 
   private loadDensity(key: string) {
@@ -310,19 +353,23 @@ export class MapGL {
       try {
         const r = await fetch(`${this.base}/d/${key}.bin`);
         if (!r.ok) return;
-        const buf = await gunzip(await r.arrayBuffer());
+        const buf = await gunzipBody(r);
         const N = SIDE * SIDE, cnt = new Uint16Array(buf, 0, N), sub = new Uint8Array(buf, 2 * N, N), pur = new Uint8Array(buf, 3 * N, N);
-        const D = new Float32Array(N), scale = this.meta.density.log_scale;
-        for (let i = 0; i < N; i++) if (cnt[i]) D[i] = Math.pow(2, cnt[i] / scale) - 1;
         const gl = this.gl;
-        const tex = gl.createTexture()!;
-        gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.R16F, SIDE, SIDE, 0, gl.RED, gl.FLOAT, D);
-        this.texParams(gl.LINEAR);
-        const col = gl.createTexture()!;
-        gl.bindTexture(gl.TEXTURE_2D, col); this.texParams(gl.LINEAR);
+        gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+        const mk = (internal: number, format: number, type: number, data: ArrayBufferView) => {
+          const t = gl.createTexture()!;
+          gl.bindTexture(gl.TEXTURE_2D, t);
+          gl.texImage2D(gl.TEXTURE_2D, 0, internal, SIDE, SIDE, 0, format, type, data);
+          this.texParams(gl.NEAREST);
+          return t;
+        };
+        const cntTex = mk(gl.R16UI, gl.RED_INTEGER, gl.UNSIGNED_SHORT, cnt);
+        const subTex = mk(gl.R8UI, gl.RED_INTEGER, gl.UNSIGNED_BYTE, sub);
+        const purTex = mk(gl.R8, gl.RED, gl.UNSIGNED_BYTE, pur);
+        gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
         const [z, x, y] = key.split("/").map(Number);
-        this.dtiles.set(key, { key, z, x, y, tex, col, D, sub: new Uint8Array(sub), pur: new Uint8Array(pur), born: performance.now(), colFor: "" });
+        this.dtiles.set(key, { key, z, x, y, cntTex, subTex, purTex, tex: gl.createTexture()!, cnt, sub, born: 0, baked: "" });
         this.evict();
         this.onChange();
       } catch { /* a missing tile: its parent keeps showing */ }
@@ -330,6 +377,37 @@ export class MapGL {
     })();
     this.loading.set(key, p);
   }
+
+  /** Usable this frame: loaded and baked with the current palette (at most a few bakes per frame). */
+  private ready(t: DTile | undefined, now: number): DTile | undefined {
+    if (!t) return undefined;
+    if (t.baked !== this.palKey) {
+      if (this.bakesLeft <= 0) return t.baked ? t : undefined;   // an old palette's bake is better than nothing
+      this.bakesLeft--;
+      const first = !t.baked;
+      this.bake(t);
+      if (first) t.born = now;
+    }
+    return t;
+  }
+  private bakesLeft = 0;
+  /** set by the caller: the map is moving (glide, fling, drag, pinch, wheel) */
+  moving = false;
+  /** dev: switch passes off to time them (tools/check scripts) */
+  dbg = { haze: true, stars: true, glow: true, forceRs: 0, finish: false };
+  wall: number[] = [];
+  lastRs = 1;
+  /** render pixels while moving; adapted to the GPU from its timer */
+  moveBudget = 2.0e6;
+  /** called with the time between two frames while moving: aim at 60 fps, spend what is left on pixels */
+  private slow = 0; private fast = 0;
+  adaptFrame(dt: number) {
+    const max = 16e6, min = 0.6e6;
+    if (dt > 21) { this.fast = 0; if (++this.slow >= 3) { this.moveBudget = Math.max(min, this.moveBudget * 0.8); this.slow = 0; } }
+    else if (dt < 17.5) { this.slow = 0; if (++this.fast >= 20) { this.moveBudget = Math.min(max, this.moveBudget * 1.12); this.fast = 0; } }
+  }
+  private lastMovingFrame = false;
+  BAKES = 3;
 
   private texParams(filter: number) {
     const gl = this.gl;
@@ -343,7 +421,7 @@ export class MapGL {
       try {
         const r = await fetch(`${this.base}/p/${key}.bin`);
         if (!r.ok) return;
-        const raw = new Uint16Array(await gunzip(await r.arrayBuffer()));
+        const raw = new Uint16Array(await gunzipBody(r));
         const gl = this.gl, vao = gl.createVertexArray()!, buf = gl.createBuffer()!;
         gl.bindVertexArray(vao);
         gl.bindBuffer(gl.ARRAY_BUFFER, buf);
@@ -369,7 +447,8 @@ export class MapGL {
   private evict() {
     if (this.dtiles.size > 260) for (const [k, t] of this.dtiles) {
       if (this.wantD.has(k) || t.z <= 2) continue;
-      this.gl.deleteTexture(t.tex); this.gl.deleteTexture(t.col); this.dtiles.delete(k);
+      for (const x of [t.tex, t.cntTex, t.subTex, t.purTex]) this.gl.deleteTexture(x);
+      this.dtiles.delete(k);
       if (this.dtiles.size <= 200) break;
     }
     if (this.ptiles.size > 260) for (const [k, t] of this.ptiles) {
@@ -402,6 +481,16 @@ export class MapGL {
     }
     return (this.targets[name] = { tex, fb, w, h });
   }
+  private blackT: Target | null = null;
+  private black(): Target {
+    if (!this.blackT) {
+      const gl = this.gl, tex = gl.createTexture()!;
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+      this.blackT = { tex, fb: null as any, w: 1, h: 1 };
+    }
+    return this.blackT;
+  }
   private into(t: Target | null, W?: number, H?: number) {
     const gl = this.gl;
     gl.bindFramebuffer(gl.FRAMEBUFFER, t ? t.fb : null);
@@ -426,19 +515,60 @@ export class MapGL {
    *  A tile draws the first N of its studies (most cited first), N = its share of this budget. */
   starDensity(z: number) { return 1 / (9 * Math.pow(Math.max(1, z), 0.75)); }
 
+  /** timing of the last frames (dev checks): CPU ms of draw(), and GPU ms when the timer extension exists */
+  perf = { cpu: [] as number[], gpu: [] as number[], q: [] as WebGLQuery[], phases: [] as Record<string, number>[] };
+  private ph: Record<string, number> = {}; private phT = 0;
+  private mark(name: string) { const t = performance.now(); this.ph[name] = (this.ph[name] ?? 0) + t - this.phT; this.phT = t; }
+  timer: any = null;
   draw(c: Cam, w: number, h: number) {
+    const t0 = performance.now();
+    if (this.timer === null) this.timer = this.gl.getExtension("EXT_disjoint_timer_query_webgl2") || false;
+    let q: WebGLQuery | null = null;
+    if (this.timer) {
+      const gl = this.gl;
+      while (this.perf.q.length && gl.getQueryParameter(this.perf.q[0], gl.QUERY_RESULT_AVAILABLE)) {
+        const x = this.perf.q.shift()!, ms = gl.getQueryParameter(x, gl.QUERY_RESULT) / 1e6;
+        this.perf.gpu.push(ms); gl.deleteQuery(x);
+      }
+      if (this.perf.q.length < 8) { q = gl.createQuery()!; gl.beginQuery(this.timer.TIME_ELAPSED_EXT, q); }
+    }
+    this.ph = {}; this.phT = performance.now();
+    this.lastMovingFrame = this.moving;
+    const tw = performance.now();
+    this.drawFrame(c, w, h);
+    if (this.dbg.finish) { const px = new Uint8Array(4); this.gl.readPixels(0, 0, 1, 1, this.gl.RGBA, this.gl.UNSIGNED_BYTE, px); this.wall.push(performance.now() - tw); }
+    this.perf.phases.push(this.ph); if (this.perf.phases.length > 600) this.perf.phases.splice(0, 300);
+    if (q) { this.gl.endQuery(this.timer.TIME_ELAPSED_EXT); this.perf.q.push(q); }
+    this.perf.cpu.push(performance.now() - t0);
+    if (this.perf.cpu.length > 600) this.perf.cpu.splice(0, 300);
+    if (this.perf.gpu.length > 600) this.perf.gpu.splice(0, 300);
+  }
+
+  private drawFrame(c: Cam, w: number, h: number) {
     const gl = this.gl, dpr = Math.min(devicePixelRatio || 1, 2);
-    const W = Math.round(w * dpr), H = Math.round(h * dpr);
+    const W0 = Math.round(w * dpr), H0 = Math.round(h * dpr);
+    // dynamic resolution: while the map moves, the whole picture is painted into fewer pixels and the browser's
+    // compositor stretches the canvas (the eye cannot see detail in motion; weak GPUs keep 60 fps); the moment it
+    // stops, one full-resolution frame. The budget follows the frame rate reached (adaptFrame): fast GPUs never drop.
+    const rs = this.dbg.forceRs || (this.moving ? Math.min(1, Math.sqrt(this.moveBudget / (W0 * H0))) : 1);
+    const W = Math.max(1, Math.round(W0 * rs)), H = Math.max(1, Math.round(H0 * rs)), r = dpr * (W / W0);
     if (this.canvas.width !== W || this.canvas.height !== H) { this.canvas.width = W; this.canvas.height = H; }
+    const Wr = W, Hr = H;
+    const tag = rs < 1 ? "lo" : "hi";
+    this.lastRs = rs;
     const bg = this.pal.bg;
     if (!this.meta) { this.into(null, W, H); gl.clearColor(bg[0], bg[1], bg[2], 1); gl.clear(gl.COLOR_BUFFER_BIT); return; }
     this.palette();
     const b = this.bounds(c, w, h), now = performance.now(), sc = this.scale;
     let busy = false, pending = false;
-    const haze = this.target("haze", W, H), stars = this.target("stars", W, H);
-    const lv = (n: number) => this.target(`d${n}`, Math.max(1, Math.ceil(W / 2 ** n)), Math.max(1, Math.ceil(H / 2 ** n)));
-    const midL = Math.max(1, Math.min(4, Math.round(Math.log2(3.7 * dpr / 1.7))));
-    const bigL = Math.max(midL + 1, Math.min(5, Math.round(Math.log2(13.5 * dpr / 1.7))));
+    this.bakesLeft = this.BAKES;
+    this.mark("setup");
+    // dark theme: the stars add into the same light buffer (two full-screen passes fewer); light theme needs them apart
+    const merged = this.pal.dark;
+    const haze = this.target(`haze:${tag}`, Wr, Hr), stars = merged ? haze : this.target(`stars:${tag}`, Wr, Hr);
+    const lv = (n: number) => this.target(`d${n}:${tag}`, Math.max(1, Math.ceil(Wr / 2 ** n)), Math.max(1, Math.ceil(Hr / 2 ** n)));
+    const midL = Math.max(1, Math.min(4, Math.round(Math.log2(3.7 * r / 1.7))));
+    const bigL = Math.max(midL + 1, Math.min(5, Math.round(Math.log2(13.5 * r / 1.7))));
 
     // ------------------------------------------------------------- 1a. density -> haze
     const L = this.densityLevel(c, dpr), n = 1 << L;
@@ -452,12 +582,12 @@ export class MapGL {
         const key = `${L}/${tx}/${ty}`;
         if (!this.dHave.has(key)) continue;
         this.wantD.add(key);
-        const t = this.dtiles.get(key);
+        const t = this.ready(this.dtiles.get(key), now);
         const wx = tx / n, wy = ty / n, ws = 1 / n;
         const fade = t ? Math.min(1, (now - t.born) / 300) : 0;
         if (fade < 1) {   // the best loaded ancestor fills in until this tile arrives (light adds up: weights sum to 1)
           for (let l = L - 1; l >= 0; l--) {
-            const m = 1 << (L - l), a = this.dtiles.get(`${l}/${tx >> (L - l)}/${ty >> (L - l)}`);
+            const m = 1 << (L - l), a = this.ready(this.dtiles.get(`${l}/${tx >> (L - l)}/${ty >> (L - l)}`), now);
             if (!a) continue;
             draws.push({ t: a, sx: wx, sy: wy, ss: ws, uv: [(tx % m) / m, (ty % m) / m, 1 / m], w: 1 - fade });
             break;
@@ -465,7 +595,8 @@ export class MapGL {
           busy = true; pending = true;
         }
         if (t) draws.push({ t, sx: wx, sy: wy, ss: ws, uv: [0, 0, 1], w: fade });
-        else missing.push([Math.hypot(wx + ws / 2 - cx, wy + ws / 2 - cy), key]);
+        else if (!this.dtiles.has(key)) missing.push([Math.hypot(wx + ws / 2 - cx, wy + ws / 2 - cy), key]);
+        else { busy = true; pending = true; }   // loaded, waiting for its bake
       }
     missing.sort((p, q) => p[0] - q[0]);
     for (const [, k] of missing.slice(0, 16)) this.loadDensity(k);
@@ -474,11 +605,12 @@ export class MapGL {
       for (let ty = Math.max(0, Math.floor(b.y0 * m)); ty <= Math.min(m - 1, Math.floor(b.y1 * m)); ty++)
         for (let tx = Math.max(0, Math.floor(b.x0 * m)); tx <= Math.min(m - 1, Math.floor(b.x1 * m)); tx++) {
           const k = `${l}/${tx}/${ty}`;
-          if (this.dHave.has(k)) { this.wantD.add(k); if (!this.dtiles.has(k)) this.loadDensity(k); }
+          if (this.dHave.has(k)) { this.wantD.add(k); if (!this.dtiles.has(k)) this.loadDensity(k); else this.ready(this.dtiles.get(k), now); }
         }
     }
     if (missing.length || this.loading.size) busy = true;
     if (missing.length) pending = true;
+    this.mark("tiles+bakes");
 
     if (now - this.lastStats > 180) { this.lastStats = now; this.kTarget = this.exposure(c, dpr, b, L) || this.kTarget; }
     if (!this.k) this.k = this.kTarget;
@@ -488,43 +620,43 @@ export class MapGL {
       if (Math.abs(Math.log(this.kTarget / this.k)) > 0.01) { busy = true; pending = true; }
     }
 
-    const span = c.S * c.z * dpr;
+    this.mark("exposure");
+    const span = c.S * c.z * r, spanDev = c.S * c.z * dpr;   // render px, device px (brightness is per device px)
     gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
     this.into(haze); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
     const P = this.progs.density;
     gl.useProgram(P.p);
     gl.bindVertexArray(this.quad);
-    gl.uniform2f(P.u.u_view, W, H);
+    gl.uniform2f(P.u.u_view, Wr, Hr);
     // very close in, the stars lead and the haze steps back
     const hazeW = Math.max(0.5, Math.min(1, 1 - (Math.log2(c.z) - 5) / 3));
     gl.uniform1f(P.u.u_k, this.k * hazeW); gl.uniform1f(P.u.u_scale, sc);
-    gl.uniform1i(P.u.u_d, 0); gl.uniform1i(P.u.u_c, 1);
+    gl.uniform1i(P.u.u_t, 0); gl.uniform1f(P.u.u_lin, this.hdr ? 1 : 0);
     for (const d of draws) {
-      if (d.w <= 0) continue;
-      this.colourTexture(d.t);
-      const texelPx = span / ((1 << d.t.z) * TILE);
+      if (d.w <= 0 || !this.dbg.haze) continue;
+      const texelPx = spanDev / ((1 << d.t.z) * TILE);
       gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, d.t.tex);
-      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, d.t.col);
       gl.uniform1f(P.u.u_area, texelPx * texelPx);
       gl.uniform1f(P.u.u_w, d.w);
-      gl.uniform1f(P.u.u_cubic, texelPx > 2.5 ? 1 : 0);
-      gl.uniform4f(P.u.u_rect, c.ox * dpr + d.sx * span, c.oy * dpr + d.sy * span, d.ss * span, d.ss * span);
+      gl.uniform1f(P.u.u_cubic, texelPx * (r / dpr) > 2.5 ? 1 : 0);
+      gl.uniform4f(P.u.u_rect, c.ox * r + d.sx * span, c.oy * r + d.sy * span, d.ss * span, d.ss * span);
       const u0 = (1 + d.uv[0] * TILE) / SIDE, v0 = (1 + d.uv[1] * TILE) / SIDE, us = d.uv[2] * TILE / SIDE;
       gl.uniform4f(P.u.u_uv, u0, v0, us, us);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
 
+    this.mark("haze");
     // ------------------------------------------------------------- 1b. stars
     const Lp = this.pointLevel(c);
     this.pLevel = Lp;
     this.wantP.clear();
-    this.into(stars); gl.clear(gl.COLOR_BUFFER_BIT);
+    this.into(stars); if (!merged) gl.clear(gl.COLOR_BUFFER_BIT);
     const S = this.progs.stars;
     gl.useProgram(S.p);
-    gl.uniform2f(S.u.u_view, W, H);
-    gl.uniform3f(S.u.u_cam, c.ox * dpr, c.oy * dpr, span);
+    gl.uniform2f(S.u.u_view, Wr, Hr);
+    gl.uniform3f(S.u.u_cam, c.ox * r, c.oy * r, span);
     gl.uniform1f(S.u.u_size, Math.min(2.4, 0.8 + Math.max(0, Math.log2(c.z)) * 0.2));
-    gl.uniform1f(S.u.u_dpr, dpr); gl.uniform1f(S.u.u_scale, sc);
+    gl.uniform1f(S.u.u_dpr, r); gl.uniform1f(S.u.u_scale, sc);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.palTex); gl.uniform1i(S.u.u_pal, 0);
     const budget = this.starDensity(c.z);
     const pm: [number, string][] = [];
@@ -537,6 +669,7 @@ export class MapGL {
           this.wantP.add(k);
           const t = this.ptiles.get(k);
           if (!t) { pm.push([l * 10 + Math.hypot((tx + .5) / m - cx, (ty + .5) / m - cy), k]); continue; }
+          if (!this.dbg.stars) continue;
           const fade = Math.min(1, (now - t.born) / 400);
           if (fade < 1) { busy = true; pending = true; }
           const side = c.S * c.z / m;
@@ -563,6 +696,7 @@ export class MapGL {
     }
     this.complete = !pending;
 
+    this.mark("stars");
     // ------------------------------------------------------------- 2. glow: down chain, blur at two sizes
     gl.disable(gl.BLEND);
     gl.bindVertexArray(this.quad);
@@ -575,7 +709,7 @@ export class MapGL {
       this.into(dst);
       gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, src.tex);
       gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, stars.tex);
-      gl.uniform1f(D.u.u_two, i === 1 ? 1 : 0);
+      gl.uniform1f(D.u.u_two, i === 1 && !merged ? 1 : 0);
       gl.uniform2f(D.u.u_texel, 1 / src.w, 1 / src.h);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       src = dst;
@@ -593,11 +727,12 @@ export class MapGL {
     };
     const mid = blur(midL), big = blur(bigL);
 
+    this.mark("glow");
     // ------------------------------------------------------------- 3. film curve -> screen
     const C = this.progs.compose;
     this.into(null, W, H);
     gl.useProgram(C.p);
-    const tex = [haze, stars, mid, big];
+    const tex = [haze, merged ? this.black() : stars, mid, big];
     ["u_haze", "u_stars", "u_mid", "u_big"].forEach((name, i) => {
       gl.activeTexture(gl.TEXTURE0 + i); gl.bindTexture(gl.TEXTURE_2D, tex[i].tex); gl.uniform1i(C.u[name], i);
     });
@@ -611,32 +746,39 @@ export class MapGL {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     gl.bindVertexArray(null);
     gl.activeTexture(gl.TEXTURE0);
+    this.mark("compose");
     if (busy) this.onChange();
   }
 
-  /** Exposure, as make_map.py: light = studies per pixel / the 99.7th percentile of what is on screen. */
+  /** Exposure, as make_map.py: light = studies per pixel / the 99.7th percentile of what is on screen.
+   *  A histogram of the raw (log-scaled) counts of a sample of the visible pixels: no sorting, no per-sample pow. */
+  private hist = new Uint32Array(4096);
   private exposure(c: Cam, dpr: number, b: { x0: number; y0: number; x1: number; y1: number }, L: number) {
     const n = 1 << L, span = c.S * c.z * dpr, texelPx = span / (n * TILE), area = texelPx * texelPx;
-    const vals: number[] = [];
+    const h = this.hist; h.fill(0);
+    let total = 0;
     for (const t of this.dtiles.values()) {
-      if (t.z !== L) continue;
+      if (t.z !== L || !t.baked) continue;
       const wx = t.x / n, wy = t.y / n;
       if (wx > b.x1 || wy > b.y1 || wx + 1 / n < b.x0 || wy + 1 / n < b.y0) continue;
-      for (let i = 0; i < 2000; i++) {
-        const px = 1 + ((i * 97) % 256), py = 1 + ((i * 61 + (i >> 8) * 13) % 256);
-        const x = wx + (px - 1) / (n * TILE), y = wy + (py - 1) / (n * TILE);
-        if (x < b.x0 || x > b.x1 || y < b.y0 || y > b.y1) continue;
-        const d = t.D[py * SIDE + px];
-        if (d > 0) vals.push(d / area);
+      // the visible texel range of this tile, sampled on a grid of at most ~48 x 48
+      const ix0 = Math.max(0, Math.floor((b.x0 - wx) * n * TILE)), ix1 = Math.min(TILE - 1, Math.floor((b.x1 - wx) * n * TILE));
+      const iy0 = Math.max(0, Math.floor((b.y0 - wy) * n * TILE)), iy1 = Math.min(TILE - 1, Math.floor((b.y1 - wy) * n * TILE));
+      const sx = Math.max(1, ((ix1 - ix0) / 48) | 0), sy = Math.max(1, ((iy1 - iy0) / 48) | 0);
+      const cnt = t.cnt;
+      for (let y = iy0; y <= iy1; y += sy) for (let x = ix0, o = (y + 1) * SIDE + 1; x <= ix1; x += sx) {
+        const v = cnt[o + x];
+        if (v) { h[v >> 4]++; total++; }
       }
     }
-    if (vals.length < 50) return 0;
-    vals.sort((p, q) => p - q);
-    const ref = vals[Math.min(vals.length - 1, Math.floor(vals.length * 0.997))];
-    // capped: where studies are few, a lone study stays a faint glow (its star carries it), not a bright patch
+    if (total < 50) return 0;
+    let want = Math.floor(total * 0.003), i = 4095;
+    for (; i > 0 && want >= h[i]; i--) want -= h[i];
+    const ref = (Math.pow(2, ((i << 4) + 8) / this.meta.density.log_scale) - 1) / area;
     // EXPOSURE: matched to the homepage image at the whole-map view (measured on 1x and 2x screens), so the
     // swap from the image to the live map is not a jump; light needs more, low-density screens a little less
     const e = this.EXPOSURE ?? (this.pal.dark ? 0.5 : 0.7) * Math.pow(dpr / 2, 0.45);
+    // capped: where studies are few, a lone study stays a faint glow (its star carries it), not a bright patch
     return Math.min(e / ref, 60);
   }
   EXPOSURE: number | null = null;
@@ -672,6 +814,6 @@ export class MapGL {
     const L = this.dLevel, n = 1 << L, t = this.dtiles.get(`${L}/${Math.floor(x * n)}/${Math.floor(y * n)}`);
     if (!t) return null;
     const px = 1 + Math.floor((x * n - t.x) * TILE), py = 1 + Math.floor((y * n - t.y) * TILE);
-    return t.D[py * SIDE + px] ? this.meta.subfields[t.sub[py * SIDE + px]]?.field ?? null : null;
+    return t.cnt[py * SIDE + px] ? this.meta.subfields[t.sub[py * SIDE + px]]?.field ?? null : null;
   }
 }
