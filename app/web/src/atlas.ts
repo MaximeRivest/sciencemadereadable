@@ -181,6 +181,7 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
   startEngine();
   // for the browser check (tools/check_site.py) and screenshots
   (window as any).__fly = (x: number, y: number, z: number) => { motion = null; Object.assign(view, viewFor(x, y, z)); apply(); };
+  (window as any).__expose = (k: number, st?: number) => { if (engine) { engine.EXPOSURE = k; if (st != null) engine.STARS = st; engine.lastStats = 0; engine.k = 0; frame(); } };
   (window as any).__mapStats = () => ({ z: view.z, stars: engine ? [...engine.ptiles.values()].reduce((s, t) => s + t.shown, 0) : 0,
                                         density: engine?.dtiles.size ?? 0, names: labelEls.size });
 }
@@ -524,8 +525,6 @@ function drawLabels(c: Cam) {
       box.appendChild(el);
       labelEls.set(i, el);
     }
-    const col = colourOf(l.f, dark);
-    if (l.k !== "paper" && col) el.style.color = col;
     el.style.opacity = String(a);
     el.style.transform = l.k === "paper" ? `translate(${x}px, ${y + 7}px) translate(-50%, 0)` : `translate(${x}px, ${y}px) translate(-50%, -50%)`;
   }

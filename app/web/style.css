@@ -521,9 +521,10 @@ body.gl #map::before, body.gl #world::before { opacity: 0; }
 .gl-label { position: absolute; left: 0; top: 0; white-space: nowrap; pointer-events: auto; cursor: pointer;
   font: 600 13px/1.2 var(--sans); color: var(--ink); will-change: transform, opacity; transition: color .2s;
   text-shadow: 0 0 2px var(--explore), 0 0 6px var(--explore), 0 0 12px var(--explore), 0 0 18px var(--explore); }
-.gl-label.k-field { font-size: 15px; font-weight: 700; letter-spacing: .01em; }
-.gl-label.k-subfield { font-size: 13px; font-weight: 600; }
-.gl-label.k-topic { font-size: 12px; font-weight: 500; font-style: italic; }
+/* calm names, as on the homepage map: the colour is the map's job */
+.gl-label.k-field { font-size: 15px; font-weight: 650; letter-spacing: .01em; opacity: .92; }
+.gl-label.k-subfield { font-size: 13px; font-weight: 600; color: color-mix(in srgb, var(--ink) 82%, var(--explore)); }
+.gl-label.k-topic { font-size: 12px; font-weight: 500; font-style: italic; color: color-mix(in srgb, var(--ink) 68%, var(--explore)); }
 .gl-label.k-paper { font: 400 11.5px/1.2 var(--serif); color: var(--ink); }
 .gl-label.k-paper::before { content: ""; position: absolute; left: 50%; top: -7px; width: 1px; height: 5px; background: currentColor; opacity: .5; }
 .gl-label:hover { text-decoration: underline; text-underline-offset: 3px; }
