@@ -23,8 +23,8 @@ OUT = Path(__file__).resolve().parent
 SIZE = 1400
 
 # hue (degrees), saturation per domain
-DOMAINS = {"Life Sciences": (150, 0.50), "Health Sciences": (14, 0.55),
-           "Physical Sciences": (214, 0.46), "Social Sciences": (36, 0.36)}
+DOMAINS = {"Life Sciences": (150, 0.62), "Health Sciences": (14, 0.66),
+           "Physical Sciences": (214, 0.60), "Social Sciences": (38, 0.50)}
 LIGHTNESS = {"light": (0.26, 0.40), "dark": (0.56, 0.70)}  # range over the fields of a domain
 
 meta = json.loads((BUILD / "meta.json").read_text())
@@ -56,21 +56,47 @@ cell = gy * SIZE + gx
 count = np.bincount(cell, minlength=SIZE * SIZE).astype(np.float32)
 grey = np.bincount(cell, weights=np.isin(field, unclassified).astype(np.float32), minlength=SIZE * SIZE)
 
-a = np.log1p(count) / np.log1p(np.percentile(count[count > 0], 99.5))
-a = np.clip(a, 0, 1) ** 0.8
-a = a * np.where(grey >= np.maximum(count, 1) * 0.999, 0.25, 1.0)  # specks of unclassified papers: faint
 
+def blur(img: np.ndarray, sigma: float) -> np.ndarray:
+    """Gaussian blur of a float [H, W, C] image, per channel."""
+    from scipy.ndimage import gaussian_filter
+    return gaussian_filter(img, sigma=(sigma, sigma, 0), mode="constant")
+
+
+def saturate(rgb: np.ndarray, k: float) -> np.ndarray:
+    grey = rgb.mean(-1, keepdims=True)
+    return np.clip(grey + (rgb - grey) * k, 0, None)
+
+
+ref = np.percentile(count[count > 0], 99.7)   # exposure: the densest 0.3 % of places saturate
 for theme in ("light", "dark"):
     pal = palette(theme)
+    # summed colour per place (not averaged): dense places collect more light / more ink
     rgb = np.stack([np.bincount(cell, weights=pal[field, c], minlength=SIZE * SIZE) for c in range(3)], 1)
-    rgb = rgb / np.maximum(count, 1)[:, None]
-    alpha = a ** 0.75 if theme == "light" else a  # on cream, faint ink reads as grey: lift it
-    img = np.concatenate([rgb, alpha[:, None]], 1).reshape(SIZE, SIZE, 4)
-    sharp = Image.fromarray((img * 255).astype(np.uint8), "RGBA").filter(ImageFilter.GaussianBlur(0.7))
-    glow = np.asarray(sharp.filter(ImageFilter.GaussianBlur(10))).astype(np.float32)
-    glow[..., 3] *= 0.30 if theme == "light" else 0.55
-    out = Image.alpha_composite(Image.fromarray(glow.astype(np.uint8), "RGBA"), sharp)
-    out.save(OUT / f"science-map-{theme}.webp", quality=72, method=6)
+    rgb = rgb.reshape(SIZE, SIZE, 3)
+    mute = np.where(grey >= np.maximum(count, 1) * 0.999, 0.3, 1.0).reshape(SIZE, SIZE, 1)
+    rgb = rgb * mute / ref
+    if theme == "dark":
+        # long exposure: stars + glow at three scales, then a film-like curve; bright cores burn toward white
+        light = rgb * 1.6 + blur(rgb, 1.2) * 1.4 + blur(rgb, 6) * 2.2 + blur(rgb, 22) * 3.0
+        light = saturate(light, 1.35)
+        lum = light.max(-1, keepdims=True)
+        exposed = 1 - np.exp(-light * 1.6)
+        white = np.clip((1 - np.exp(-lum * 0.9)) - 0.55, 0, 1) / 0.45   # only the densest cores
+        exposed = exposed * (1 - white * 0.6) + white * 0.6
+        a = np.clip(exposed.max(-1, keepdims=True), 0, 1)
+        out_rgb = np.where(a > 1e-4, exposed / np.maximum(a, 1e-4), 0)
+    else:
+        # ink: each study adds pigment; dense places become deep, saturated ink with a soft shadow
+        # sharp grains carry most of the ink (stars in negative); the wide wash stays light
+        ink = rgb * 2.4 + blur(rgb, 0.9) * 1.6 + blur(rgb, 7) * 1.4 + blur(rgb, 24) * 0.6
+        amount = ink.mean(-1, keepdims=True)
+        a = np.clip(1 - np.exp(-amount * 7.0), 0, 1) * 0.98
+        colour = ink / np.maximum(ink.max(-1, keepdims=True), 1e-6)    # hue of the pigment
+        out_rgb = saturate(colour * (0.58 - 0.34 * a), 1.5)            # deeper where denser
+    img = np.concatenate([np.clip(out_rgb, 0, 1), a], -1)
+    out = Image.fromarray((img * 255).astype(np.uint8), "RGBA")
+    out.save(OUT / f"science-map-{theme}.webp", quality=74, method=6)
     out.resize((480, 480), Image.LANCZOS).save(OUT / f"science-map-{theme}-small.webp", quality=70, method=6)
     print(theme, f"{(OUT / f'science-map-{theme}.webp').stat().st_size / 1e6:.2f} MB")
 
