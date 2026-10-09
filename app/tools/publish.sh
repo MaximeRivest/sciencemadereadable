@@ -45,8 +45,10 @@ case "${1:-}" in
 esac
 
 cd "$REPO"
-if [ -n "$(git status --porcelain -- app/web app/tools app/server.py)" ]; then
-  git status --short -- app/web app/tools app/server.py
+# changed tracked files anywhere that matters, and new files where the site's own files live
+DIRTY="$(git status --porcelain --untracked-files=no -- app/web app/tools app/server.py; git status --porcelain -- app/web/src app/web/map)"
+if [ -n "$DIRTY" ]; then
+  echo "$DIRTY"
   echo "commit these first: the live site is always a commit you can name" >&2; exit 1
 fi
 git fetch -q origin
