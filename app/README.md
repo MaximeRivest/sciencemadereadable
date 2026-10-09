@@ -30,6 +30,30 @@ As a Home Manager user service (machines/hm): the same command as `ExecStart`, `
 `After=network-online.target`, `WantedBy=default.target`. Check from outside:
 `curl https://api.sciencemadereadable.com/api/status`.
 
+## Develop privately, publish when you like it
+
+```sh
+app/tools/dev.sh up                 # https://lambda.tail69222b.ts.net:18940/  (tailnet only, any device)
+# edit app/web/src/*.ts, style.css, index.html: rebuilt and reloaded in the open page in under a second
+app/tools/dev.sh check              # a browser walk-through, desktop + phone (18 checks, ~15 s)
+git commit … && git push
+app/tools/publish.sh                # check dev -> GitHub Pages -> wait until live -> check live
+app/tools/publish.sh rollback       # the previous version back
+app/tools/publish.sh queue          # app/server.py changed: restart the queue (only when no rewrite runs)
+```
+
+- The dev site uses the **real data API** (`--data prod`, read-only) by default. To change the API too:
+  `search/dev.sh up` (a second private API from the `dev` branch worktree `../search-dev`), then
+  `app/tools/dev.sh up --data dev`; when both are right: `search/dev.sh promote`, then `publish.sh`.
+  Promote the API before publishing a page that needs it.
+- The dev site always uses the **real queue**: rewrites asked for there are real (they're saved for everyone).
+  A dev queue would share its files with the real one; there isn't one.
+- A red DEV badge on every dev page names the backends, so dev is never mistaken for the live site.
+- Publishing refuses uncommitted or unpushed changes under `app/`: what is live is always a commit, named in the
+  gh-pages commit message (`site from <commit>`).
+- From the laptop away from lambda: `.venv/bin/python app/tools/dev.py --data public --queue public`
+  (dev page on your machine, the public API behind it).
+
 ## Where the models run
 
 Since 2026-10-05 evening, **our 9B on lambda's GPU 0**, in InkType's place, declared in
