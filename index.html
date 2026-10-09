@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Science, made readable</title>
 <meta name="description" content="Search all of science, see where it sits on the map of research, and read open papers rewritten in plain words.">
-<link rel="stylesheet" href="style.css?v=f235db59a5">
+<link rel="stylesheet" href="style.css?v=5c45849f91">
 <script src="theme.js?v=daa32516ad"></script>
 <script src="config.js?v=6e53bdb24f"></script>
 </head>
@@ -42,6 +42,8 @@
     <div id="globe">
       <img class="map-img light" src="map/science-map-light-small.webp" alt="">
       <img class="map-img dark" src="map/science-map-dark-small.webp" alt="">
+      <div id="tiles" hidden></div>
+      <svg id="links" viewBox="0 0 1 1" preserveAspectRatio="none" aria-hidden="true"></svg>
       <div id="labels"></div>
       <div id="dots"></div>
     </div>
@@ -49,9 +51,15 @@
   <div id="map-tag">where these studies sit in science · open the map</div>
 </div>
 <div id="map-tip" hidden></div>
+<div id="pick" hidden role="dialog" aria-label="Study on the map">
+  <div class="pick-body"></div>
+  <div class="pick-actions"><button type="button" id="pick-open" class="primary">Open</button><button type="button" id="pick-close">Close</button></div>
+</div>
 <div id="explore-ui">
-  <p>The map of science: 128 million studies, 1800 to today. Studies about similar things sit close together;
-     colours are fields. <span class="ex-how">Scroll or pinch to zoom, drag to move.</span></p>
+  <p>The map of science: studies about similar things sit close together; colours are fields. Zoom in and every
+     dot is a study: tap one to see which. <span class="ex-how">Scroll or pinch to zoom, drag to move.</span></p>
+  <p id="ex-legend" hidden><span class="lg k-ref"></span>builds on <span class="lg k-similar"></span>same conversation
+     <span class="lg k-next"></span>read next <span class="lg here"></span>this study</p>
   <button type="button" id="ex-in" aria-label="Zoom in">+</button><button type="button" id="ex-out" aria-label="Zoom out">−</button>
   <button type="button" id="ex-reset">Whole map</button><button type="button" id="ex-back">Back</button>
 </div>
@@ -202,6 +210,6 @@
   </form>
 </dialog>
 
-<script type="module" src="app.js?v=c1c894fef7"></script>
+<script type="module" src="app.js?v=093cc920e5"></script>
 </body>
 </html>
