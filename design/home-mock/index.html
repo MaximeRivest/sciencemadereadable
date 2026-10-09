@@ -83,6 +83,10 @@ form.big button { border-radius: 999px; border: 0; background: var(--accent); co
 body[data-state="home"] #map { --s: max(1250px, 125vw); width: var(--s); height: var(--s);
   left: calc(50vw - var(--s) / 2); top: max(56vh, 470px); }
 body[data-state="home"] .map-img { opacity: 1; }
+/* light mode: a faint sky inside the planet, so the pale glowing cores read as light */
+:root[data-theme="light"] #world::before { content: ""; position: absolute; inset: 2%; border-radius: 50%;
+  background: radial-gradient(circle closest-side, #e9ece6 0%, #eef0ea 70%, transparent 100%); }
+:root[data-theme="light"] body[data-state="explore"] #world::before { opacity: .7; }
 @media (max-width: 700px) { body[data-state="home"] #map { --s: 190vw; top: 72vh; } }
 
 /* results: a quiet globe beside the list; the results glow */

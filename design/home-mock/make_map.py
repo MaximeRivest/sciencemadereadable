@@ -87,13 +87,26 @@ for theme in ("light", "dark"):
         a = np.clip(exposed.max(-1, keepdims=True), 0, 1)
         out_rgb = np.where(a > 1e-4, exposed / np.maximum(a, 1e-4), 0)
     else:
-        # ink: each study adds pigment; dense places become deep, saturated ink with a soft shadow
-        # sharp grains carry most of the ink (stars in negative); the wide wash stays light
-        ink = rgb * 2.4 + blur(rgb, 0.9) * 1.6 + blur(rgb, 7) * 1.4 + blur(rgb, 24) * 0.6
-        amount = ink.mean(-1, keepdims=True)
-        a = np.clip(1 - np.exp(-amount * 7.0), 0, 1) * 0.98
-        colour = ink / np.maximum(ink.max(-1, keepdims=True), 1e-6)    # hue of the pigment
-        out_rgb = saturate(colour * (0.58 - 0.34 * a), 1.5)            # deeper where denser
+        # backlit glass: the same summed light as the dark map, shown as vivid colour on cream;
+        # the densest cores turn into pale, warm light ringed by their colour (glow without darkness)
+        light = rgb * 1.6 + blur(rgb, 1.2) * 1.3 + blur(rgb, 6) * 2.0 + blur(rgb, 22) * 2.6
+        exposed = 1 - np.exp(-light * 1.8)
+        lum = exposed.max(-1, keepdims=True)
+        hue = saturate(exposed / np.maximum(lum, 1e-6), 1.6)
+        hue = hue / np.maximum(hue.max(-1, keepdims=True), 1e-6)       # pure, bright colour
+        core = np.clip((lum - 0.62) / 0.38, 0, 1) ** 1.5                # only the densest places
+        glowcol = np.array([1.0, 0.985, 0.94])                          # warm white, brighter than the page
+        haze_rgb = hue * 0.86 * (1 - core) + glowcol * core
+        haze_a = np.clip(lum ** 0.9 * 0.85 + core * 0.15, 0, 1)
+        # sharp grains on top, in the deep version of their colour: the "stars" inside the glow
+        grain = rgb * 1.0 + blur(rgb, 0.7) * 1.2
+        g_lum = grain.max(-1, keepdims=True)
+        g_hue = saturate(grain / np.maximum(g_lum, 1e-6), 1.5)
+        g_hue = g_hue / np.maximum(g_hue.max(-1, keepdims=True), 1e-6)
+        g_a = np.clip(1 - np.exp(-g_lum * 4.0), 0, 1) * 0.75 * (1 - core * 0.85)   # cores stay luminous
+        g_rgb = g_hue * 0.50
+        a = g_a + haze_a * (1 - g_a)                                     # grains over haze ("over")
+        out_rgb = (g_rgb * g_a + haze_rgb * haze_a * (1 - g_a)) / np.maximum(a, 1e-6)
     img = np.concatenate([np.clip(out_rgb, 0, 1), a], -1)
     out = Image.fromarray((img * 255).astype(np.uint8), "RGBA")
     out.save(OUT / f"science-map-{theme}.webp", quality=74, method=6)
