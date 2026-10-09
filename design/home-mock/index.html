@@ -55,17 +55,10 @@ input[type=search]:focus { border-color: var(--accent); box-shadow: 0 0 0 4px va
 #home { position: relative; z-index: 5; text-align: center; max-width: 760px; margin: 0 auto; padding: 15vh 24px 0;
         transition: opacity .35s, transform .5s var(--ease); }
 body:not([data-state="home"]) #home { opacity: 0; transform: translateY(-30px); pointer-events: none; position: absolute; left: 0; right: 0; }
-.hero { font: 500 clamp(40px, 7vw, 66px)/1.05 var(--serif); margin: 0 0 16px; letter-spacing: -.01em; }
-.hero-sub { font: 20px/1.5 var(--serif); color: var(--muted); margin: 0 auto 34px; max-width: 560px; }
+.hero { font: 500 clamp(40px, 7vw, 66px)/1.05 var(--serif); margin: 0 0 34px; letter-spacing: -.01em; }
 form.big { display: flex; gap: 10px; }
 form.big input { font-size: 18px; padding: 16px 24px; box-shadow: 0 10px 40px rgba(60, 50, 30, .10); }
 form.big button { border-radius: 999px; border: 0; background: var(--accent); color: #fff; font-weight: 600; padding: 0 26px; }
-.home-links { margin-top: 18px; display: flex; gap: 22px; justify-content: center; flex-wrap: wrap; font-size: 14.5px; color: var(--muted); }
-.home-links button { border: 0; background: none; color: var(--muted); padding: 2px 0; text-decoration: underline;
-                     text-decoration-color: var(--line); text-underline-offset: 4px; }
-.home-links button:hover { color: var(--ink); text-decoration-color: var(--accent); }
-@media (max-width: 700px) { .home-links { flex-direction: column; gap: 10px; } }
-.soon { white-space: nowrap; font-size: 11.5px; border: 1px solid var(--line); border-radius: 999px; padding: 0 7px; margin-left: 4px; }
 
 /* ---------------------------------------------------------------- the map: one element, four places */
 #map { position: fixed; z-index: 1; border-radius: 50%; cursor: pointer;
@@ -110,11 +103,6 @@ body[data-state="explore"] #map::before { opacity: 0; }
 body[data-state="explore"] #map.dragging { cursor: grabbing; }
 body:not([data-state="explore"]) #world { transform: none !important; }
 
-#map-hint { position: absolute; left: 50%; top: 9%; transform: translateX(-50%); z-index: 3; white-space: nowrap;
-            border: 1px solid var(--line); background: color-mix(in srgb, var(--card) 85%, transparent);
-            color: var(--muted); border-radius: 999px; padding: 6px 16px; font-size: 13.5px; backdrop-filter: blur(6px); }
-#map-hint:hover { color: var(--ink); border-color: var(--accent); }
-body:not([data-state="home"]) #map-hint { display: none; }
 #map-tag { position: absolute; left: 50%; bottom: -30px; transform: translateX(-50%); font-size: 12.5px; color: var(--faint);
            white-space: nowrap; pointer-events: none; }
 body:not([data-state="results"]) #map-tag { display: none; }
@@ -198,15 +186,10 @@ body:not([data-state="explore"]) #explore-ui { display: none; }
 
 <main id="home">
   <h1 class="hero">Science, made readable.</h1>
-  <p class="hero-sub">Find any study, across all of science. Read it in plain words.</p>
   <form class="big" role="search">
     <input type="search" placeholder="What are you curious about?" aria-label="Search all of science" autofocus>
     <button>Search</button>
   </form>
-  <div class="home-links">
-    <button type="button" id="go-explore">Explore the map of science</button>
-    <button type="button" id="go-own">Rewrite your own paper: paste text or drop a PDF <span class="soon">soon</span></button>
-  </div>
 </main>
 
 <div id="map" role="button" tabindex="0" aria-label="Map of science: open the explorer">
@@ -218,7 +201,6 @@ body:not([data-state="explore"]) #explore-ui { display: none; }
       <div id="dots"></div>
     </div>
   </div>
-  <button id="map-hint" type="button">Every dot is a study · explore the map</button>
   <div id="map-tag">where your results sit in science · click to explore</div>
 </div>
 
@@ -440,10 +422,7 @@ $("#ex-back").onclick = () => history.back();
 
 // ---------------------------------------------------------------- wiring
 for (const f of document.querySelectorAll("form")) f.onsubmit = (e) => { e.preventDefault(); search(f.querySelector("input").value); };
-$("#go-explore").onclick = (e) => { e.stopPropagation(); explore(); };
-$("#map-hint").onclick = (e) => { e.stopPropagation(); explore(); };
 $("#brand").onclick = () => { S.data = null; setState("home"); };
-$("#go-own").onclick = () => alert("Coming later: paste a paper's text or drop its PDF, and we'll rewrite it for you only.");
 history.replaceState({ state: "home" }, "");
 { // links: ?q=... opens results, ?view=explore the map, ?q=...&open=0 the first result
   const u = new URLSearchParams(location.search);
