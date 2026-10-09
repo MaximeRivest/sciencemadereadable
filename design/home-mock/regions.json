@@ -1,0 +1,161 @@
+{
+ "atlas": "20261008T131030-tsne",
+ "fields": [
+  {
+   "name": "Agricultural and Biological Sciences",
+   "colour": "#a5ec65",
+   "x": 0.6705729166666666,
+   "y": 0.59765625
+  },
+  {
+   "name": "Arts and Humanities",
+   "colour": "#a965ec",
+   "x": 0.2721354166666667,
+   "y": 0.2903645833333333
+  },
+  {
+   "name": "Biochemistry, Genetics and Molecular Biology",
+   "colour": "#6ce740",
+   "x": 0.72265625,
+   "y": 0.80078125
+  },
+  {
+   "name": "Business, Management and Accounting",
+   "colour": "#b340e7",
+   "x": 0.4830729166666667,
+   "y": 0.22005208333333334
+  },
+  {
+   "name": "Chemical Engineering",
+   "colour": "#65d9ec",
+   "x": 0.8684895833333334,
+   "y": 0.5950520833333334
+  },
+  {
+   "name": "Chemistry",
+   "colour": "#40bee7",
+   "x": 0.8841145833333334,
+   "y": 0.6888020833333334
+  },
+  {
+   "name": "Computer Science",
+   "colour": "#65bcec",
+   "x": 0.59765625,
+   "y": 0.11067708333333333
+  },
+  {
+   "name": "Decision Sciences",
+   "colour": "#da65ec",
+   "x": 0.51171875,
+   "y": 0.17578125
+  },
+  {
+   "name": "Dentistry",
+   "colour": "#ec657a",
+   "x": 0.5299479166666666,
+   "y": 0.60546875
+  },
+  {
+   "name": "Earth and Planetary Sciences",
+   "colour": "#409ae7",
+   "x": 0.6158854166666666,
+   "y": 0.4283854166666667
+  },
+  {
+   "name": "Economics, Econometrics and Finance",
+   "colour": "#e740df",
+   "x": 0.4309895833333333,
+   "y": 0.19921875
+  },
+  {
+   "name": "Energy",
+   "colour": "#659fec",
+   "x": 0.8763020833333334,
+   "y": 0.5716145833333334
+  },
+  {
+   "name": "Engineering",
+   "colour": "#4076e7",
+   "x": 0.69140625,
+   "y": 0.41015625
+  },
+  {
+   "name": "Environmental Science",
+   "colour": "#6581ec",
+   "x": 0.6184895833333334,
+   "y": 0.5299479166666666
+  },
+  {
+   "name": "Health Professions",
+   "colour": "#e74540",
+   "x": 0.38671875,
+   "y": 0.5455729166666666
+  },
+  {
+   "name": "Immunology and Microbiology",
+   "colour": "#6aec65",
+   "x": 0.58203125,
+   "y": 0.86328125
+  },
+  {
+   "name": "Materials Science",
+   "colour": "#4052e7",
+   "x": 0.8268229166666666,
+   "y": 0.5768229166666666
+  },
+  {
+   "name": "Mathematics",
+   "colour": "#6565ec",
+   "x": 0.8033854166666666,
+   "y": 0.16276041666666666
+  },
+  {
+   "name": "Medicine",
+   "colour": "#ec8165",
+   "x": 0.4518229166666667,
+   "y": 0.7486979166666666
+  },
+  {
+   "name": "Neuroscience",
+   "colour": "#40e75e",
+   "x": 0.47265625,
+   "y": 0.4856770833333333
+  },
+  {
+   "name": "Nursing",
+   "colour": "#e78240",
+   "x": 0.7174479166666666,
+   "y": 0.64453125
+  },
+  {
+   "name": "Pharmacology, Toxicology and Pharmaceutics",
+   "colour": "#65ec9a",
+   "x": 0.7825520833333334,
+   "y": 0.66015625
+  },
+  {
+   "name": "Physics and Astronomy",
+   "colour": "#5340e7",
+   "x": 0.8997395833333334,
+   "y": 0.2591145833333333
+  },
+  {
+   "name": "Psychology",
+   "colour": "#ec65cd",
+   "x": 0.41015625,
+   "y": 0.46484375
+  },
+  {
+   "name": "Social Sciences",
+   "colour": "#e740a3",
+   "x": 0.3528645833333333,
+   "y": 0.24869791666666666
+  },
+  {
+   "name": "Veterinary",
+   "colour": "#ecb265",
+   "x": 0.59765625,
+   "y": 0.6575520833333334
+  }
+ ]
+}
