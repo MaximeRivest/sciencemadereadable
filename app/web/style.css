@@ -544,3 +544,5 @@ body:not([data-view="explore"]) #sdots, body:not([data-view="explore"]) #slinks 
 #slinks line { stroke-width: 1.3px; opacity: .6; }
 #slinks .ln-x-ref { stroke: #6a8fd8; }
 #slinks .ln-y-cand { stroke: var(--accent); stroke-dasharray: 3 4; opacity: .5; }
+/* "you are here" and the question mark only mark a place: a tap on them goes to the map (identifies the study there) */
+#sdots .dot.here, #sdots .qmark { pointer-events: none; }
