@@ -534,3 +534,12 @@ body[data-view="explore"] #map.on-star { cursor: pointer; }
 /* names and stars pass under the top bar: a soft fade keeps the bar readable */
 body.gl nav.top::before { content: ""; position: absolute; z-index: -1; left: -50vw; right: -50vw; top: -20px; height: calc(100% + 46px);
   background: linear-gradient(var(--explore) 55%, transparent); pointer-events: none; }
+
+/* the explorer's markers and citation lines, in screen space (atlas.ts placeMarks) */
+#sdots, #slinks { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 2; pointer-events: none; overflow: hidden; }
+body:not([data-view="explore"]) #sdots, body:not([data-view="explore"]) #slinks { display: none; }
+#sdots > * { left: 0; top: 0; }
+#sdots .dot { pointer-events: auto; }
+#slinks line { stroke-width: 1.3px; opacity: .6; }
+#slinks .ln-x-ref { stroke: #6a8fd8; }
+#slinks .ln-y-cand { stroke: var(--accent); stroke-dasharray: 3 4; opacity: .5; }

@@ -9,6 +9,11 @@
  * #glabels (names, screen space), #world (the images, citation lines, result / walk dots, CSS-transformed).
  * All positions are atlas coordinates in [0, 1]; the data API gives them.
  *
+ * In the explorer, markers (results, the walk, "you are here", the picked study) and citation lines are drawn
+ * in screen space (#sdots, #slinks), placed every frame with the same camera as the WebGL map. Inside the
+ * CSS-scaled #world, Chrome rounds positions at large zooms (up to 400x) and a marker drifted ~50 px away from
+ * its study. The small views keep #world (zoom 1, no rounding problem).
+ *
  * The camera: view.z (zoom), view.x / view.y (css px offset of the world inside the #map box). One
  * animation loop moves it (glides, flings, flights) and redraws everything in the same frame.
  */
@@ -73,7 +78,7 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
     else return;
     e.preventDefault();
   });
-  map.addEventListener("wheel", (e) => {
+  const onWheel = (e: WheelEvent) => {
     if (document.body.dataset.view !== "explore") return;
     e.preventDefault();
     const r = map.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
@@ -81,7 +86,9 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
     // trackpads (small steps, or a pinch: ctrlKey) follow the fingers; a mouse wheel glides
     if (e.ctrlKey || Math.abs(dy) < 40) { stopMotion(); zoomAt(mx, my, Math.exp(-dy * (e.ctrlKey ? 0.01 : 0.004))); }
     else smoothZoom(mx, my, Math.exp(-dy * 0.0028));
-  }, { passive: false });
+  };
+  map.addEventListener("wheel", onWheel, { passive: false });
+  $("#sdots").addEventListener("wheel", onWheel, { passive: false });
 
   // one finger (or the mouse) moves, two fingers pinch and move together; a tap identifies a study or
   // follows a name; a double tap zooms in; a flick keeps the map moving
@@ -327,6 +334,7 @@ function place() {
   document.body.classList.toggle("map-zoomed", view.z >= 1.6);
   document.body.classList.toggle("gl", glOn());
   lineWidths();
+  placeMarks();
   if (glOn()) {
     const r = $("#map").getBoundingClientRect();
     const cam: Cam = { S: r.width, ox: r.left + view.x, oy: r.top + view.y, z: view.z };
@@ -384,23 +392,31 @@ function at<T extends HTMLElement | SVGElement>(el: T, x: number, y: number): T 
   return el;
 }
 
+/** Where markers go: screen space in the explorer, the CSS world elsewhere. */
+const marks: { el: HTMLElement; x: number; y: number }[] = [];
+function put<T extends HTMLElement>(el: T, x: number, y: number): T {
+  if (explore()) marks.push({ el, x, y }); else at(el, x, y);
+  return el;
+}
+
 function draw() {
-  const box = $("#dots");
-  if (!box) return;
+  const world = $("#dots"), screen = $("#sdots");
+  if (!world || !screen) return;
   const v = document.body.dataset.view;
-  box.replaceChildren();
+  world.replaceChildren(); screen.replaceChildren(); marks.length = 0;
+  const box = explore() ? screen : world;
   drawLines(v);
   if (v === "home") return;
   const walk = v === "work" || (v === "explore" && context === "walk");
   if (question && (v === "results" || (v === "explore" && context === "results"))) {
-    const q = at(document.createElement("span"), question.x, question.y);
+    const q = put(document.createElement("span"), question.x, question.y);
     q.className = "qmark";
     q.title = "Your question lands here";
     box.appendChild(q);
   }
   const list = v === "results" || (v === "explore" && context === "results") ? results : walk ? walkSpots : [];
   for (const s of list) {
-    const el = at(document.createElement("span"), s.x, s.y);
+    const el = put(document.createElement("span"), s.x, s.y);
     el.className = `dot k-${s.kind ?? "result"}` + (s.readable ? " readable" : "") + (s.strong ? " strong" : "");
     el.dataset.id = s.id;
     // a mouse only: on touch screens a tap counts as hovering and the popup would stay over the map
@@ -410,15 +426,16 @@ function draw() {
     box.appendChild(el);
   }
   if (here && (v === "work" || v === "reader" || (v === "explore" && context === "walk"))) {
-    const h = at(document.createElement("span"), here.x, here.y);
+    const h = put(document.createElement("span"), here.x, here.y);
     h.className = "dot here";
     box.appendChild(h);
   }
   if (picked && v === "explore") {
-    const p = at(document.createElement("span"), picked.x, picked.y);
+    const p = put(document.createElement("span"), picked.x, picked.y);
     p.className = "picked";
     box.appendChild(p);
   }
+  placeMarks();
 }
 
 /** Line widths in map units, so lines stay ~1 px on screen at any zoom (the zoom is a CSS transform, which
@@ -431,18 +448,31 @@ function lineWidths() {
   svg.style.setProperty("--dash", `${3 * px} ${4 * px}`);
 }
 
+const lineEls: { el: SVGLineElement; l: Line }[] = [];
 function drawLines(v?: string) {
   lineWidths();
-  const svg = document.querySelector("#links") as SVGSVGElement | null;
-  if (!svg) return;
-  svg.replaceChildren();
+  const svg = document.querySelector("#links") as SVGSVGElement | null, ssvg = document.querySelector("#slinks") as SVGSVGElement | null;
+  if (!svg || !ssvg) return;
+  svg.replaceChildren(); ssvg.replaceChildren(); lineEls.length = 0;
   if (!(v === "work" || (v === "explore" && context === "walk"))) return;
+  const into = v === "explore" ? ssvg : svg;
   for (const l of walkLines) {
     const e = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    e.setAttribute("x1", String(l.x1)); e.setAttribute("y1", String(l.y1));
-    e.setAttribute("x2", String(l.x2)); e.setAttribute("y2", String(l.y2));
+    if (v === "explore") lineEls.push({ el: e, l });
+    else { e.setAttribute("x1", String(l.x1)); e.setAttribute("y1", String(l.y1)); e.setAttribute("x2", String(l.x2)); e.setAttribute("y2", String(l.y2)); }
     e.setAttribute("class", `ln-${l.kind}`);
-    svg.appendChild(e);
+    into.appendChild(e);
+  }
+}
+
+/** Screen-space markers and lines follow the camera (same formula as the WebGL map). */
+function placeMarks() {
+  if (!explore()) return;
+  const r = $("#map").getBoundingClientRect(), span = r.width * view.z, ox = r.left + view.x, oy = r.top + view.y;
+  for (const m of marks) m.el.style.translate = `${ox + m.x * span}px ${oy + m.y * span}px`;
+  for (const { el, l } of lineEls) {
+    el.setAttribute("x1", (ox + l.x1 * span).toFixed(1)); el.setAttribute("y1", (oy + l.y1 * span).toFixed(1));
+    el.setAttribute("x2", (ox + l.x2 * span).toFixed(1)); el.setAttribute("y2", (oy + l.y2 * span).toFixed(1));
   }
 }
 

@@ -76,6 +76,12 @@ def desktop(b, errs):
     pg.mouse.click(640, 400)
     check(until(pg, '!document.querySelector("#pick").hidden && !/Finding/.test(document.querySelector("#pick").innerText)', 15),
           "tapping the map identifies a study")
+    # the "selected" ring sits on the tapped study (it drifted ~50 px at deep zoom when it lived in the scaled world)
+    pg.evaluate("window.__fly(0.62, 0.45, 150)"); pg.wait_for_timeout(3000)
+    pg.mouse.click(640, 400)
+    until(pg, '!!document.querySelector(".picked")', 10)
+    c = pg.evaluate('(() => { const b = document.querySelector(".picked")?.getBoundingClientRect(); return b ? [b.x + b.width / 2, b.y + b.height / 2] : null })()')
+    check(c and abs(c[0] - 640) < 20 and abs(c[1] - 400) < 20, f"deep zoom: the selected ring is on the tapped study ({c})")
     pg.screenshot(path=OUT / "map.png")
     pg.goto(BASE + "?q=coral%20bleaching&readable=1")
     until(pg, 'document.querySelectorAll("#results .hit").length > 0')
