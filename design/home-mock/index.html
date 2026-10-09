@@ -4,25 +4,29 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Science, made readable · homepage mock</title>
+<script>
+  // theme before first paint: the reader's choice if any, else the device's
+  const stored = localStorage.getItem("theme");
+  document.documentElement.dataset.theme = stored || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+</script>
 <style>
 :root {
   --paper: #fbf8f2; --ink: #1d1c1a; --muted: #7a756c; --faint: #a39d92; --line: #e8e2d6;
   --accent: #2f7a5a; --accent-soft: #e4f0e8; --card: #fffdf8; --gold: #f2a33a; --gold-glow: rgba(242, 163, 58, .55);
-  --space: #0d0e12;
+  --explore: #f2eee5;
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --ease: cubic-bezier(.3, .7, .2, 1);
 }
-@media (prefers-color-scheme: dark) {
-  :root { --paper: #161513; --ink: #ece8df; --muted: #a39d92; --faint: #77726a; --line: #2e2c28;
-          --accent: #6cc39a; --accent-soft: #1f2d26; --card: #1d1c19; }
-}
+:root[data-theme="dark"] { --paper: #161513; --ink: #ece8df; --muted: #a39d92; --faint: #77726a; --line: #2e2c28;
+  --accent: #6cc39a; --accent-soft: #1f2d26; --card: #1d1c19; --explore: #10100f; color-scheme: dark; }
+body, nav.top, input[type=search], .card-like { transition: background-color .5s, color .5s, border-color .5s; }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { margin: 0; height: 100%; }
 body { background: var(--paper); color: var(--ink); font: 17px/1.55 var(--sans); overflow-x: hidden; transition: background .6s; }
 body[data-state="home"] { overflow: hidden; }
-body[data-state="explore"] { background: var(--space); overflow: hidden; }
+body[data-state="explore"] { background: var(--explore); overflow: hidden; }
 button { font: inherit; cursor: pointer; }
 a { color: var(--accent); }
 
@@ -32,18 +36,20 @@ nav.top { position: fixed; top: 0; left: 0; right: 0; z-index: 20; display: flex
 #brand { font: 600 18px/1 var(--serif); color: var(--ink); text-decoration: none; white-space: nowrap; cursor: pointer; }
 #brand::before { content: "✦ "; color: var(--accent); }
 body[data-state="home"] #brand, body[data-state="home"] #mini-search { visibility: hidden; }
-body[data-state="explore"] #brand { color: #e9e6df; }
 #mini-search { flex: 1; max-width: 460px; }
-.nav-right { margin-left: auto; display: flex; gap: 18px; font-size: 14px; }
+.nav-right { margin-left: auto; display: flex; gap: 18px; font-size: 14px; align-items: center; }
+#theme { border: 1px solid var(--line); background: var(--card); color: var(--muted); border-radius: 999px;
+         width: 34px; height: 34px; padding: 0; display: grid; place-items: center; }
+#theme:hover { color: var(--ink); border-color: var(--accent); }
+#theme svg { width: 17px; height: 17px; }
+:root[data-theme="dark"] #theme .sun, :root[data-theme="light"] #theme .moon { display: none; }
 .nav-right a { color: var(--muted); text-decoration: none; }
-body[data-state="explore"] .nav-right a { color: #9b978f; }
 body:not([data-state="home"]) nav.top { background: color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter: blur(8px); }
-body[data-state="explore"] nav.top { background: rgba(13, 14, 18, .7); }
+body[data-state="explore"] nav.top { background: color-mix(in srgb, var(--explore) 80%, transparent); }
 
 input[type=search] { width: 100%; font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line);
                      border-radius: 999px; padding: 8px 16px; outline: none; }
 input[type=search]:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
-body[data-state="explore"] #mini-search input { background: rgba(255, 255, 255, .08); border-color: rgba(255, 255, 255, .16); color: #eee; }
 
 /* ---------------------------------------------------------------- home */
 #home { position: relative; z-index: 5; text-align: center; max-width: 760px; margin: 0 auto; padding: 15vh 24px 0;
@@ -65,8 +71,10 @@ form.big button { border-radius: 999px; border: 0; background: var(--accent); co
 #map { position: fixed; z-index: 1; border-radius: 50%; cursor: pointer;
        transition: top .8s var(--ease), left .8s var(--ease), width .8s var(--ease), height .8s var(--ease); }
 #world { position: absolute; inset: 0; transform-origin: 0 0; }
-#map-img { position: absolute; inset: 0; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none;
-           transition: filter .8s, opacity .8s; }
+.map-img { position: absolute; inset: 0; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none;
+            transition: filter .8s, opacity .8s; }
+/* both themes are drawn; the other one fades out */
+:root[data-theme="light"] .map-img.dark, :root[data-theme="dark"] .map-img.light { opacity: 0 !important; }
 #map::before { /* atmosphere */
   content: ""; position: absolute; inset: -6%; border-radius: 50%; pointer-events: none; transition: opacity .8s;
   background: radial-gradient(circle closest-side, transparent 78%, color-mix(in srgb, var(--accent) 18%, transparent) 84%, transparent 93%); }
@@ -74,13 +82,13 @@ form.big button { border-radius: 999px; border: 0; background: var(--accent); co
 /* home: a planet rising from the bottom edge */
 body[data-state="home"] #map { --s: max(1250px, 125vw); width: var(--s); height: var(--s);
   left: calc(50vw - var(--s) / 2); top: max(56vh, 470px); }
-body[data-state="home"] #map-img { opacity: 1; }
+body[data-state="home"] .map-img { opacity: 1; }
 @media (max-width: 700px) { body[data-state="home"] #map { --s: 190vw; top: 72vh; } }
 
 /* results: a quiet globe beside the list; the results glow */
 body[data-state="results"] #map { --s: min(400px, 34vw); width: var(--s); height: var(--s);
   left: min(calc(50vw + 250px), calc(100vw - var(--s) - 32px)); top: 120px; }
-body[data-state="results"] #map-img, body[data-state="paper"] #map-img { filter: grayscale(1) contrast(1.1); opacity: .42; }
+body[data-state="results"] .map-img, body[data-state="paper"] .map-img { filter: grayscale(1) contrast(1.1); opacity: .42; }
 @media (max-width: 1100px) { /* not enough room: the globe becomes a small button */
   body[data-state="results"] #map { --s: 64px; left: calc(100vw - 84px); top: calc(100vh - 84px); } }
 
@@ -115,9 +123,10 @@ body:not([data-state="results"]) #map-tag { display: none; }
 body[data-state="paper"] .dot:not(.here) { opacity: .25; box-shadow: none; }
 .dot.here { width: 12px; height: 12px; margin: -6px 0 0 -6px; }
 #labels span { position: absolute; transform: translate(-50%, -50%); font: 600 calc(12px / var(--z, 1)) var(--sans);
-               color: rgba(255, 255, 255, .85); text-shadow: 0 1px 6px #000; white-space: nowrap; pointer-events: none;
-               letter-spacing: .02em; }
+               color: var(--ink); opacity: .8; text-shadow: 0 0 4px var(--explore), 0 0 10px var(--explore), 0 0 2px var(--explore);
+               white-space: nowrap; pointer-events: none; letter-spacing: .02em; }
 body:not([data-state="explore"]) #labels { display: none; }
+#world:not(.zoomed) #labels .small { display: none; }
 
 /* ---------------------------------------------------------------- results */
 #results { position: relative; z-index: 4; max-width: 1100px; margin: 0 auto; padding: 96px 24px 80px; }
@@ -151,15 +160,16 @@ body:not([data-state="paper"]) #paper { display: none; }
 body:not([data-state="paper"]) .you-are-here { display: none; }
 
 /* ---------------------------------------------------------------- explore */
-#explore-ui { position: fixed; z-index: 6; left: 24px; bottom: 22px; color: #a9a59d; font-size: 13px; max-width: 420px; }
+#explore-ui { position: fixed; z-index: 6; left: 24px; bottom: 22px; color: var(--muted); font-size: 13px; max-width: 420px;
+              text-shadow: 0 0 6px var(--explore); }
 body:not([data-state="explore"]) #explore-ui { display: none; }
-#explore-ui button { border: 1px solid rgba(255, 255, 255, .2); background: rgba(255, 255, 255, .06); color: #ddd;
+#explore-ui button { border: 1px solid var(--line); background: var(--card); color: var(--ink);
                      border-radius: 999px; padding: 4px 12px; font-size: 13px; margin-right: 6px; }
 #tip { position: fixed; z-index: 30; pointer-events: none; max-width: 340px; background: var(--card); color: var(--ink);
        border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: 13.5px; box-shadow: 0 8px 30px rgba(0,0,0,.25); }
 
-@media (prefers-reduced-motion: reduce) { #map, #map-img, #home { transition: none !important; } .qmark { animation: none; } }
-.still #map, .still #map-img, .still #home { transition: none !important; }
+@media (prefers-reduced-motion: reduce) { #map, .map-img, #home { transition: none !important; } .qmark { animation: none; } }
+.still #map, .still .map-img, .still #home, .still body { transition: none !important; }
 .chip { border: 1px solid var(--line); background: var(--card); color: var(--muted); border-radius: 999px; padding: 1px 10px;
         font-size: 13px; margin-left: 6px; }
 .chip[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
@@ -170,7 +180,12 @@ body:not([data-state="explore"]) #explore-ui { display: none; }
 <nav class="top">
   <a id="brand">made readable</a>
   <form id="mini-search" role="search"><input type="search" aria-label="Search all of science" placeholder="Search all of science"></form>
-  <span class="nav-right"><a href="#">Library</a><a href="#">About</a></span>
+  <span class="nav-right"><a href="#">Library</a><a href="#">About</a>
+    <button id="theme" type="button" aria-label="Switch between light and dark" title="Light or dark">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+    </button>
+  </span>
 </nav>
 
 <main id="home">
@@ -188,7 +203,8 @@ body:not([data-state="explore"]) #explore-ui { display: none; }
 
 <div id="map" role="button" tabindex="0" aria-label="Map of science: open the explorer">
   <div id="world">
-    <img id="map-img" src="science-map-small.webp" alt="">
+    <img class="map-img light" src="science-map-light-small.webp" alt="">
+    <img class="map-img dark" src="science-map-dark-small.webp" alt="">
     <div id="labels"></div>
     <div id="dots"></div>
   </div>
@@ -219,14 +235,32 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const S = { state: "home", q: "", data: null, paper: null, view: { z: 1, x: 0, y: 0 }, readableOnly: false };
 
-// full-resolution map once the page is up
-const full = new Image();
-full.onload = () => { $("#map-img").src = full.src; };
-setTimeout(() => { full.src = "science-map.webp"; }, 300);
+// full-resolution maps once the page is up (current theme first)
+function loadFull() {
+  const order = document.documentElement.dataset.theme === "dark" ? ["dark", "light"] : ["light", "dark"];
+  order.forEach((th, n) => setTimeout(() => {
+    const im = new Image();
+    im.onload = () => { $(`.map-img.${th}`).src = im.src; };
+    im.src = `science-map-${th}.webp`;
+  }, 300 + n * 1500));
+}
+loadFull();
+
+// light / dark: follows the device until the reader chooses; the choice is remembered
+const root = document.documentElement;
+$("#theme").onclick = () => {
+  root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+  localStorage.setItem("theme", root.dataset.theme);
+};
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+  if (!localStorage.getItem("theme")) root.dataset.theme = e.matches ? "dark" : "light";
+});
 
 fetch("regions.json").then((r) => r.json()).then((d) => {
+  // the 10 largest fields always; the others once zoomed in (they crowd the whole-map view)
+  const big = new Set([...d.fields].sort((a, b) => b.dots - a.dots).slice(0, 10).map((f) => f.name));
   $("#labels").innerHTML = d.fields.map((f) =>
-    `<span style="left:${f.x * 100}%;top:${f.y * 100}%">${esc(f.name)}</span>`).join("");
+    `<span class="${big.has(f.name) ? "" : "small"}" style="left:${f.x * 100}%;top:${f.y * 100}%">${esc(f.name)}</span>`).join("");
 });
 
 // ---------------------------------------------------------------- states
@@ -352,6 +386,7 @@ function applyView() {
   const v = S.view;
   $("#world").style.transform = `translate(${v.x}px, ${v.y}px) scale(${v.z})`;
   $("#world").style.setProperty("--z", v.z);
+  $("#world").classList.toggle("zoomed", v.z >= 1.6);
 }
 function explore(focus) {
   setState("explore");
