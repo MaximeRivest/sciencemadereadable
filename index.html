@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Science, made readable</title>
 <meta name="description" content="Real research papers, rewritten in plain words by small open AI models we trained.">
-<link rel="stylesheet" href="style.css?v=19ed991a3f">
+<link rel="stylesheet" href="style.css?v=3ef165dd97">
 <script src="config.js?v=9f33887f77"></script>
 </head>
 <body data-view="home">
@@ -31,6 +31,30 @@
     <input type="search" placeholder="What are you curious about? Bees, coral reefs, microplastics…" aria-label="Search" autofocus>
     <button>Search</button>
   </form>
+  <div class="search-opts">
+    <span class="seg" role="radiogroup" aria-label="Search by">
+      <button type="button" role="radio" data-by="meaning" title="Finds papers about what you mean, even with other words">By meaning</button>
+      <button type="button" role="radio" data-by="words" title="Finds papers containing your words; supports quotes, AND, OR, NOT">Exact words</button>
+    </span>
+    <select class="since" aria-label="Published">
+      <option value="">Any year</option><option value="2024">Since 2024</option>
+      <option value="2020">Since 2020</option><option value="2015">Since 2015</option>
+    </select>
+    <button type="button" class="tips-toggle" aria-expanded="false">How to search</button>
+  </div>
+  <div class="search-tips" hidden>
+    <p class="tips-head">Ask in your own words <span class="quiet">· finds papers by meaning</span></p>
+    <p><button type="button" class="tip" data-by="meaning" data-q="Why do we need sleep?">Why do we need sleep?</button>
+       <button type="button" class="tip" data-by="meaning" data-q="Can exercise help with depression?">Can exercise help with depression?</button></p>
+    <p class="tips-head">Or look for exact words <span class="quiet">· click to try</span></p>
+    <ul>
+      <li><button type="button" class="tip" data-by="words" data-q='"gut microbiome" autism'><code>"gut microbiome" autism</code></button> a phrase in quotes, and another word</li>
+      <li><button type="button" class="tip" data-by="words" data-q="sleep AND (teens OR adolescents) NOT caffeine"><code>sleep AND (teens OR adolescents) NOT caffeine</code></button> combine, exclude</li>
+      <li><button type="button" class="tip" data-by="words" data-q="microplastic*"><code>microplastic*</code></button> any ending: microplastic, microplastics…</li>
+      <li><button type="button" class="tip" data-by="words" data-q="title:coral bleaching"><code>title:coral bleaching</code></button> "coral" in the title, "bleaching" anywhere</li>
+    </ul>
+    <p class="quiet">Have a DOI or a PubMed Central ID (PMC…)? Paste it to open that paper.</p>
+  </div>
   <section id="now-wrap" hidden>
     <h3 class="now-head"><span class="live-dot"></span>Being made readable right now</h3>
     <div id="now"></div>
@@ -54,6 +78,30 @@
 </main>
 
 <main id="results-view" class="view">
+  <div class="search-opts">
+    <span class="seg" role="radiogroup" aria-label="Search by">
+      <button type="button" role="radio" data-by="meaning" title="Finds papers about what you mean, even with other words">By meaning</button>
+      <button type="button" role="radio" data-by="words" title="Finds papers containing your words; supports quotes, AND, OR, NOT">Exact words</button>
+    </span>
+    <select class="since" aria-label="Published">
+      <option value="">Any year</option><option value="2024">Since 2024</option>
+      <option value="2020">Since 2020</option><option value="2015">Since 2015</option>
+    </select>
+    <button type="button" class="tips-toggle" aria-expanded="false">How to search</button>
+  </div>
+  <div class="search-tips" hidden>
+    <p class="tips-head">Ask in your own words <span class="quiet">· finds papers by meaning</span></p>
+    <p><button type="button" class="tip" data-by="meaning" data-q="Why do we need sleep?">Why do we need sleep?</button>
+       <button type="button" class="tip" data-by="meaning" data-q="Can exercise help with depression?">Can exercise help with depression?</button></p>
+    <p class="tips-head">Or look for exact words <span class="quiet">· click to try</span></p>
+    <ul>
+      <li><button type="button" class="tip" data-by="words" data-q='"gut microbiome" autism'><code>"gut microbiome" autism</code></button> a phrase in quotes, and another word</li>
+      <li><button type="button" class="tip" data-by="words" data-q="sleep AND (teens OR adolescents) NOT caffeine"><code>sleep AND (teens OR adolescents) NOT caffeine</code></button> combine, exclude</li>
+      <li><button type="button" class="tip" data-by="words" data-q="microplastic*"><code>microplastic*</code></button> any ending: microplastic, microplastics…</li>
+      <li><button type="button" class="tip" data-by="words" data-q="title:coral bleaching"><code>title:coral bleaching</code></button> "coral" in the title, "bleaching" anywhere</li>
+    </ul>
+    <p class="quiet">Have a DOI or a PubMed Central ID (PMC…)? Paste it to open that paper.</p>
+  </div>
   <div id="results"></div>
 </main>
 
@@ -158,6 +206,6 @@
   </form>
 </dialog>
 
-<script type="module" src="app.js?v=304d3e8ec7"></script>
+<script type="module" src="app.js?v=41b21b9a50"></script>
 </body>
 </html>

@@ -269,4 +269,29 @@ body.solo .thanks { margin-left: auto; margin-right: auto; }
 .give-alt { margin: 4px 0 10px; font-size: 15px; color: var(--muted); }
 .give { margin-bottom: 4px; }
 
-.search-how { font-size: 0.85em; margin: 0 0 0.6em; }
+
+/* search options: by meaning / exact words, year, tips */
+.search-opts { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap;
+               margin-top: 14px; font-size: 13.5px; color: var(--muted); }
+#results-view .search-opts { justify-content: flex-start; margin: 0 0 6px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 2px; background: var(--card); }
+.seg button { border: 0; background: transparent; padding: 4px 12px; font-size: 13.5px; color: var(--muted); }
+.seg button:hover { color: var(--ink); }
+.seg button[aria-checked="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.search-opts select { font-size: 13.5px; padding: 4px 10px; color: var(--muted); }
+.tips-toggle { border: 0; background: none; color: var(--muted); padding: 4px 6px; font-size: 13.5px;
+               text-decoration: underline dotted; text-underline-offset: 3px; }
+.tips-toggle:hover, .tips-toggle[aria-expanded="true"] { color: var(--ink); }
+.search-tips { text-align: left; margin: 12px auto 0; max-width: 620px; background: var(--card); border: 1px solid var(--line);
+               border-radius: 14px; padding: 6px 20px 10px; font-size: 14px; color: var(--muted); }
+#results-view .search-tips { margin: 8px 0 14px; }
+.search-tips p, .search-tips ul { margin: 8px 0; }
+.search-tips ul { list-style: none; padding: 0; }
+.search-tips li { margin: 5px 0; }
+.tips-head { color: var(--ink); font-weight: 600; margin-top: 12px !important; }
+.tips-head .quiet { font-weight: 400; }
+.tip { padding: 3px 10px; font-size: 13.5px; margin: 2px 6px 2px 0; color: var(--ink); }
+.tip:hover { border-color: var(--accent); color: var(--accent); }
+.tip code { font: 13px ui-monospace, "SF Mono", Menlo, monospace; }
+.search-how { font-size: 13.5px; margin: 4px 0 4px; }
+.search-how a { cursor: pointer; }
