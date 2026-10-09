@@ -419,3 +419,32 @@ body[data-view="results"] #map, body[data-view="work"] #map, body[data-view="rea
   .support-link { white-space: nowrap; }
   .search-opts { gap: 8px; }
 }
+
+/* ---------------------------------------------------------------- touch */
+/* the home text block is as tall as the page: let taps through to the map below, keep its form tappable */
+#home { pointer-events: none; }
+#home > * { pointer-events: auto; }
+/* the map takes every gesture in the explorer (no page scroll or page zoom under the fingers) */
+body[data-view="explore"] #map { touch-action: none; }
+body[data-view="explore"] { overscroll-behavior: none; }
+#map { -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+#explore-ui button { min-height: 32px; }
+#ex-in, #ex-out { width: 34px; padding: 0 !important; font-size: 18px !important; line-height: 1; }
+.dot { touch-action: manipulation; }
+body[data-view="explore"] .dot::after { content: ""; position: absolute; inset: -10px; border-radius: 50%; } /* bigger tap target */
+
+@media (max-width: 560px) {
+  /* 16 px: phones don't zoom the page when the box is tapped */
+  form.search.big input { font-size: 16px; padding: 14px 18px; }
+  form.search.big button { padding: 0 18px; }
+  form.search.mini input, input[type=search] { font-size: 16px; }
+  .hero { margin-bottom: 26px; }
+  #explore-ui { left: 12px; right: 12px; bottom: 12px; max-width: none; font-size: 12.5px; }
+  #explore-ui .ex-how { display: none; }
+  body[data-view="explore"] #map { --s: max(100vh, 100vw); top: calc(50vh - var(--s) / 2); left: calc(50vw - var(--s) / 2); }
+}
+@media (hover: none) { #explore-ui .ex-how::after { content: ""; } }
+@media (max-width: 560px) {
+  #explore-ui p { background: color-mix(in srgb, var(--card) 85%, transparent); border: 1px solid var(--line);
+                  border-radius: 12px; padding: 8px 12px; backdrop-filter: blur(6px); text-shadow: none; }
+}

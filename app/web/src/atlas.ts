@@ -45,30 +45,48 @@ export function initMap(opts: { explore: () => void; open: (s: Spot) => void }) 
     const r = map.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
     zoomAt(mx, my, Math.exp(-e.deltaY * 0.0015));
   }, { passive: false });
-  // drag to move, pinch to zoom
+  // one finger (or the mouse) moves, two fingers pinch and move together; double tap zooms in
   const pts = new Map<number, { x: number; y: number }>();
-  let last: { d: number; cx: number; cy: number } | null = null;
+  let g: { cx: number; cy: number; d: number } | null = null;
+  const gesture = () => {
+    const a = [...pts.values()], r = map.getBoundingClientRect();
+    const cx = a.reduce((s, p) => s + p.x, 0) / a.length - r.left, cy = a.reduce((s, p) => s + p.y, 0) / a.length - r.top;
+    return { cx, cy, d: a.length > 1 ? Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) : 0 };
+  };
   map.addEventListener("pointerdown", (e) => {
     if (document.body.dataset.view !== "explore" || (e.target as HTMLElement).classList.contains("dot")) return;
     pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    map.setPointerCapture(e.pointerId);
+    try { map.setPointerCapture(e.pointerId); } catch { /* */ }
     map.classList.add("dragging");
+    g = gesture();
   });
   map.addEventListener("pointermove", (e) => {
-    const p = pts.get(e.pointerId);
-    if (!p) return;
-    if (pts.size === 1) { view.x += e.clientX - p.x; view.y += e.clientY - p.y; apply(); }
+    if (!pts.has(e.pointerId)) return;
     pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (pts.size === 2) {
-      const [a, b] = [...pts.values()], r = map.getBoundingClientRect();
-      const d = Math.hypot(a.x - b.x, a.y - b.y), cx = (a.x + b.x) / 2 - r.left, cy = (a.y + b.y) / 2 - r.top;
-      if (last) zoomAt(cx, cy, d / last.d);
-      last = { d, cx, cy };
+    const n = gesture();
+    if (g) {
+      view.x += n.cx - g.cx; view.y += n.cy - g.cy;
+      if (n.d && g.d) zoomAt(n.cx, n.cy, n.d / g.d); else apply();
     }
+    g = n;
   });
-  const up = (e: PointerEvent) => { pts.delete(e.pointerId); last = null; if (!pts.size) map.classList.remove("dragging"); };
+  const up = (e: PointerEvent) => {
+    pts.delete(e.pointerId);
+    g = pts.size ? gesture() : null;
+    if (!pts.size) map.classList.remove("dragging");
+  };
   map.addEventListener("pointerup", up);
   map.addEventListener("pointercancel", up);
+  map.addEventListener("dblclick", (e) => {
+    if (document.body.dataset.view !== "explore") return;
+    const r = map.getBoundingClientRect();
+    zoomAt(e.clientX - r.left, e.clientY - r.top, 2);
+  });
+  // Safari: no page zoom while the map is being pinched
+  document.addEventListener("gesturestart", (e) => { if (document.body.dataset.view === "explore") e.preventDefault(); });
+  const centre = (f: number) => { const r = map.getBoundingClientRect(); zoomAt(innerWidth / 2 - r.left, innerHeight / 2 - r.top, f); };
+  $("#ex-in").onclick = () => centre(1.6);
+  $("#ex-out").onclick = () => centre(1 / 1.6);
   $("#ex-reset").onclick = () => resetView();
   $("#ex-back").onclick = () => history.back();
 
@@ -87,6 +105,7 @@ export function initMap(opts: { explore: () => void; open: (s: Spot) => void }) 
 
 function zoomAt(mx: number, my: number, f: number) {
   const z = Math.min(12, Math.max(1, view.z * f));
+  if (z === view.z) return apply();
   view.x = mx - (mx - view.x) * (z / view.z);
   view.y = my - (my - view.y) * (z / view.z);
   view.z = z;
@@ -102,6 +121,7 @@ export function resetView() { view.z = 1; view.x = 0; view.y = 0; apply(); }
 
 /** Called by the page on every view change. */
 export function mapView(v: string) {
+  $("#map-tip").hidden = true;
   if (v !== "explore") resetView();
   draw();
 }
@@ -112,8 +132,11 @@ export function focus(p: { x: number; y: number } | null) {
   if (!p) return;
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
   setTimeout(() => {
-    const size = Math.min(innerWidth, innerHeight) * 0.96, z = 2.5;
-    view.z = z; view.x = size / 2 - p.x * size * z; view.y = size / 2 - p.y * size * z;
+    // centre the place on the screen (the map can be larger than the screen on phones)
+    const r = $("#map").getBoundingClientRect(), size = r.width, z = 2.5;
+    view.z = z;
+    view.x = innerWidth / 2 - r.left - p.x * size * z;
+    view.y = innerHeight / 2 - r.top - p.y * size * z;
     apply();
   }, still ? 0 : 820);
 }
@@ -148,8 +171,9 @@ function draw() {
       const el = at(document.createElement("span"), s.x, s.y);
       el.className = "dot" + (s.readable ? " readable" : "");
       el.dataset.id = s.id;
-      el.onmouseenter = (e) => tip(e, s);
-      el.onmouseleave = () => { $("#map-tip").hidden = true; };
+      // a mouse only: on touch screens a tap counts as hovering and the popup would stay over the map
+      el.onpointerenter = (e) => { if (e.pointerType === "mouse") tip(e, s); };
+      el.onpointerleave = () => { $("#map-tip").hidden = true; };
       el.onclick = (e) => { if (document.body.dataset.view === "explore") { e.stopPropagation(); $("#map-tip").hidden = true; openSpot(s); } };
       box.appendChild(el);
     }

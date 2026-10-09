@@ -551,6 +551,9 @@ for (const tip of document.querySelectorAll<HTMLButtonElement>(".tip"))
     runSearch(tip.dataset.q!);
   };
 drawOpts("");
+// phones: a hint that fits the box
+if (matchMedia("(max-width: 560px)").matches)
+  for (const i of document.querySelectorAll<HTMLInputElement>("form.search input")) i.placeholder = "Curious about…?";
 $("#readable-only").onclick = () => { opts.readable = !opts.readable; drawOpts(); rerun(); };
 initMap({
   explore: () => go(`?map${location.search.includes("q=") ? "&" + location.search.slice(1).replace(/(^|&)map(&|$)/, "$1") : ""}`),
