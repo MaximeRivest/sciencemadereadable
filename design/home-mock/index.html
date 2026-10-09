@@ -52,7 +52,7 @@ input[type=search] { width: 100%; font: inherit; color: var(--ink); background: 
 input[type=search]:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
 
 /* ---------------------------------------------------------------- home */
-#home { position: relative; z-index: 5; text-align: center; max-width: 760px; margin: 0 auto; padding: 15vh 24px 0;
+#home { position: relative; z-index: 5; text-align: center; max-width: 760px; margin: 0 auto; padding: calc(50vh - 120px) 24px 0;
         transition: opacity .35s, transform .5s var(--ease); }
 body:not([data-state="home"]) #home { opacity: 0; transform: translateY(-30px); pointer-events: none; position: absolute; left: 0; right: 0; }
 .hero { font: 500 clamp(40px, 7vw, 66px)/1.05 var(--serif); margin: 0 0 34px; letter-spacing: -.01em; }
@@ -78,13 +78,13 @@ form.big button { border-radius: 999px; border: 0; background: var(--accent); co
 
 /* home: a planet rising from the bottom edge */
 body[data-state="home"] #map { --s: max(1250px, 125vw); width: var(--s); height: var(--s);
-  left: calc(50vw - var(--s) / 2); top: max(56vh, 470px); }
+  left: calc(50vw - var(--s) / 2); top: max(64vh, 540px); }
 body[data-state="home"] .map-img { opacity: 1; }
 /* light mode: a faint sky inside the planet, so the pale glowing cores read as light */
 :root[data-theme="light"] #world::before { content: ""; position: absolute; inset: 2%; border-radius: 50%;
   background: radial-gradient(circle closest-side, #e9ece6 0%, #eef0ea 70%, transparent 100%); }
 :root[data-theme="light"] body[data-state="explore"] #world::before { opacity: .7; }
-@media (max-width: 700px) { body[data-state="home"] #map { --s: 190vw; top: 72vh; } }
+@media (max-width: 700px) { body[data-state="home"] #map { --s: 190vw; top: 74vh; } }
 
 /* results: a quiet globe beside the list; the results glow */
 body[data-state="results"] #map { --s: min(400px, 34vw); width: var(--s); height: var(--s);
