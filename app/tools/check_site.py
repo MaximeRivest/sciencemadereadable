@@ -78,10 +78,19 @@ def desktop(b, errs):
           "tapping the map identifies a study")
     # the "selected" ring sits on the tapped study (it drifted ~50 px at deep zoom when it lived in the scaled world)
     pg.evaluate("window.__fly(0.62, 0.45, 150)"); pg.wait_for_timeout(3000)
-    pg.mouse.click(640, 400)
+    pg.evaluate('document.querySelector("#pick-close").click()')
+    ring = None
+    for mx in range(400, 900, 17):          # find a study under the mouse (the hover ring shows on it)
+        pg.mouse.move(mx, 420); pg.wait_for_timeout(40)
+        ring = pg.evaluate('(() => { const r = document.querySelector("#hover-ring"); if (r.hidden) return null;'
+                           ' const b = r.getBoundingClientRect(); return [b.x + b.width / 2, b.y + b.height / 2] })()')
+        if ring:
+            pg.mouse.click(mx, 420)
+            break
     until(pg, '!!document.querySelector(".picked")', 10)
     c = pg.evaluate('(() => { const b = document.querySelector(".picked")?.getBoundingClientRect(); return b ? [b.x + b.width / 2, b.y + b.height / 2] : null })()')
-    check(c and abs(c[0] - 640) < 20 and abs(c[1] - 400) < 20, f"deep zoom: the selected ring is on the tapped study ({c})")
+    check(ring and c and abs(c[0] - ring[0]) < 3 and abs(c[1] - ring[1]) < 3,
+          f"deep zoom: the selected ring is on the tapped study (study {ring}, ring {c})")
     pg.screenshot(path=OUT / "map.png")
     pg.goto(BASE + "?q=coral%20bleaching&readable=1")
     until(pg, 'document.querySelectorAll("#results .hit").length > 0')
