@@ -3,11 +3,16 @@
  * beside the results (where they glow), a small "you are here" beside a study, a home button in the reader,
  * and the whole map to explore. One element; CSS places it by the view (body[data-view]).
  *
- * Layers inside #globe, bottom to top: the rendered images (design/home-mock/make_map.py; the haze of all of
- * science), #tiles (every study as a dot once zoomed in: the release's quadtree tiles, drawn into canvases),
- * #links (citations of a walk), #labels (field names), #dots (search results, a walk, "you are here").
+ * Small views draw the rendered images (design/home-mock/make_map.py). The explorer draws the release's map
+ * data with WebGL (mapgl.ts): every study's density, the studies themselves as stars (most cited first), and
+ * names that never collide (fields, subfields, topics, famous studies). Layers, bottom to top: canvas#gl,
+ * #glabels (names, screen space), #world (the images, citation lines, result / walk dots, CSS-transformed).
  * All positions are atlas coordinates in [0, 1]; the data API gives them.
+ *
+ * The camera: view.z (zoom), view.x / view.y (css px offset of the world inside the #map box). One
+ * animation loop moves it (glides, flings, flights) and redraws everything in the same frame.
  */
+import { MapGL, type Cam } from "./mapgl.ts";
 
 export type Kind = "result" | "ref" | "similar" | "next";
 export interface Spot { id: string; x: number; y: number; readable?: boolean; title?: string; meta?: string; kind?: Kind; strong?: boolean }
@@ -15,8 +20,8 @@ export interface Line { x1: number; y1: number; x2: number; y2: number; kind: st
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
-const MAX_ZOOM = 160;          // deep enough to reach the finest tiles (every study)
-const TILES_FROM = 1.5;        // below this the rendered image is sharper than the dots
+const MAX_ZOOM = 400;          // deep enough to separate single studies in the densest clusters
+const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 let api = "";
 let results: Spot[] = [];
@@ -28,6 +33,10 @@ let here: { x: number; y: number } | null = null;
 let openSpot: (s: Spot) => void = () => {};
 let picked: { x: number; y: number } | null = null;
 const view = { z: 1, x: 0, y: 0 };
+const fieldColour: Record<string, { light: number[]; dark: number[] }> = {};
+
+let engine: MapGL | null = null;
+let base = "";
 
 export function initMap(opts: { api: string; explore: () => void; open: (s: Spot) => void }) {
   api = opts.api;
@@ -50,22 +59,37 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
       s.textContent = f.name;
       box.appendChild(s);
     }
+    palette();
   }).catch(() => {});
 
   map.addEventListener("click", () => { if (document.body.dataset.view !== "explore") opts.explore(); });
-  map.addEventListener("keydown", (e) => { if (e.key === "Enter" && document.body.dataset.view !== "explore") opts.explore(); });
+  map.addEventListener("keydown", (e) => {
+    if (document.body.dataset.view !== "explore") { if (e.key === "Enter") opts.explore(); return; }
+    const r = map.getBoundingClientRect(), step = 80;
+    const mid = () => [innerWidth / 2 - r.left, innerHeight / 2 - r.top] as const;
+    if (e.key === "ArrowLeft") glide(step, 0); else if (e.key === "ArrowRight") glide(-step, 0);
+    else if (e.key === "ArrowUp") glide(0, step); else if (e.key === "ArrowDown") glide(0, -step);
+    else if (e.key === "+" || e.key === "=") smoothZoom(...mid(), 2); else if (e.key === "-") smoothZoom(...mid(), 0.5);
+    else return;
+    e.preventDefault();
+  });
   map.addEventListener("wheel", (e) => {
     if (document.body.dataset.view !== "explore") return;
     e.preventDefault();
     const r = map.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
-    zoomAt(mx, my, Math.exp(-e.deltaY * 0.0015));
+    const dy = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY;
+    // trackpads (small steps, or a pinch: ctrlKey) follow the fingers; a mouse wheel glides
+    if (e.ctrlKey || Math.abs(dy) < 40) { stopMotion(); zoomAt(mx, my, Math.exp(-dy * (e.ctrlKey ? 0.01 : 0.004))); }
+    else smoothZoom(mx, my, Math.exp(-dy * 0.0028));
   }, { passive: false });
-  // one finger (or the mouse) moves, two fingers pinch and move together; a tap identifies a study;
-  // a double tap zooms in
+
+  // one finger (or the mouse) moves, two fingers pinch and move together; a tap identifies a study or
+  // follows a name; a double tap zooms in; a flick keeps the map moving
   const pts = new Map<number, { x: number; y: number }>();
   let g: { cx: number; cy: number; d: number } | null = null;
-  let down: { x: number; y: number; t: number; many: boolean } | null = null;
+  let down: { x: number; y: number; t: number; many: boolean; label: HTMLElement | null } | null = null;
   let tapTimer = 0;
+  const track: { x: number; y: number; t: number }[] = [];
   const gesture = () => {
     const a = [...pts.values()], r = map.getBoundingClientRect();
     const cx = a.reduce((s, p) => s + p.x, 0) / a.length - r.left, cy = a.reduce((s, p) => s + p.y, 0) / a.length - r.top;
@@ -73,20 +97,24 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
   };
   map.addEventListener("pointerdown", (e) => {
     if (document.body.dataset.view !== "explore" || (e.target as HTMLElement).classList.contains("dot")) return;
+    stopMotion();
     pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    down = pts.size === 1 ? { x: e.clientX, y: e.clientY, t: performance.now(), many: false } : down && { ...down, many: true };
+    const label = (e.target as HTMLElement).closest<HTMLElement>(".gl-label");
+    down = pts.size === 1 ? { x: e.clientX, y: e.clientY, t: performance.now(), many: false, label } : down && { ...down, many: true };
+    track.length = 0;
     try { map.setPointerCapture(e.pointerId); } catch { /* */ }
     map.classList.add("dragging");
     g = gesture();
   });
   map.addEventListener("pointermove", (e) => {
-    if (!pts.has(e.pointerId)) return;
+    if (!pts.has(e.pointerId)) { if (e.pointerType === "mouse" && !e.buttons) hover(e.clientX, e.clientY); return; }
     pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
     const n = gesture();
     if (g) {
       view.x += n.cx - g.cx; view.y += n.cy - g.cy;
       if (n.d && g.d) zoomAt(n.cx, n.cy, n.d / g.d); else apply();
     }
+    if (pts.size === 1) { track.push({ x: e.clientX, y: e.clientY, t: performance.now() }); if (track.length > 8) track.shift(); }
     g = n;
   });
   const up = (e: PointerEvent) => {
@@ -94,28 +122,39 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
     g = pts.size ? gesture() : null;
     if (pts.size) return;
     map.classList.remove("dragging");
-    if (e.type === "pointerup" && down && !down.many && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 8
-        && performance.now() - down.t < 500) {
+    const tap = e.type === "pointerup" && down && !down.many && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 8
+      && performance.now() - down.t < 500;
+    if (tap && down!.label) { const l = down!.label; down = null; return followLabel(l); }
+    if (tap) {
       const x = e.clientX, y = e.clientY;
       clearTimeout(tapTimer);
       tapTimer = window.setTimeout(() => pick(x, y), 260);   // a second tap (zoom) cancels it
+    } else if (down && !down.many && track.length > 2 && !still()) {
+      // a flick: keep going at the release speed, slowing down
+      const a = track[0], b = track[track.length - 1], dt = b.t - a.t;
+      if (dt > 0 && performance.now() - b.t < 60) {
+        const vx = (b.x - a.x) / dt, vy = (b.y - a.y) / dt;
+        if (Math.hypot(vx, vy) > 0.25) motion = { kind: "fling", vx, vy, t: performance.now() };
+        frame();
+      }
     }
     down = null;
   };
   map.addEventListener("pointerup", up);
   map.addEventListener("pointercancel", up);
+  map.addEventListener("pointerleave", () => hoverRing(null));
   map.addEventListener("dblclick", (e) => {
     if (document.body.dataset.view !== "explore") return;
     clearTimeout(tapTimer);
     const r = map.getBoundingClientRect();
-    zoomAt(e.clientX - r.left, e.clientY - r.top, 2);
+    smoothZoom(e.clientX - r.left, e.clientY - r.top, 2.5);
   });
   // Safari: no page zoom while the map is being pinched
   document.addEventListener("gesturestart", (e) => { if (document.body.dataset.view === "explore") e.preventDefault(); });
-  const centre = (f: number) => { const r = map.getBoundingClientRect(); zoomAt(innerWidth / 2 - r.left, innerHeight / 2 - r.top, f); };
-  $("#ex-in").onclick = () => centre(1.8);
-  $("#ex-out").onclick = () => centre(1 / 1.8);
-  $("#ex-reset").onclick = () => resetView();
+  const centre = (f: number) => { const r = map.getBoundingClientRect(); smoothZoom(innerWidth / 2 - r.left, innerHeight / 2 - r.top, f); };
+  $("#ex-in").onclick = () => centre(2);
+  $("#ex-out").onclick = () => centre(0.5);
+  $("#ex-reset").onclick = () => flyTo(0.5, 0.5, 1);
   $("#ex-back").onclick = () => history.back();
   $("#pick-close").onclick = () => closePick();
 
@@ -130,41 +169,184 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
     try { chosen = localStorage.getItem("theme"); } catch { /* */ }
     if (!chosen) root.dataset.theme = e.matches ? "dark" : "light";
   });
-  // the dots are drawn in the theme's colours: redraw them when it changes
-  new MutationObserver(() => { for (const t of built.values()) t.cv.remove(); built.clear(); scheduleTiles(); })
-    .observe(root, { attributes: true, attributeFilter: ["data-theme"] });
-  addEventListener("resize", () => scheduleTiles());
+  new MutationObserver(() => { palette(); frame(); }).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+  addEventListener("resize", () => frame());
+  startEngine();
+  // for the browser check (tools/check_site.py) and screenshots
+  (window as any).__fly = (x: number, y: number, z: number) => { motion = null; Object.assign(view, viewFor(x, y, z)); apply(); };
+  (window as any).__mapStats = () => ({ z: view.z, stars: engine ? [...engine.ptiles.values()].reduce((s, t) => s + t.shown, 0) : 0,
+                                        density: engine?.dtiles.size ?? 0, names: labelEls.size });
 }
+
+// ======================================================================= the engine
+function startEngine() {
+  const cv = $("#gl") as HTMLCanvasElement | null;
+  // older browsers (no WebGL2, or no gzip streams: iOS < 16.4) keep the rendered images
+  if (!cv || typeof DecompressionStream === "undefined") return;
+  try { engine = new MapGL(cv); } catch { engine = null; return; }   // no WebGL2: the images stay
+  engine.onChange = () => frame();
+  cv.addEventListener("webglcontextlost", (e) => { e.preventDefault(); engine = null; document.body.classList.remove("gl"); });
+  (async () => {
+    const r = await fetch(`${api}/api/data/map/regions`);
+    const rel = (await r.json()).release;
+    if (!rel) throw new Error("no release");
+    base = `${api}/api/data/map/tiles/${rel}/v2`;
+    await engine!.load(base);
+    palette();
+    labelsReady = fetch(`${base}/labels.json`).then((r) => r.json()).then((l: Label[]) => { labels = l; frame(); }).catch(() => {});
+    glReady = true;
+    mapView(document.body.dataset.view ?? "home");
+  })().catch(() => { engine = null; });
+}
+let glReady = false;
+
+function palette() {
+  if (!engine) return;
+  const dark = document.documentElement.dataset.theme === "dark";
+  const bg = hexRGB(getComputedStyle(document.documentElement).getPropertyValue("--explore").trim() || (dark ? "#10100f" : "#f2eee5"));
+  const fields: Record<string, number[]> = {};
+  for (const [n, c] of Object.entries(fieldColour)) fields[n] = dark ? c.dark : c.light;
+  engine.setPalette({ dark, bg, fields });
+}
+
+const explore = () => document.body.dataset.view === "explore";
+const glOn = () => !!engine && glReady && explore();
+
+// ----------------------------------------------------------------------- camera
+type Motion = { kind: "zoom"; mx: number; my: number; target: number }
+  | { kind: "fling"; vx: number; vy: number; t: number }
+  | { kind: "fly"; from: { x: number; y: number; z: number }; to: { x: number; y: number; z: number }; t0: number; ms: number }
+  | { kind: "glide"; dx: number; dy: number; left: number };
+let motion: Motion | null = null;
+let raf = 0, settleUntil = 0, lastT = 0;
+
+function stopMotion() { motion = null; }
 
 function zoomAt(mx: number, my: number, f: number) {
   const z = Math.min(MAX_ZOOM, Math.max(1, view.z * f));
-  if (z === view.z) return apply();
+  if (z !== view.z) {
+    view.x = mx - (mx - view.x) * (z / view.z);
+    view.y = my - (my - view.y) * (z / view.z);
+    view.z = z;
+  }
+  apply();
+}
+
+function smoothZoom(mx: number, my: number, f: number) {
+  if (still()) return zoomAt(mx, my, f);
+  const cur = motion?.kind === "zoom" ? motion.target : view.z;
+  motion = { kind: "zoom", mx, my, target: Math.min(MAX_ZOOM, Math.max(1, cur * f)) };
+  frame();
+}
+function glide(dx: number, dy: number) { motion = { kind: "glide", dx, dy, left: 1 }; frame(); }
+
+/** World point at the centre of the screen, at zoom z: the view that puts it there. */
+function viewFor(x: number, y: number, z: number) {
+  const r = $("#map").getBoundingClientRect(), S = r.width;
+  return { z, x: innerWidth / 2 - r.left - x * S * z, y: innerHeight / 2 - r.top - y * S * z };
+}
+function centreNow() {
+  const r = $("#map").getBoundingClientRect(), S = r.width * view.z;
+  return { x: (innerWidth / 2 - r.left - view.x) / S, y: (innerHeight / 2 - r.top - view.y) / S };
+}
+
+/** Fly to a world point: out a little when far, then in (zoom and pan feel like one movement). */
+export function flyTo(x: number, y: number, z: number) {
+  z = Math.min(MAX_ZOOM, Math.max(1, z));
+  if (still()) { Object.assign(view, viewFor(x, y, z)); return apply(); }
+  const c = centreNow();
+  motion = { kind: "fly", from: { ...c, z: view.z }, to: { x, y, z }, t0: performance.now(), ms: 0 };
+  const S = $("#map").offsetWidth, d = Math.hypot(x - c.x, y - c.y) * S * Math.min(view.z, z);
+  motion.ms = Math.min(1600, 520 + 140 * Math.log2(1 + d / 300) + 60 * Math.abs(Math.log2(z / view.z)));
+  frame();
+}
+
+function apply() { frame(); }
+
+/** One frame: move the camera one step, place the world, draw the map and the names. */
+function frame() {
+  if (raf) return;
+  raf = requestAnimationFrame((t) => { raf = 0; tick(t); });
+}
+function tick(t: number) {
+  const dt = Math.min(64, lastT ? t - lastT : 16); lastT = t;
+  let moving = false;
+  const map = $("#map");
+  if (motion?.kind === "zoom") {
+    const k = 1 - Math.exp(-dt / 70), f = Math.exp(Math.log(motion.target / view.z) * k);
+    zoomRaw(motion.mx, motion.my, f);
+    if (Math.abs(Math.log(motion.target / view.z)) < 0.002) motion = null; else moving = true;
+  } else if (motion?.kind === "fling") {
+    const decay = Math.exp(-dt / 280);
+    view.x += motion.vx * dt; view.y += motion.vy * dt;
+    motion.vx *= decay; motion.vy *= decay;
+    if (Math.hypot(motion.vx, motion.vy) < 0.02) motion = null; else moving = true;
+  } else if (motion?.kind === "glide") {
+    const k = 1 - Math.exp(-dt / 60), s = motion.left * k;
+    view.x += motion.dx * s; view.y += motion.dy * s; motion.left -= s;
+    if (motion.left < 0.01) motion = null; else moving = true;
+  } else if (motion?.kind === "fly") {
+    const m = motion, u = Math.min(1, (t - m.t0) / m.ms), e = u < .5 ? 4 * u * u * u : 1 - (-2 * u + 2) ** 3 / 2;
+    const S = map.offsetWidth, d = Math.hypot(m.to.x - m.from.x, m.to.y - m.from.y) * S;
+    // out by up to a few steps when the target is far off screen at the zooms involved
+    const bump = Math.max(0, Math.log2(d * Math.min(m.from.z, m.to.z) / Math.max(innerWidth, 1)) ) * 0.9;
+    const lz = Math.log2(m.from.z) + (Math.log2(m.to.z) - Math.log2(m.from.z)) * e - bump * Math.sin(Math.PI * u) ;
+    const z = Math.min(MAX_ZOOM, Math.max(1, 2 ** lz));
+    Object.assign(view, viewFor(m.from.x + (m.to.x - m.from.x) * e, m.from.y + (m.to.y - m.from.y) * e, z));
+    if (u >= 1) motion = null; else moving = true;
+  }
+  clampView();
+  place();
+  if (moving || t < settleUntil) frame();
+}
+
+function zoomRaw(mx: number, my: number, f: number) {
+  const z = Math.min(MAX_ZOOM, Math.max(1, view.z * f));
   view.x = mx - (mx - view.x) * (z / view.z);
   view.y = my - (my - view.y) * (z / view.z);
   view.z = z;
-  apply();
 }
-function apply() {
+
+/** Keep part of the map on screen. */
+function clampView() {
+  if (!explore()) return;
+  const r = $("#map").getBoundingClientRect(), S = r.width * view.z, m = 0.35;
+  const minX = innerWidth * m - r.left - S, maxX = innerWidth * (1 - m) - r.left;
+  const minY = innerHeight * m - r.top - S, maxY = innerHeight * (1 - m) - r.top;
+  view.x = Math.min(maxX, Math.max(minX, view.x));
+  view.y = Math.min(maxY, Math.max(minY, view.y));
+}
+
+function place() {
   const w = $("#world");
   w.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.z})`;
   w.style.setProperty("--z", String(view.z));
   w.classList.toggle("zoomed", view.z >= 1.6);
-  w.classList.toggle("deep", view.z >= 7);       // field names are too broad there; the image is only haze
+  w.classList.toggle("deep", view.z >= 7);
   w.classList.toggle("deeper", view.z >= 24);
   document.body.classList.toggle("map-zoomed", view.z >= 1.6);
+  document.body.classList.toggle("gl", glOn());
   lineWidths();
-  scheduleTiles();
+  if (glOn()) {
+    const r = $("#map").getBoundingClientRect();
+    const cam: Cam = { S: r.width, ox: r.left + view.x, oy: r.top + view.y, z: view.z };
+    engine!.draw(cam, innerWidth, innerHeight);
+    drawLabels(cam);
+  }
 }
-export function resetView() { view.z = 1; view.x = 0; view.y = 0; apply(); }
+
+export function resetView() { motion = null; view.z = 1; view.x = 0; view.y = 0; apply(); }
 
 /** Called by the page on every view change. */
 export function mapView(v: string) {
   $("#map-tip").hidden = true;
   if (v === "results") context = "results";
   if (v === "work" || v === "reader") context = "walk";
-  if (v !== "explore") { resetView(); closePick(); }
+  if (v !== "explore") { resetView(); closePick(); hoverRing(null); }
   $("#ex-legend").hidden = !(context === "walk" && walkSpots.length);
+  settleUntil = performance.now() + 950;   // the box moves to its place for the view (CSS, .8 s): follow it
   draw();
+  frame();
 }
 
 /** What the explorer shows: the last search's results, or the walk around a study. */
@@ -181,15 +363,7 @@ export const focusPoint = () => context === "walk" ? (here ?? question) : (quest
 export function focus(p: { x: number; y: number } | null) {
   resetView();
   if (!p) return;
-  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  setTimeout(() => {
-    // centre the place on the screen (the map can be larger than the screen on phones)
-    const r = $("#map").getBoundingClientRect(), size = r.width, z = 2.5;
-    view.z = z;
-    view.x = innerWidth / 2 - r.left - p.x * size * z;
-    view.y = innerHeight / 2 - r.top - p.y * size * z;
-    apply();
-  }, still ? 0 : 820);
+  setTimeout(() => flyTo(p.x, p.y, 3), still() ? 0 : 820);
 }
 
 export function setResults(list: Spot[], q: { x: number; y: number } | null) { results = list; question = q; context = "results"; draw(); }
@@ -259,7 +433,6 @@ function lineWidths() {
 
 function drawLines(v?: string) {
   lineWidths();
-  setTimeout(lineWidths, 850);   // after the map has moved to its place for the view
   const svg = document.querySelector("#links") as SVGSVGElement | null;
   if (!svg) return;
   svg.replaceChildren();
@@ -283,179 +456,132 @@ function tip(e: MouseEvent, s: Spot) {
   t.style.top = e.clientY + 14 + "px";
 }
 
-// ======================================================================= every study, as dots (tiles)
-// A quadtree of the release (pipeline/release/tiles.py): level z is a 2^z x 2^z grid; a tile keeps up to
-// `capacity` studies not taken by a coarser level. To show level L, a display tile draws its own points and
-// those of its ancestors that fall inside it. Zooming in only adds dots; a dot never moves.
-
-let TI: any = null;                     // index.json
-let release = "";
-let tiLoading: Promise<void> | null = null;
-let subField: string[] = [];            // subfield code -> field name
-const fieldColour: Record<string, { light: number[]; dark: number[] }> = {};
-const ptsCache = new Map<string, Promise<Uint16Array | null>>();
-const idsCache = new Map<string, Promise<BigUint64Array | null>>();
-interface Built { cv: HTMLCanvasElement; x: Float32Array; y: Float32Array; src: string[]; si: Uint8Array; idx: Uint32Array }
-const built = new Map<string, Built>();
-const building = new Set<string>();
-let tileTimer = 0;
-
 function hexRGB(h?: string): number[] {
-  if (!h) return [0.6, 0.6, 0.6];
-  return [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
+  if (!h || h[0] !== "#") return [0.6, 0.6, 0.6];
+  if (h.length === 4) h = "#" + [...h.slice(1)].map((c) => c + c).join("");
+  return [1, 3, 5].map((i) => parseInt(h!.slice(i, i + 2), 16) / 255);
 }
 
-function loadIndex(): Promise<void> {
-  tiLoading ??= (async () => {
-    const r = await fetch(`${api}/api/data/map/regions`);
-    release = (await r.json()).release;
-    if (!release) throw new Error("no release");
-    TI = await (await fetch(`${api}/api/data/map/tiles/${release}/index.json`)).json();
-    subField = TI.subfields.map((s: any) => s.field);
-  })().catch((e) => { tiLoading = null; throw e; });
-  return tiLoading;
-}
+// ======================================================================= names on the map
+// labels.json (mapdata.py): each name shows while s0 <= s < s1, s = screen px per unit square / 1024; they
+// were placed so that names showing at the same zoom never overlap.
+interface Label { t: string; k: "field" | "subfield" | "topic" | "paper"; x: number; y: number; s0: number; s1: number; m: number; f: number; id?: string; full?: string }
+let labels: Label[] = [];
+let labelsReady: Promise<void> | null = null;
+const labelEls = new Map<number, HTMLElement>();
 
-function pts(key: string): Promise<Uint16Array | null> {
-  let p = ptsCache.get(key);
-  if (!p) {
-    p = fetch(`${api}/api/data/map/tiles/${release}/${key}.pts`)
-      .then((r) => r.ok ? r.arrayBuffer() : null).then((b) => b ? new Uint16Array(b) : null).catch(() => null);
-    ptsCache.set(key, p);
-    if (ptsCache.size > 400) ptsCache.delete(ptsCache.keys().next().value!);
+function drawLabels(c: Cam) {
+  const box = $("#glabels");
+  if (!box) return;
+  const s = c.S * c.z / 1024, W = innerWidth, H = innerHeight, span = c.S * c.z;
+  const dark = document.documentElement.dataset.theme === "dark";
+  const seen = new Set<number>();
+  for (let i = 0; i < labels.length; i++) {
+    const l = labels[i];
+    if (s < l.s0 || s >= l.s1) continue;
+    const x = c.ox + l.x * span, y = c.oy + l.y * span;
+    if (x < -300 || y < -40 || x > W + 300 || y > H + 40) continue;
+    const a = Math.min(1, (s / l.s0 - 1) / 0.18 + 0.15, (l.s1 / s - 1) / 0.18);
+    if (a <= 0.02) continue;
+    seen.add(i);
+    let el = labelEls.get(i);
+    if (!el) {
+      el = document.createElement("span");
+      el.className = `gl-label k-${l.k}`;
+      el.textContent = l.t;
+      el.dataset.i = String(i);
+      if (l.full) el.title = l.full;
+      box.appendChild(el);
+      labelEls.set(i, el);
+    }
+    const col = colourOf(l.f, dark);
+    if (l.k !== "paper" && col) el.style.color = col;
+    el.style.opacity = String(a);
+    el.style.transform = l.k === "paper" ? `translate(${x}px, ${y + 7}px) translate(-50%, 0)` : `translate(${x}px, ${y}px) translate(-50%, -50%)`;
   }
-  return p;
+  for (const [i, el] of labelEls) if (!seen.has(i)) { el.remove(); labelEls.delete(i); }
 }
 
-function scheduleTiles() {
-  clearTimeout(tileTimer);
-  tileTimer = window.setTimeout(updateTiles, 140);
-}
-
-async function updateTiles() {
-  const layer = $("#tiles");
-  if (!layer) return;
-  const on = document.body.dataset.view === "explore" && view.z >= TILES_FROM;
-  layer.hidden = !on;
-  if (!on) return;
-  try { await loadIndex(); } catch { return; }
-  const map = $("#map"), S = map.offsetWidth, r = map.getBoundingClientRect();
-  const L = Math.max(0, Math.min(TI.levels - 1, Math.floor(Math.log2(S * view.z / 420))));
-  const n = 1 << L, span = S * view.z;
-  const x0 = (-r.left - view.x) / span, x1 = (innerWidth - r.left - view.x) / span;
-  const y0 = (-r.top - view.y) / span, y1 = (innerHeight - r.top - view.y) / span;
-  const want = new Set<string>();
-  for (let ty = Math.max(0, Math.floor(y0 * n)); ty <= Math.min(n - 1, Math.floor(y1 * n)); ty++)
-    for (let tx = Math.max(0, Math.floor(x0 * n)); tx <= Math.min(n - 1, Math.floor(x1 * n)); tx++) {
-      // something to draw if this square or one of its ancestors holds studies
-      for (let l = 0; l <= L; l++) if (`${l}/${tx >> (L - l)}/${ty >> (L - l)}` in TI.tiles) { want.add(`${L}/${tx}/${ty}`); break; }
-    }
-  for (const [k, t] of built) t.cv.hidden = !want.has(k);
-  // forget far-away canvases
-  if (built.size > 64) for (const [k, t] of built) if (!want.has(k)) { t.cv.remove(); built.delete(k); if (built.size <= 48) break; }
-  for (const k of want) if (!built.has(k) && !building.has(k)) buildTile(k);
-}
-
-async function buildTile(key: string) {
-  building.add(key);
-  try {
-    const [L, tx, ty] = key.split("/").map(Number);
-    const n = 1 << L, ox = tx / n, oy = ty / n;
-    const srcs: { key: string; z: number; sx: number; sy: number; a: Uint16Array }[] = [];
-    for (let l = 0; l <= L; l++) {
-      const sx = tx >> (L - l), sy = ty >> (L - l), k = `${l}/${sx}/${sy}`;
-      if (!(k in TI.tiles)) continue;
-      const a = await pts(k);
-      if (a) srcs.push({ key: k, z: l, sx, sy, a });
-    }
-    const dark = document.documentElement.dataset.theme === "dark";
-    const C = Math.min(1280, Math.round(640 * Math.min(devicePixelRatio || 1, 2)));
-    const acc = new Float32Array(C * C * 4);   // r, g, b, count
-    const xs: number[] = [], ys: number[] = [], si: number[] = [], idx: number[] = [];
-    const cols = subField.map((f) => (fieldColour[f] ?? { light: [0.45, 0.45, 0.45], dark: [0.7, 0.7, 0.7] })[dark ? "dark" : "light"]);
-    const splat = (cx: number, cy: number, c: number[], w: number) => {
-      if (cx < 0 || cy < 0 || cx >= C || cy >= C) return;
-      const o = (cy * C + cx) * 4;
-      acc[o] += c[0] * w; acc[o + 1] += c[1] * w; acc[o + 2] += c[2] * w; acc[o + 3] += w;
-    };
-    srcs.forEach((s, sIdx) => {
-      const m = 1 << s.z, a = s.a;
-      for (let i = 0, j = 0; j < a.length; i++, j += 4) {
-        const px = (s.sx + a[j] / 65535) / m, py = (s.sy + a[j + 1] / 65535) / m;
-        const u = (px - ox) * n, v = (py - oy) * n;
-        if (u < 0 || v < 0 || u >= 1 || v >= 1) continue;
-        const cx = (u * C) | 0, cy = (v * C) | 0, c = cols[a[j + 3]] ?? [0.6, 0.6, 0.6];
-        splat(cx, cy, c, 1);
-        splat(cx + 1, cy, c, 0.3); splat(cx - 1, cy, c, 0.3); splat(cx, cy + 1, c, 0.3); splat(cx, cy - 1, c, 0.3);
-        xs.push(px); ys.push(py); si.push(sIdx); idx.push(i);
-      }
-    });
-    const cv = document.createElement("canvas");
-    cv.width = cv.height = C;
-    const ctx = cv.getContext("2d")!;
-    const img = ctx.createImageData(C, C), d = img.data;
-    for (let p = 0, o = 0; p < C * C; p++, o += 4) {
-      const w = acc[o + 3];
-      if (!w) continue;
-      let r = acc[o] / w, g = acc[o + 1] / w, b = acc[o + 2] / w;
-      const a = 1 - Math.exp(-w * (dark ? 1.25 : 1.1));
-      if (dark) { const white = Math.min(0.55, Math.max(0, (w - 2.5) / 12)); r += (1 - r) * white; g += (1 - g) * white; b += (1 - b) * white; }
-      else { const deep = Math.min(0.35, w / 20); r *= 1 - deep; g *= 1 - deep; b *= 1 - deep; }
-      d[o] = r * 255; d[o + 1] = g * 255; d[o + 2] = b * 255; d[o + 3] = a * 255;
-    }
-    ctx.putImageData(img, 0, 0);
-    cv.className = "tile";
-    cv.style.left = `${ox * 100}%`; cv.style.top = `${oy * 100}%`;
-    cv.style.width = cv.style.height = `${100 / n}%`;
-    $("#tiles").appendChild(cv);
-    built.set(key, { cv, x: Float32Array.from(xs), y: Float32Array.from(ys), src: srcs.map((s) => s.key),
-                     si: Uint8Array.from(si), idx: Uint32Array.from(idx) });
-    scheduleTiles();
-  } finally {
-    building.delete(key);
+const colCache = new Map<string, string>();
+function colourOf(f: number, dark: boolean) {
+  const k = `${f}:${dark}`;
+  let c = colCache.get(k);
+  if (c === undefined) {
+    const name = engine?.meta?.fields?.[f]?.name, rgb = name && fieldColour[name]?.[dark ? "dark" : "light"];
+    c = rgb ? `rgb(${rgb.map((v: number) => Math.round(v * 255)).join(",")})` : "";
+    colCache.set(k, c);
   }
+  return c;
 }
 
-// ----------------------------------------------------------------------- tap a dot: which study is it?
+function followLabel(el: HTMLElement) {
+  const l = labels[Number(el.dataset.i)];
+  if (!l) return;
+  const S = $("#map").offsetWidth;
+  if (l.k === "paper" && l.id) {
+    picked = { x: l.x, y: l.y };
+    draw();
+    showCard(l.id, l.x, l.y);
+    return;
+  }
+  // into the group: far enough that its own topics (or studies) start to show
+  const s = Math.min(l.s1 * 0.6, Math.max(l.s0 * 3, l.k === "topic" ? 14 : 2));
+  flyTo(l.x, l.y, s * 1024 / S);
+}
+
+// ======================================================================= which study is it?
+function hover(cx: number, cy: number) {
+  if (!glOn() || view.z < 1.3) return hoverRing(null);
+  const r = $("#map").getBoundingClientRect();
+  const s = engine!.nearest({ S: r.width, ox: r.left + view.x, oy: r.top + view.y, z: view.z }, cx, cy, 9);
+  hoverRing(s ? { x: r.left + view.x + s.x * r.width * view.z, y: r.top + view.y + s.y * r.width * view.z } : null);
+}
+function hoverRing(p: { x: number; y: number } | null) {
+  const el = document.querySelector("#hover-ring") as HTMLElement | null;
+  if (!el) return;
+  el.hidden = !p;
+  $("#map").classList.toggle("on-star", !!p);
+  if (p) el.style.transform = `translate(${p.x}px, ${p.y}px)`;
+}
+
 async function pick(cx: number, cy: number) {
-  if (document.body.dataset.view !== "explore" || view.z < TILES_FROM || !TI) return;
-  const map = $("#map"), S = map.offsetWidth, r = map.getBoundingClientRect(), span = S * view.z;
-  const mx = (cx - r.left - view.x) / span, my = (cy - r.top - view.y) / span;
-  const reach = 14 / span;
-  let best: { t: Built; i: number; d: number } | null = null;
-  for (const t of built.values()) {
-    if (t.cv.hidden) continue;
-    for (let i = 0; i < t.x.length; i++) {
-      const dx = t.x[i] - mx, dy = t.y[i] - my;
-      if (Math.abs(dx) > reach || Math.abs(dy) > reach) continue;
-      const d = dx * dx + dy * dy;
-      if (!best || d < best.d) best = { t, i, d };
-    }
-  }
-  if (!best) return closePick();
-  const { t, i } = best, src = t.src[t.si[i]];
-  picked = { x: t.x[i], y: t.y[i] };
+  if (!glOn()) return;
+  const r = $("#map").getBoundingClientRect();
+  const s = engine!.nearest({ S: r.width, ox: r.left + view.x, oy: r.top + view.y, z: view.z }, cx, cy, 16);
+  if (!s) return closePick();
+  picked = { x: s.x, y: s.y };
   draw();
   const card = $("#pick");
   card.hidden = false;
   card.querySelector(".pick-body")!.innerHTML = `<span class="quiet">Finding this study…</span>`;
-  let ids = idsCache.get(src);
-  if (!ids) {
-    ids = fetch(`${api}/api/data/map/tiles/${release}/${src}.ids`).then((r) => r.ok ? r.arrayBuffer() : null)
-      .then((b) => b ? new BigUint64Array(b) : null).catch(() => null);
-    idsCache.set(src, ids);
+  const ids = await idsOf(s.key);
+  if (!ids || !picked || picked.x !== s.x) return ids ? undefined : closePick();
+  showCard(`W${ids[s.i]}`, s.x, s.y);
+}
+
+const idsCache = new Map<string, Promise<BigUint64Array | null>>();
+function idsOf(key: string) {
+  let p = idsCache.get(key);
+  if (!p) {
+    p = fetch(`${base}/i/${key}.bin`).then((r) => r.ok ? r.arrayBuffer() : null).then((b) => b ? new BigUint64Array(b) : null).catch(() => null);
+    idsCache.set(key, p);
+    if (idsCache.size > 60) idsCache.delete(idsCache.keys().next().value!);
   }
-  const arr = await ids;
-  if (!arr) return closePick();
-  const w = `W${arr[t.idx[i]]}`;
+  return p;
+}
+
+async function showCard(w: string, x: number, y: number) {
+  const card = $("#pick");
+  card.hidden = false;
+  card.querySelector(".pick-body")!.innerHTML = `<span class="quiet">Finding this study…</span>`;
   try {
     const d = await (await fetch(`${api}/api/data/works/${w}`)).json();
-    if (!picked || picked.x !== t.x[i]) return;   // another tap since
+    if (!picked || picked.x !== x) return;   // another tap since
     const title = (d.title ?? "").replace(/<[^>]+>/g, "") || "(no title)";
-    const meta = [d.venue, d.year].filter(Boolean).join(" · ");
+    const meta = [d.venue, d.year, d.citations ? `cited ${Number(d.citations).toLocaleString()} times` : ""].filter(Boolean).join(" · ");
     card.querySelector(".pick-body")!.innerHTML =
       `<b>${esc(title)}</b><span class="quiet">${esc(meta)}${d.smr ? ' · <span class="ok">Readable</span>' : ""}</span>`;
-    ($("#pick-open") as HTMLButtonElement).onclick = () => { closePick(); openSpot({ id: w, x: picked?.x ?? 0, y: picked?.y ?? 0, readable: Boolean(d.smr) }); };
+    ($("#pick-open") as HTMLButtonElement).onclick = () => { closePick(); openSpot({ id: w, x, y, readable: Boolean(d.smr) }); };
   } catch { closePick(); }
 }
 

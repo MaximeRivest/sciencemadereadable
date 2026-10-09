@@ -32,7 +32,7 @@ case "${1:-status}" in
     systemd-run --user -q --unit=smr-dev-build --description="sciencemadereadable dev: esbuild --watch" \
       -p WorkingDirectory="$APP" -p Nice=5 "$NODE" tools/build.mjs --watch
     systemd-run --user -q --unit=smr-dev-site --description="sciencemadereadable dev site (127.0.0.1:$PORT, tailnet :$TS_PORT)" \
-      -p WorkingDirectory="$REPO" -p Restart=on-failure -p MemoryMax=1G \
+      -p WorkingDirectory="$REPO" -p Restart=on-failure -p MemoryMax=1G -E SMR_MAP_V2_ROOT="${SMR_MAP_V2_ROOT:-/mnt/fast/scholarsreadinglist/release/tiles}" \
       "$REPO/.venv/bin/python" -u app/tools/dev.py --port "$PORT" --data "$DATA"
     tailscale serve --bg --https="$TS_PORT" "http://127.0.0.1:$PORT" >/dev/null
     for _ in $(seq 1 20); do curl -sf -o /dev/null "http://127.0.0.1:$PORT/" && break; sleep 0.3; done

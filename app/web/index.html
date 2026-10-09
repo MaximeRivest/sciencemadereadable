@@ -38,6 +38,8 @@
 </main>
 
 <div id="map" role="button" tabindex="0" aria-label="The map of science: open it">
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div id="glabels"></div>
   <div id="world">
     <div id="globe">
       <img class="map-img light" src="map/science-map-light-small.webp" alt="">
@@ -50,6 +52,7 @@
   </div>
   <div id="map-tag">where these studies sit in science · open the map</div>
 </div>
+<div id="hover-ring" hidden></div>
 <div id="map-tip" hidden></div>
 <div id="pick" hidden role="dialog" aria-label="Study on the map">
   <div class="pick-body"></div>

@@ -71,8 +71,11 @@ def desktop(b, errs):
     for _ in range(3):
         pg.click("#ex-in")
         pg.wait_for_timeout(250)
-    check(until(pg, '[...document.querySelectorAll("#tiles canvas")].filter(c => !c.hidden).length > 0', 25),
-          "zoomed in, every study shows as dots")
+    check(until(pg, 'document.body.classList.contains("gl") && !!window.__mapStats && window.__mapStats().stars > 1000', 25),
+          "zoomed in, the map engine draws studies as stars")
+    pg.mouse.click(640, 400)
+    check(until(pg, '!document.querySelector("#pick").hidden && !/Finding/.test(document.querySelector("#pick").innerText)', 15),
+          "tapping the map identifies a study")
     pg.screenshot(path=OUT / "map.png")
     pg.goto(BASE + "?q=coral%20bleaching&readable=1")
     until(pg, 'document.querySelectorAll("#results .hit").length > 0')

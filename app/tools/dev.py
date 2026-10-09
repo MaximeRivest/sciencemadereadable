@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import http.server
 import json
+import re
 import os
 import urllib.error
 import urllib.request
@@ -45,6 +46,10 @@ RELOAD_JS = """// dev only (app/tools/dev.py): a badge, and a reload when the fi
   }, 800);
 })();
 """
+
+
+MAP_V2 = re.compile(r"^/api/data/map/tiles/([\w-]{1,40})/v2/((?:map|labels)\.json|[dpi]/\d{1,2}/\d{1,6}/\d{1,6}\.bin)$")
+MAP_V2_ROOT = Path(os.environ["SMR_MAP_V2_ROOT"]) if os.environ.get("SMR_MAP_V2_ROOT") else None
 
 
 def make_handler(data: str, queue: str, names: tuple[str, str]):
@@ -82,6 +87,14 @@ def make_handler(data: str, queue: str, names: tuple[str, str]):
 
         def route(self, method: str):
             p = self.path
+            m = MAP_V2.match(p.split("?")[0])
+            if m and MAP_V2_ROOT:
+                # the map's second format, straight from the release directory while the data API
+                # does not serve it yet (SMR_MAP_V2_ROOT=/mnt/fast/scholarsreadinglist/release/tiles)
+                f = (MAP_V2_ROOT / m.group(1) / "v2" / m.group(2)).resolve()
+                if MAP_V2_ROOT.resolve() in f.parents and f.is_file():
+                    return self.send_body(200, f.read_bytes(), "application/json" if f.suffix == ".json" else "application/octet-stream")
+                return self.send_body(404, b'{"error":"no such tile"}', "application/json")
             if p.startswith("/api/data/"):
                 return self.proxy(data + p[len("/api/data"):], method)
             if p.startswith("/api/"):
