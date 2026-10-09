@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Science, made readable</title>
 <meta name="description" content="Search all of science, see where it sits on the map of research, and read open papers rewritten in plain words.">
-<link rel="stylesheet" href="style.css?v=7e6111dc0a">
+<link rel="stylesheet" href="style.css?v=f235db59a5">
 <script src="theme.js?v=daa32516ad"></script>
 <script src="config.js?v=6e53bdb24f"></script>
 </head>
@@ -51,7 +51,8 @@
 <div id="map-tip" hidden></div>
 <div id="explore-ui">
   <p>The map of science: 128 million studies, 1800 to today. Studies about similar things sit close together;
-     colours are fields. Scroll or pinch to zoom, drag to move.</p>
+     colours are fields. <span class="ex-how">Scroll or pinch to zoom, drag to move.</span></p>
+  <button type="button" id="ex-in" aria-label="Zoom in">+</button><button type="button" id="ex-out" aria-label="Zoom out">−</button>
   <button type="button" id="ex-reset">Whole map</button><button type="button" id="ex-back">Back</button>
 </div>
 
@@ -201,6 +202,6 @@
   </form>
 </dialog>
 
-<script type="module" src="app.js?v=c8e0b95f92"></script>
+<script type="module" src="app.js?v=c1c894fef7"></script>
 </body>
 </html>
