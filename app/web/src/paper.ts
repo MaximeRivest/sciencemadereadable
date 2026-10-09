@@ -9,7 +9,13 @@ import { layout, licenseOk, sectionNodes, splitSections, type Mark } from "./jat
 const EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest";
 const IMAGES = "https://pmc-oa-opendata.s3.amazonaws.com";
 
-export interface Hit { pmcid: string; doi?: string; title: string; authors?: string; journal?: string; year?: string }
+export interface Hit {
+  pmcid: string; doi?: string; title: string; authors?: string; journal?: string; year?: string;
+  id?: string;           // OpenAlex W-id (all-of-science search)
+  readable?: boolean;    // we can rewrite and show it (PMC full text, CC BY research article)
+  x?: number; y?: number; // on the map of science
+  type?: string; citations?: number;
+}
 
 export interface Paper {
   doi: string; pmcid: string; title: string; authors: string; journal: string; year: string; license: string;
@@ -25,17 +31,86 @@ const clean = (s?: string) => {
 };
 
 /** How the last search was answered: our index by meaning or by exact words, or Europe PMC. */
-export const lastSearch: { by: "semantic" | "keyword" | "europepmc"; matches: number | null } = { by: "semantic", matches: null };
+export const lastSearch: { by: "semantic" | "keyword" | "europepmc"; matches: number | null; scope: "all" | "readable";
+  map: { x: number; y: number } | null } = { by: "semantic", matches: null, scope: "all", map: null };
 
 /** Open-access, CC BY research papers with full text: the ones we can rewrite and show. Ours first
  *  (by meaning; by exact words when the query has quotes, AND / OR / NOT, brackets or word*),
  *  Europe PMC's keyword search if ours fails or is slow. */
-export interface SearchOptions { by?: "meaning" | "words" | ""; since?: string }
+export interface SearchOptions { by?: "meaning" | "words" | ""; since?: string; readable?: boolean }
+
+const authorsLine = (s?: string, n = 0) => {
+  const names = (s ?? "").split(" | ").filter(Boolean);
+  return names.slice(0, 6).join(", ") + (n > 6 ? ", et al." : "");
+};
+const plainText = (s?: string) => (s ?? "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+
+/** All of science (our data API through the queue server): every embedded study, the readable ones marked,
+ *  each placed on the map. Throws when the data API can't be reached. */
+async function searchAll(q: string, opts: SearchOptions, signal?: AbortSignal): Promise<Hit[]> {
+  const params = new URLSearchParams({ q, k: "20", map: "true", abstracts: "false",
+    mode: opts.by === "words" ? "keyword" : opts.by === "meaning" ? "semantic" : "auto" });
+  if (opts.since) params.set("year_from", opts.since);
+  if (opts.readable) params.set("collection", "smr");
+  const r = await fetch(`${API}/api/data/search?${params}`,
+    { signal: AbortSignal.any([AbortSignal.timeout(9000), ...(signal ? [signal] : [])]) });
+  if (!r.ok) throw new Error(`data API ${r.status}`);
+  const d = await r.json();
+  lastSearch.by = d.mode === "keyword" ? "keyword" : "semantic";
+  lastSearch.matches = d.matches ?? null;
+  lastSearch.scope = opts.readable ? "readable" : "all";
+  lastSearch.map = d.map ?? null;
+  return (d.results ?? []).map((x: any) => ({
+    id: x.id, pmcid: x.pmcid ?? "", doi: x.doi ?? undefined, title: plainText(x.title).replace(/\.$/, "") || "(no title)",
+    authors: authorsLine(x.authors, x.authors_count), journal: x.venue ?? undefined, year: x.year ? String(x.year) : undefined,
+    readable: Boolean(x.smr), x: x.x, y: x.y, type: x.type, citations: x.citations,
+  }));
+}
+
+/** One study's details (any study we hold, readable or not). */
+export async function work(ref: string): Promise<any> {
+  const r = await fetch(`${API}/api/data/works/${encodeURIComponent(ref)}`, { signal: AbortSignal.timeout(9000) });
+  if (r.status === 404) throw new PaperError("We don't have this study (yet).");
+  if (!r.ok) throw new PaperError("Our search is busy right now. Try again in a moment.");
+  const d = await r.json();
+  return { ...d, title: plainText(d.title), abstract: plainText(d.abstract), authorsLine: authorsLine(d.authors, d.authors_count) };
+}
+
+/** Studies closest in meaning to one study. */
+export async function similar(ref: string, k = 6): Promise<Hit[]> {
+  try {
+    const r = await fetch(`${API}/api/data/similar/${encodeURIComponent(ref)}?k=${k}&abstracts=false`, { signal: AbortSignal.timeout(9000) });
+    if (!r.ok) return [];
+    return ((await r.json()).results ?? []).map((x: any) => ({
+      id: x.id, pmcid: x.pmcid ?? "", doi: x.doi ?? undefined, title: plainText(x.title) || "(no title)",
+      journal: x.venue ?? undefined, year: x.year ? String(x.year) : undefined, readable: Boolean(x.smr),
+    }));
+  } catch { return []; }
+}
+
+/** Where studies sit on the map (by DOI, PMCID or W-id). */
+export async function place(refs: string[]): Promise<Record<string, { x: number; y: number }>> {
+  try {
+    const r = await fetch(`${API}/api/data/map/place?ids=${encodeURIComponent(refs.join(","))}`, { signal: AbortSignal.timeout(6000) });
+    return r.ok ? (await r.json()).papers ?? {} : {};
+  } catch { return {}; }
+}
 
 /** Did the reader type search syntax (quotes, AND/OR/NOT, brackets, word*, -word, title:)? Same rule as the server. */
 export const looksExact = (q: string) => /"|\b(AND|OR|NOT)\b|[()*]|(^|\s)[-+]\w|\b(title|abstract|keywords):/.test(q);
 
 export async function search(q: string, opts: SearchOptions = {}, signal?: AbortSignal): Promise<Hit[]> {
+  try {
+    return await searchAll(q, opts, signal);
+  } catch (e) {
+    if (signal?.aborted) throw e;
+  }
+  return searchReadable(q, opts, signal);
+}
+
+async function searchReadable(q: string, opts: SearchOptions = {}, signal?: AbortSignal): Promise<Hit[]> {
+  lastSearch.scope = "readable";
+  lastSearch.map = null;
   const params = new URLSearchParams({ q, mode: opts.by === "words" ? "keyword" : opts.by === "meaning" ? "semantic" : "auto" });
   if (opts.since) params.set("year_from", opts.since);
   try {
@@ -45,7 +120,7 @@ export async function search(q: string, opts: SearchOptions = {}, signal?: Abort
       const d = await r.json();
       lastSearch.by = d.mode === "keyword" ? "keyword" : "semantic";
       lastSearch.matches = d.matches ?? null;
-      return d.hits ?? [];
+      return (d.hits ?? []).map((h: Hit) => ({ ...h, readable: true }));
     }
   } catch (e) {
     if (signal?.aborted) throw e;
@@ -62,7 +137,7 @@ async function searchEuropePMC(q: string, since?: string, signal?: AbortSignal):
   const d = await (await fetch(url, { signal })).json();
   return (d.resultList?.result ?? []).filter((r: any) => r.pmcid).map((r: any) => ({
     pmcid: r.pmcid, doi: r.doi, title: clean(r.title).replace(/\.$/, ""), authors: r.authorString,
-    journal: r.journalTitle, year: r.pubYear,
+    journal: r.journalTitle, year: r.pubYear, readable: true,
   }));
 }
 

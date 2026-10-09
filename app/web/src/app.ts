@@ -1,6 +1,7 @@
 import { MODELS, type ModelInfo } from "./models.ts";
 import { rewrite, type Keys } from "./pipeline.ts";
-import { lastSearch, looksExact, open, search, PaperError, type Hit, type Paper } from "./paper.ts";
+import { lastSearch, looksExact, open, place, search, similar, work, PaperError, type Hit, type Paper } from "./paper.ts";
+import { currentHere, currentQuestion, focus, hot, initMap, mapView, setHere, setResults, type Spot } from "./atlas.ts";
 import { Reader } from "./reader.ts";
 import { activeJob, examples, follow, library, now, openable, savedRewrites, status, supportState, type LibraryItem, type Status, type Support } from "./jobs.ts";
 import { ProgressPanel } from "./progress.ts";
@@ -42,10 +43,11 @@ function saveKeyForm() {
 }
 
 // ---------------------------------------------------------------- views
-function show(view: "home" | "results" | "reader" | "library") {
+function show(view: "home" | "results" | "reader" | "library" | "work" | "explore") {
   document.body.dataset.view = view;
   track("view", { view });
   window.scrollTo(0, 0);
+  mapView(view);
 }
 
 /** Why a search result can't be opened, in the reader's words (the same refusals as opening it). */
@@ -63,7 +65,7 @@ let searchRun = 0;
 
 // ---------------------------------------------------------------- search options
 // "" = the reader hasn't chosen: the toggle follows what they type (quotes, AND/OR/NOT → exact words).
-const opts: { by: "" | "meaning" | "words"; since: string } = { by: "", since: "" };
+const opts: { by: "" | "meaning" | "words"; since: string; readable: boolean } = { by: "", since: "", readable: false };
 const typed = () => ($("#search-results") as HTMLInputElement).value;
 
 function drawOpts(text = typed()) {
@@ -71,17 +73,21 @@ function drawOpts(text = typed()) {
   for (const b of document.querySelectorAll<HTMLButtonElement>(".seg button"))
     b.setAttribute("aria-checked", String(b.dataset.by === shown));
   for (const s of document.querySelectorAll<HTMLSelectElement>(".search-opts .since")) s.value = opts.since;
+  $("#readable-only").setAttribute("aria-pressed", String(opts.readable));
 }
 function searchUrl(q: string) {
   const p = new URLSearchParams({ q });
   if (opts.by) p.set("by", opts.by);
   if (opts.since) p.set("since", opts.since);
+  if (opts.readable) p.set("readable", "1");
   return `?${p}`;
 }
 function rerun() {
   const q = typed().trim() || new URLSearchParams(location.search).get("q") || "";
   if (q && document.body.dataset.view === "results") runSearch(q);
 }
+
+let lastHits: Hit[] = [];
 
 async function runSearch(q: string) {
   q = q.trim();
@@ -93,7 +99,7 @@ async function runSearch(q: string) {
   show("results");
   const run = ++searchRun;   // a newer search makes this one's late answers moot
   const box = $("#results");
-  box.innerHTML = `<p class="quiet">Looking for open papers…</p>`;
+  box.innerHTML = `<p class="quiet">Looking across science…</p>`;
   let hits: Hit[];
   try {
     hits = await search(q, opts);
@@ -102,84 +108,145 @@ async function runSearch(q: string) {
     return;
   }
   if (run !== searchRun) return;
+  hits = collapse(hits);
+  lastHits = hits;
+  setResults(hits.filter((h) => h.x != null && h.id).map(spot), lastSearch.map);
   const switchTo = (by: "meaning" | "words", label: string) => {
     const a = document.createElement("a");
     a.textContent = label;
     a.onclick = () => { opts.by = by; runSearch(q); };
     return a;
   };
-  if (!hits.length) {
-    track("search", { n: 0, src: lastSearch.by });
-    box.innerHTML = "";
-    const p = box.appendChild(document.createElement("p"));
-    p.className = "quiet";
-    if (lastSearch.by === "keyword") p.append("No open paper contains all these words. Try fewer words, or ", switchTo("meaning", "search by meaning"), ".");
-    else p.textContent = opts.since ? "Nothing open to read for that in these years. Try “Any year” or other words." : "Nothing open to read for that. Try other words.";
-    return;
-  }
   box.innerHTML = "";
   const how = box.appendChild(document.createElement("p"));
   how.className = "quiet search-how";
+  const readableN = hits.filter((h) => h.readable).length;
+  if (!hits.length) {
+    track("search", { n: 0, src: lastSearch.by });
+    if (lastSearch.by === "keyword") how.append("No study contains all these words. Try fewer words, or ", switchTo("meaning", "search by meaning"), ".");
+    else how.textContent = opts.since ? "Nothing found in these years. Try “Any year” or other words." : "Nothing found. Try other words.";
+    return;
+  }
+  const scope = lastSearch.scope === "readable" ? "readable" : "";
   if (lastSearch.by === "keyword")
-    how.append(`${(lastSearch.matches ?? hits.length).toLocaleString()} open papers contain these words; best matches first. `,
+    how.append(`${(lastSearch.matches ?? hits.length).toLocaleString()} ${scope} studies contain these words; best matches first. `,
       switchTo("meaning", "Search by meaning instead"));
   else if (lastSearch.by === "semantic")
-    how.append("Closest in meaning first. ", switchTo("words", "Only papers with these exact words"));
-  else how.textContent = "Our search is busy, so these come from Europe PMC's word search.";
-  const good = box.appendChild(document.createElement("div"));
-  const note = box.appendChild(document.createElement("p"));
-  note.className = "quiet checking";
-  const refusedBox = box.appendChild(document.createElement("div"));
-  const verdicts = new Map<string, string>();   // pmcid → "ok", "?" (couldn't tell) or why not
-  const rows = new Map<string, HTMLAnchorElement>();
-  let next = 0, holding = true;
+    how.append("Closest in meaning first. ", switchTo("words", "Only studies with these exact words"));
+  else how.textContent = "Our search is busy, so these come from Europe PMC's word search (papers we can make readable).";
+  if (lastSearch.scope === "all" && lastSearch.by !== "europepmc")
+    how.append(` · ${readableN} of ${hits.length} can be read in plain words`);
 
-  const row = (h: Hit) => {
-    const a = document.createElement("a");
-    a.className = "hit";
-    a.href = `?paper=${encodeURIComponent(h.doi || h.pmcid)}`;
-    a.innerHTML = `<span class="hit-title">${esc(h.title)}</span><span class="hit-meta">${esc([h.journal, h.year].filter(Boolean).join(" · "))}</span>`;
-    a.onclick = (e) => { if (a.classList.contains("off")) return; e.preventDefault(); go(a.getAttribute("href")!); };
-    rows.set(h.pmcid, a);
-    return a;
-  };
-  const grey = (a: HTMLAnchorElement, h: Hit, why: string) => {   // the reason; the link goes to the original
-    a.classList.add("off");
-    a.href = h.doi ? `https://doi.org/${h.doi}` : `https://europepmc.org/article/PMC/${h.pmcid}`;
-    a.target = "_blank";
-    a.rel = "noopener";
-    a.title = "Opens the original paper in a new tab";
-    a.insertAdjacentHTML("beforeend", `<span class="hit-why">${esc(CANT[why] ?? "Can't be opened here.")} ` +
-      `<span class="hit-orig">Read the original ↗</span></span>`);
-  };
-  const refused = (v?: string) => Boolean(v && v !== "ok" && v !== "?");
-  const draw = () => {
-    for (; next < hits.length; next++) {
-      const h = hits[next], v = verdicts.get(h.pmcid);
-      if (v === undefined && holding) break;
-      const a = row(h);
-      if (refused(v)) { grey(a, h, v!); refusedBox.appendChild(a); } else good.appendChild(a);
-    }
-    const left = hits.length - verdicts.size;
-    const ok = hits.filter((h) => !refused(verdicts.get(h.pmcid))).length;
-    note.textContent = left ? (good.childElementCount ? `Checking ${left} more…` : "Checking which papers we can open…")
-      : ok ? "" : "None of these can be opened here. Try other words.";
-    note.hidden = !note.textContent;
-  };
-  draw();
-  const timer = setTimeout(() => { if (run === searchRun) { holding = false; draw(); } }, HOLD_MS);
-  const byId = new Map(hits.map((h) => [h.pmcid, h]));
-  await openable(hits.map((h) => h.pmcid), (pmcid, v) => {
-    const h = byId.get(pmcid);
-    if (run !== searchRun || !h) return;
-    verdicts.set(pmcid, v);
-    const shown = rows.get(pmcid);   // shown before its answer came (not held): greyed where it is
-    if (shown && refused(v)) grey(shown, h, v);
-    draw();
+  const list = box.appendChild(document.createElement("div"));
+  for (const h of hits) list.appendChild(row(h));
+  track("search", { n: hits.length, ok: readableN, src: lastSearch.by });
+
+  // the readable ones: the same check as opening them (licence, layout), so a promise isn't broken later
+  const pm = hits.filter((h) => h.readable && h.pmcid).map((h) => h.pmcid);
+  if (pm.length) await openable(pm, (pmcid, v) => {
+    if (run !== searchRun || v === "ok" || v === "?") return;
+    const h = hits.find((x) => x.pmcid === pmcid);
+    if (!h) return;
+    h.readable = false;
+    const a = list.querySelector<HTMLAnchorElement>(`a[data-key="${CSS.escape(key(h))}"]`);
+    if (a) a.replaceWith(row(h, CANT[v]));
   });
-  clearTimeout(timer);
-  if (run !== searchRun) return;
-  track("search", { n: hits.length, ok: hits.filter((h) => !refused(verdicts.get(h.pmcid))).length, src: lastSearch.by });
+}
+
+/** The same study is often indexed several times (repository copies, preprint and article): keep one per title,
+ *  the readable copy if there is one, at the best rank. */
+function collapse(hits: Hit[]): Hit[] {
+  const seen = new Map<string, number>(), out: Hit[] = [];
+  for (const h of hits) {
+    const t = h.title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    const i = t.length > 12 ? seen.get(t) : undefined;
+    if (i === undefined) { if (t.length > 12) seen.set(t, out.length); out.push(h); }
+    else if (h.readable && !out[i].readable) out[i] = h;
+  }
+  return out;
+}
+
+const key = (h: Hit) => h.id || h.pmcid || h.doi || h.title;
+const spot = (h: Hit): Spot => ({ id: key(h), x: h.x!, y: h.y!, readable: h.readable, title: h.title,
+  meta: [h.journal, h.year].filter(Boolean).join(" · ") });
+/** Where a study opens: the reader when we can rewrite it, else its page (details, abstract, links). */
+const href = (h: Hit) => h.readable ? `?paper=${encodeURIComponent(h.doi || h.pmcid)}` : `?work=${encodeURIComponent(h.id || h.doi || h.pmcid)}`;
+
+function row(h: Hit, why?: string): HTMLAnchorElement {
+  const a = document.createElement("a");
+  a.className = "hit";
+  a.dataset.key = key(h);
+  a.href = href(h);
+  const badge = h.readable ? `<span class="badge-ok" title="We can rewrite this one in plain words">Readable</span>`
+    : `<span class="badge-orig"${why ? ` title="${esc(why)}"` : ""}>Original only</span>`;
+  a.innerHTML = `<span class="hit-title">${esc(h.title)}</span>` +
+    `<span class="hit-meta">${esc([h.journal, h.year].filter(Boolean).join(" · "))} ${badge}${h.x != null ? ' <span class="pin" title="on the map">●</span>' : ""}</span>`;
+  a.onclick = (e) => { e.preventDefault(); go(a.getAttribute("href")!); };
+  a.onmouseenter = () => hot(key(h), true);
+  a.onmouseleave = () => hot(key(h), false);
+  return a;
+}
+
+// ---------------------------------------------------------------- a study we can't rewrite (or not yet)
+let workRun = 0;
+async function openWork(ref: string) {
+  show("work");
+  const run = ++workRun;
+  const box = $("#work");
+  box.innerHTML = `<p class="quiet center">Opening the study…</p>`;
+  setHere(null);
+  let d: any;
+  try {
+    d = await work(ref);
+  } catch (e: any) {
+    if (run === workRun) box.innerHTML = `<p class="quiet center">${esc(e?.message ?? "We couldn't open this study.")}</p>`;
+    return;
+  }
+  if (run !== workRun) return;
+  document.title = `${d.title} · made readable`;
+  track("open", { doi: d.doi ?? d.id, src: "work" });
+  const original = d.doi ? `https://doi.org/${d.doi}` : d.url || d.openalex;
+  const readable = Boolean(d.smr);
+  const cta = readable
+    ? `<b>This study can be read in plain words.</b> Every finding kept, nothing dumbed down.<br>
+       <a class="btn" href="?paper=${encodeURIComponent(d.doi || d.pmcid)}" data-go>Read it in plain words</a>
+       <a class="btn ghost" href="${esc(original)}" target="_blank" rel="noopener">The original ↗</a>`
+    : `<b>We can't rewrite this one.</b> ${d.pmc_oa ? "Its licence doesn't allow an adapted copy." : "Its full text isn't openly available to us."}
+       Here is what we know about it.<br>
+       <a class="btn" href="${esc(original)}" target="_blank" rel="noopener">Read the original ↗</a>
+       ${d.pdf_url ? `<a class="btn ghost" href="${esc(d.pdf_url)}" target="_blank" rel="noopener">PDF ↗</a>` : ""}`;
+  const where = [d.venue, d.year, d.type && d.type !== "article" ? d.type.replace("-", " ") : "",
+                 d.citations ? `cited ${Number(d.citations).toLocaleString()} times` : ""].filter(Boolean).join(" · ");
+  box.innerHTML = `
+    <button class="back" type="button" id="w-back">← Back</button>
+    <h1>${esc(d.title)}</h1>
+    <div class="w-by">${esc(d.authorsLine)}</div>
+    <div class="w-where">${esc(where)}</div>
+    <div class="w-cta">${cta}</div>
+    ${d.abstract ? `<p class="w-abs-head">Abstract</p><div class="w-abs">${esc(d.abstract)}</div>` : ""}
+    <div class="w-links">
+      ${d.doi ? `<a href="https://doi.org/${esc(d.doi)}" target="_blank" rel="noopener">DOI ↗</a>` : ""}
+      <a href="${esc(d.openalex)}" target="_blank" rel="noopener">OpenAlex ↗</a>
+      ${d.pmcid ? `<a href="https://pmc.ncbi.nlm.nih.gov/articles/${esc(d.pmcid)}/" target="_blank" rel="noopener">PubMed Central ↗</a>` : ""}
+      ${d.license ? `<span class="quiet">Licence: ${esc(d.license)}</span>` : ""}
+    </div>
+    <div class="w-related" id="w-related"></div>
+    <p class="you-are-here">You are here, on the map of science.<br>Click the map to look around.</p>`;
+  $("#w-back").onclick = () => history.length > 1 ? history.back() : go("");
+  for (const a of box.querySelectorAll<HTMLAnchorElement>("a[data-go]")) a.onclick = (e) => { e.preventDefault(); go(a.getAttribute("href")!); };
+  const pos = await place([d.id]);
+  if (run === workRun && pos[d.id]) setHere(pos[d.id]);
+  const rel = await similar(d.id, 6);
+  if (run !== workRun || !rel.length) return;
+  const r = $("#w-related");
+  r.innerHTML = `<p class="w-abs-head">Closest in meaning</p>`;
+  for (const h of rel) r.appendChild(row(h));
+}
+
+// ---------------------------------------------------------------- the map, whole
+function openExplore() {
+  show("explore");
+  focus(currentQuestion() ?? currentHere());
 }
 
 async function openPaper(id: string) {
@@ -199,6 +266,8 @@ async function openPaper(id: string) {
   }
   document.title = `${paper.title} · made readable`;
   track("open", { doi: paper.doi });
+  setHere(null);
+  place([paper.doi]).then((pos) => { if (paper && pos[paper.doi]) setHere(pos[paper.doi]); });
   $("#thanks").hidden = true;
   reader = new Reader($("#paper"), paper);
   reader.set({}, []);
@@ -433,16 +502,24 @@ function route() {
   clearInterval(nowTimer);
   if (q.has("support")) setTimeout(() => openSupport("link"), 300);
   if (q.has("library")) return openLibrary();
+  if (q.has("map")) return openExplore();
+  if (q.get("work")) return openWork(q.get("work")!);
   if (q.get("paper")) return openPaper(q.get("paper")!);
   if (q.get("q")) {
     const by = q.get("by");
     opts.by = by === "words" || by === "meaning" ? by : "";
     opts.since = /^\d{4}$/.test(q.get("since") ?? "") ? q.get("since")! : "";
+    opts.readable = q.get("readable") === "1";
+    // the same search again (back from a study): keep the results and the map as they were
+    if (document.body.dataset.view !== "results" && lastHits.length && ($("#search-results") as HTMLInputElement).value === q.get("q")) {
+      drawOpts(q.get("q")!);
+      setHere(null);
+      return show("results");
+    }
     return runSearch(q.get("q")!);
   }
   show("home");
-  refreshNow();
-  nowTimer = window.setInterval(() => { if (document.visibilityState === "visible") refreshNow(); }, 4000);
+  ($("form.search.big input") as HTMLInputElement).focus();
 }
 
 // ---------------------------------------------------------------- start
@@ -474,8 +551,13 @@ for (const tip of document.querySelectorAll<HTMLButtonElement>(".tip"))
     runSearch(tip.dataset.q!);
   };
 drawOpts("");
+$("#readable-only").onclick = () => { opts.readable = !opts.readable; drawOpts(); rerun(); };
+initMap({
+  explore: () => go(`?map${location.search.includes("q=") ? "&" + location.search.slice(1).replace(/(^|&)map(&|$)/, "$1") : ""}`),
+  open: (s) => { const h = lastHits.find((x) => key(x) === s.id); go(h ? href(h) : `?work=${encodeURIComponent(s.id)}`); },
+});
 $("#brand").onclick = (e) => { e.preventDefault(); go(""); };
-for (const id of ["#open-library", "#library-link"]) $(id).onclick = (e) => { e.preventDefault(); go("?library"); };
+for (const id of ["#open-library"]) $(id).onclick = (e) => { e.preventDefault(); go("?library"); };
 $("#lib-filter").oninput = drawLibrary;
 ($("#model") as HTMLSelectElement).onchange = (e) => {
   chosen = MODELS.find((m) => m.id === (e.target as HTMLSelectElement).value)!;
@@ -599,5 +681,4 @@ window.onpopstate = route;
 const checkHome = () => status().then((s) => { home = s; $("#gpu").textContent = s?.worker_online ? "GPU online" : "GPU offline"; $("#gpu").classList.toggle("on", !!s?.worker_online); if (paper && !running) showChosen(); });
 checkHome();
 setInterval(checkHome, 30000);
-loadExamples();
 route();

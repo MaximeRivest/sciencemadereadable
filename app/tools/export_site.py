@@ -15,8 +15,9 @@ api = sys.argv[1].rstrip("/") if len(sys.argv) > 1 else ""
 
 shutil.rmtree(SITE, ignore_errors=True)
 (SITE / "examples").mkdir(parents=True)
-for f in ("index.html", "style.css", "app.js"):
+for f in ("index.html", "style.css", "app.js", "theme.js"):
     shutil.copy(DEMO / "web" / f, SITE / f)
+shutil.copytree(DEMO / "web" / "map", SITE / "map")   # the map of science (images, field labels)
 domain = sys.argv[2] if len(sys.argv) > 2 else ""
 # support links: the Stripe ones only when they are live (test links take no real payment)
 support = json.loads((DEMO / "support.json").read_text()) if (DEMO / "support.json").exists() else {}
@@ -27,7 +28,7 @@ config = {"api": api, "support": {"github": "https://github.com/sponsors/MaximeR
 # script for a few minutes (GitHub Pages lets it) never runs it with today's page.
 import hashlib
 page = (SITE / "index.html").read_text()
-for f in ("config.js", "app.js", "style.css"):
+for f in ("config.js", "app.js", "style.css", "theme.js"):
     v = hashlib.sha256((SITE / f).read_bytes()).hexdigest()[:10]
     assert page.count(f'"{f}"') == 1, f
     page = page.replace(f'"{f}"', f'"{f}?v={v}"')

@@ -1,13 +1,19 @@
 # Science made readable · the app
 
 **Live: https://sciencemadereadable.com**, served by GitHub Pages from the `gh-pages` branch of this
-repository (DNS at GoDaddy: apex A/AAAA → GitHub Pages, www → maximerivest.github.io). The queue's
-public door is Tailscale Funnel on lambda, https://lambda.tail69222b.ts.net:10000 → `server.py`'s public
-port 8799 (queue, saved rewrites, examples, counts only). Publish a new version of the page (from the
-repository root; `SITE` is a checkout of the `gh-pages` branch):
+repository (DNS at GoDaddy: apex A/AAAA → GitHub Pages, www → maximerivest.github.io). Its back end is this
+machine, reached at **https://api.sciencemadereadable.com**: DNS → the OVH relay (`encrypted-link-relay`,
+144.217.95.30, also Chattering Anywhere's), whose Caddy (`/etc/caddy/conf.d/sciencemadereadable.caddy`, Let's
+Encrypt, no access log) proxies to 127.0.0.1:18799 there, the end of an outbound SSH tunnel lambda keeps open
+(user service `smr-public-tunnel`, key `~/.ssh/smr-tunnel_ed25519`; on the relay the account `smr-tunnel` may only
+listen on that one address, `sshd_config.d/10-smr-tunnel.conf`). The relay cannot open connections into lambda
+(tailnet policy); lambda reaches out. `server.py`'s public port 8799 answers: queue, saved rewrites, examples,
+counts, and `/api/data/*` (search, map, works; srl_search on :8810). The old Funnel door
+(https://lambda.tail69222b.ts.net:10000) still serves the rented-GPU worker scripts. Publish a new version of the
+page (from the repository root; `SITE` is a checkout of the `gh-pages` branch):
 
 ```
-(cd app && node tools/build.mjs) && .venv/bin/python app/tools/export_site.py https://lambda.tail69222b.ts.net:10000 sciencemadereadable.com
+(cd app && node tools/build.mjs) && .venv/bin/python app/tools/export_site.py https://api.sciencemadereadable.com sciencemadereadable.com
 rsync -a --delete --exclude .git app/site/ "$SITE"/ && git -C "$SITE" add -A && git -C "$SITE" commit -m update && git -C "$SITE" push
 ```
 
