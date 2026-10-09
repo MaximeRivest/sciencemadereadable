@@ -73,9 +73,17 @@ def desktop(b, errs):
         pg.wait_for_timeout(250)
     check(until(pg, 'document.body.classList.contains("gl") && !!window.__mapStats && window.__mapStats().stars > 1000', 25),
           "zoomed in, the map engine draws studies as stars")
-    pg.mouse.click(640, 400)
-    check(until(pg, '!document.querySelector("#pick").hidden && !/Finding/.test(document.querySelector("#pick").innerText)', 15),
-          "tapping the map identifies a study")
+    spot = None
+    for my in range(260, 620, 29):          # a study under the mouse (hover ring) and no walk marker on top
+        for mx in range(380, 960, 23):
+            pg.mouse.move(mx, my); pg.wait_for_timeout(25)
+            if pg.evaluate(f'!document.querySelector("#hover-ring").hidden && !document.elementFromPoint({mx}, {my}).closest(".dot")'):
+                spot = (mx, my); break
+        if spot: break
+    if spot:
+        pg.mouse.click(*spot)
+    check(spot and until(pg, '!document.querySelector("#pick").hidden && !/Finding/.test(document.querySelector("#pick").innerText)', 15),
+          f"tapping the map identifies a study (at {spot})")
     # the "selected" ring sits on the tapped study (it drifted ~50 px at deep zoom when it lived in the scaled world)
     pg.evaluate("window.__fly(0.62, 0.45, 150)"); pg.wait_for_timeout(3000)
     pg.evaluate('document.querySelector("#pick-close").click()')
@@ -83,6 +91,7 @@ def desktop(b, errs):
     for mx in range(400, 900, 17):          # find a study under the mouse (the hover ring shows on it)
         pg.mouse.move(mx, 420); pg.wait_for_timeout(40)
         ring = pg.evaluate('(() => { const r = document.querySelector("#hover-ring"); if (r.hidden) return null;'
+                           f' if (document.elementFromPoint({mx}, 420).closest(".dot")) return null;'
                            ' const b = r.getBoundingClientRect(); return [b.x + b.width / 2, b.y + b.height / 2] })()')
         if ring:
             pg.mouse.click(mx, 420)
