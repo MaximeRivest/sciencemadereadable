@@ -17,6 +17,19 @@ page (from the repository root; `SITE` is a checkout of the `gh-pages` branch):
 rsync -a --delete --exclude .git app/site/ "$SITE"/ && git -C "$SITE" add -A && git -C "$SITE" commit -m update && git -C "$SITE" push
 ```
 
+### The public tunnel (not yet declared in ~/Projects/os: after a reboot, start it again)
+
+```sh
+systemd-run --user --unit=smr-public-tunnel -p Restart=always -p RestartSec=5 -p StartLimitIntervalSec=0 \
+  /run/current-system/sw/bin/ssh -NT -i ~/.ssh/smr-tunnel_ed25519 -o IdentitiesOnly=yes -o BatchMode=yes \
+  -o ExitOnForwardFailure=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
+  -R 127.0.0.1:18799:127.0.0.1:8799 smr-tunnel@encrypted-link-relay
+```
+
+As a Home Manager user service (machines/hm): the same command as `ExecStart`, `Restart=always`,
+`After=network-online.target`, `WantedBy=default.target`. Check from outside:
+`curl https://api.sciencemadereadable.com/api/status`.
+
 ## Where the models run
 
 Since 2026-10-05 evening, **our 9B on lambda's GPU 0**, in InkType's place, declared in
