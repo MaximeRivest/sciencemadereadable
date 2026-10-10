@@ -7,7 +7,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Science, made readable</title>
 <meta name="description" content="Search all of science, see where it sits on the map of research, and read open papers rewritten in plain words.">
-<link rel="stylesheet" href="style.css?v=5c45849f91">
+<link rel="stylesheet" href="style.css?v=a7569ca167">
+<!-- the sharp map image first: the page shows it while the live map loads (atlas.ts); the theme's own only -->
+<link rel="preload" as="image" href="map/science-map-dark.webp" media="(prefers-color-scheme: dark)" fetchpriority="high">
+<link rel="preload" as="image" href="map/science-map-light.webp" media="(prefers-color-scheme: light)" fetchpriority="high">
 <script src="theme.js?v=daa32516ad"></script>
 <script src="config.js?v=6e53bdb24f"></script>
 </head>
@@ -38,6 +41,8 @@
 </main>
 
 <div id="map" role="button" tabindex="0" aria-label="The map of science: open it">
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div id="glabels"></div>
   <div id="world">
     <div id="globe">
       <img class="map-img light" src="map/science-map-light-small.webp" alt="">
@@ -50,6 +55,9 @@
   </div>
   <div id="map-tag">where these studies sit in science · open the map</div>
 </div>
+<div id="sdots"></div>
+<svg id="slinks" aria-hidden="true"></svg>
+<div id="hover-ring" hidden></div>
 <div id="map-tip" hidden></div>
 <div id="pick" hidden role="dialog" aria-label="Study on the map">
   <div class="pick-body"></div>
@@ -210,6 +218,6 @@
   </form>
 </dialog>
 
-<script type="module" src="app.js?v=093cc920e5"></script>
+<script type="module" src="app.js?v=fc9b5c23f5"></script>
 </body>
 </html>

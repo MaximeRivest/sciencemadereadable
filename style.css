@@ -511,3 +511,43 @@ body:not([data-view="explore"]) #pick { display: none; }
   /* once zoomed in, the explanation has done its job: room for the map */
   body.map-zoomed #explore-ui p:first-child { display: none; }
 }
+
+/* ---------------------------------------------------------------- the explorer's engine (mapgl.ts): canvas + names */
+#gl, #glabels { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; display: none; pointer-events: none; }
+#glabels { overflow: hidden; z-index: 1; }   /* above the rendered image while it shows */
+body.gl #gl, body.gl #glabels { display: block; }
+/* until the live map is final (atlas.ts "gl-ready"), the rendered image shows and the canvas waits, invisible */
+body.gl #gl { opacity: 0; transition: opacity .6s ease; }
+body.gl.gl-ready #gl { opacity: 1; }
+body.gl.gl-ready .map-img { opacity: 0 !important; transition: opacity .6s ease .45s; }
+body.gl #tiles, body.gl.gl-names #labels { display: none; }
+body.gl:not(.gl-names) #glabels { display: none; }
+body.gl #map::before, body.gl #world::before { opacity: 0; }
+.gl-label { position: absolute; left: 0; top: 0; white-space: nowrap; pointer-events: auto; cursor: pointer;
+  font: 600 13px/1.2 var(--sans); color: var(--ink); will-change: transform, opacity; transition: color .2s;
+  text-shadow: 0 0 2px var(--explore), 0 0 5px var(--explore), 0 0 10px var(--explore); }
+/* calm names, as on the homepage map: the colour is the map's job */
+.gl-label.k-field { font-size: 15px; font-weight: 650; letter-spacing: .01em; opacity: .92; }
+.gl-label.k-subfield { font-size: 13px; font-weight: 600; color: color-mix(in srgb, var(--ink) 82%, var(--explore)); }
+.gl-label.k-topic { font-size: 12px; font-weight: 500; font-style: italic; color: color-mix(in srgb, var(--ink) 68%, var(--explore)); }
+.gl-label.k-paper { font: 400 11.5px/1.2 var(--serif); color: var(--ink); }
+.gl-label.k-paper::before { content: ""; position: absolute; left: 50%; top: -7px; width: 1px; height: 5px; background: currentColor; opacity: .5; }
+.gl-label:hover { text-decoration: underline; text-underline-offset: 3px; }
+#hover-ring { position: fixed; z-index: 2; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%;
+  border: 1.5px solid var(--ink); box-shadow: 0 0 0 1.5px var(--explore); pointer-events: none; }
+body:not([data-view="explore"]) #hover-ring { display: none; }
+body[data-view="explore"] #map.on-star { cursor: pointer; }
+/* names and stars pass under the top bar: a soft fade keeps the bar readable */
+body.gl nav.top::before { content: ""; position: absolute; z-index: -1; left: -50vw; right: -50vw; top: -20px; height: calc(100% + 46px);
+  background: linear-gradient(var(--explore) 55%, transparent); pointer-events: none; }
+
+/* the explorer's markers and citation lines, in screen space (atlas.ts placeMarks) */
+#sdots, #slinks { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 2; pointer-events: none; overflow: hidden; }
+body:not([data-view="explore"]) #sdots, body:not([data-view="explore"]) #slinks { display: none; }
+#sdots > * { left: 0; top: 0; }
+#sdots .dot { pointer-events: auto; }
+#slinks line { stroke-width: 1.3px; opacity: .6; }
+#slinks .ln-x-ref { stroke: #6a8fd8; }
+#slinks .ln-y-cand { stroke: var(--accent); stroke-dasharray: 3 4; opacity: .5; }
+/* "you are here" and the question mark only mark a place: a tap on them goes to the map (identifies the study there) */
+#sdots .dot.here, #sdots .qmark { pointer-events: none; }
