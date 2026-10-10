@@ -211,8 +211,12 @@ function startEngine() {
     if (!rel) throw new Error("no release");
     base = `${api}/api/data/map/tiles/${rel}/v2`;
     // names in parallel with the index; the rendered image's own names stay until these arrive
-    labelsReady = fetch(`${base}/labels.json`).then((r) => r.json())
-      .then((l: Label[]) => { labels = l; document.body.classList.add("gl-names"); frame(); }).catch(() => {});
+    // names.json: fields, subfields, topics (~110 KB); the titles of famous studies come by place (loadTitles).
+    // Releases built before 2026-10-10 have only labels.json (everything, 8 MB).
+    labelsReady = fetch(`${base}/names.json`).then((r) => { if (!r.ok) throw new Error("no names.json"); return r.json(); })
+      .then((d: { names: Label[]; titles: Titles }) => { titles = d.titles; titleCells = new Set(d.titles.cells.map(([x, y]) => `${x}/${y}`)); return d.names; })
+      .catch(() => fetch(`${base}/labels.json`).then((r) => r.json()))
+      .then((l: Label[]) => { labels = l; labelIndex = null; document.body.classList.add("gl-names"); frame(); }).catch(() => {});
     await engine!.load(base);
     palette();
     glReady = true;
@@ -550,18 +554,41 @@ const labelEls = new Map<number, HTMLElement>();
  *  world grid, so a frame looks only at the cells on screen of one octave (built once, when labels arrive). */
 let labelIndex: Map<number, number[]> | null = null;
 const OCT0 = -2, OCTS = 20, GRID = 32;
+function indexLabel(l: Label, i: number) {
+  const o0 = Math.max(0, Math.floor(Math.log2(l.s0)) - OCT0), o1 = Math.min(OCTS - 1, Math.floor(Math.log2(Math.min(l.s1, 2 ** 17))) - OCT0);
+  const cell = Math.min(GRID - 1, Math.max(0, Math.floor(l.y * GRID))) * GRID + Math.min(GRID - 1, Math.max(0, Math.floor(l.x * GRID)));
+  for (let o = o0; o <= o1; o++) { const k = o * GRID * GRID + cell; let a = labelIndex!.get(k); if (!a) labelIndex!.set(k, a = []); a.push(i); }
+}
 function buildLabelIndex() {
   labelIndex = new Map();
-  labels.forEach((l, i) => {
-    const o0 = Math.max(0, Math.floor(Math.log2(l.s0)) - OCT0), o1 = Math.min(OCTS - 1, Math.floor(Math.log2(Math.min(l.s1, 2 ** 17))) - OCT0);
-    const cell = Math.min(GRID - 1, Math.max(0, Math.floor(l.y * GRID))) * GRID + Math.min(GRID - 1, Math.max(0, Math.floor(l.x * GRID)));
-    for (let o = o0; o <= o1; o++) { const k = o * GRID * GRID + cell; let a = labelIndex!.get(k); if (!a) labelIndex!.set(k, a = []); a.push(i); }
-  });
+  labels.forEach(indexLabel);
+}
+
+/** Titles of famous studies, by place: the cells on screen, once zoomed in far enough for any to show. */
+interface Titles { level: number; s_min: number; cells: number[][] }
+let titles: Titles | null = null, titleCells = new Set<string>();
+const titlesAsked = new Set<string>();
+function loadTitles(c: Cam) {
+  const s = c.S * c.z / 1024;
+  if (!titles || s < titles.s_min * 0.7) return;
+  const n = 1 << titles.level, span = c.S * c.z;
+  const x0 = Math.max(0, Math.floor(-c.ox / span * n)), x1 = Math.min(n - 1, Math.floor((innerWidth - c.ox) / span * n));
+  const y0 = Math.max(0, Math.floor(-c.oy / span * n)), y1 = Math.min(n - 1, Math.floor((innerHeight - c.oy) / span * n));
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    const k = `${x}/${y}`;
+    if (!titleCells.has(k) || titlesAsked.has(k)) continue;
+    titlesAsked.add(k);
+    fetch(`${base}/t/${titles.level}/${k}.json`).then((r) => r.ok ? r.json() : []).then((list: Label[]) => {
+      for (const l of list) { l.k = "paper"; labels.push(l); if (labelIndex) indexLabel(l, labels.length - 1); }
+      frame();
+    }).catch(() => titlesAsked.delete(k));
+  }
 }
 
 function drawLabels(c: Cam) {
   const box = $("#glabels");
   if (!box || !labels.length) return;
+  loadTitles(c);
   if (!labelIndex) buildLabelIndex();
   const s = c.S * c.z / 1024, W = innerWidth, H = innerHeight, span = c.S * c.z;
   const o = Math.floor(Math.log2(s)) - OCT0;
@@ -653,20 +680,22 @@ async function pick(cx: number, cy: number) {
   const card = $("#pick");
   card.hidden = false;
   card.querySelector(".pick-body")!.innerHTML = `<span class="quiet">Finding this study…</span>`;
-  const ids = await idsOf(s.key);
-  if (!ids || !picked || picked.x !== s.x) return ids ? undefined : closePick();
-  showCard(`W${ids[s.i]}`, s.x, s.y);
+  const id = await idOf(s.key, s.i);
+  if (id === null) return closePick();
+  if (!picked || picked.x !== s.x) return;
+  showCard(`W${id}`, s.x, s.y);
 }
 
-const idsCache = new Map<string, Promise<BigUint64Array | null>>();
-function idsOf(key: string) {
-  let p = idsCache.get(key);
-  if (!p) {
-    p = fetch(`${base}/i/${key}.bin`).then((r) => r.ok ? r.arrayBuffer() : null).then((b) => b ? new BigUint64Array(b) : null).catch(() => null);
-    idsCache.set(key, p);
-    if (idsCache.size > 60) idsCache.delete(idsCache.keys().next().value!);
-  }
-  return p;
+/** The W-number of study i of a point tile: 8 bytes of its .ids file (an HTTP range; the whole file is 256 KB,
+ *  several seconds through the public tunnel while tiles load). A server that ignores ranges sends it all. */
+async function idOf(key: string, i: number): Promise<bigint | null> {
+  try {
+    const r = await fetch(`${base}/i/${key}.bin`, { headers: { Range: `bytes=${i * 8}-${i * 8 + 7}` }, priority: "high" } as RequestInit);
+    if (!r.ok) return null;
+    const b = await r.arrayBuffer();
+    if (r.status === 206 && b.byteLength === 8) return new DataView(b).getBigUint64(0, true);
+    return b.byteLength >= (i + 1) * 8 ? new DataView(b).getBigUint64(i * 8, true) : null;
+  } catch { return null; }
 }
 
 async function showCard(w: string, x: number, y: number) {
@@ -674,7 +703,7 @@ async function showCard(w: string, x: number, y: number) {
   card.hidden = false;
   card.querySelector(".pick-body")!.innerHTML = `<span class="quiet">Finding this study…</span>`;
   try {
-    const d = await (await fetch(`${api}/api/data/works/${w}`)).json();
+    const d = await (await fetch(`${api}/api/data/works/${w}`, { priority: "high" } as RequestInit)).json();
     if (!picked || picked.x !== x) return;   // another tap since
     const title = (d.title ?? "").replace(/<[^>]+>/g, "") || "(no title)";
     const meta = [d.venue, d.year, d.citations ? `cited ${Number(d.citations).toLocaleString()} times` : ""].filter(Boolean).join(" · ");

@@ -759,7 +759,7 @@ class Handler(SimpleHTTPRequestHandler):
 SEARCH_API = os.environ.get("SRL_SEARCH_API", "http://127.0.0.1:8810")
 DATA_ROUTES = re.compile(r"^/api/data/(search|walk|map/place|map/regions|map/counts|llms\.txt|docs|openapi\.json|similar/[\w./:%-]{2,300}|works/[\w./:%-]{2,300}"
                          r"|map/tiles/[\w-]{1,40}/(?:index\.json|\d{1,2}/\d{1,6}/\d{1,6}\.(?:pts|ids)"
-                         r"|v2/(?:map|labels)\.json|v2/[dpi]/\d{1,2}/\d{1,6}/\d{1,6}\.bin))$")
+                         r"|v2/(?:map|labels|names)\.json|v2/[dpi]/\d{1,2}/\d{1,6}/\d{1,6}\.bin|v2/t/\d{1,2}/\d{1,6}/\d{1,6}\.json))$")
 SEARCHES: dict[str, list[float]] = {}
 SEARCHES_LOCK = threading.Lock()
 

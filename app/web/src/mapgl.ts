@@ -698,7 +698,7 @@ export class MapGL {
     // idle: fetch the next finer level around the middle of the screen, where zooming in usually goes
     if (!pending && this.loading.size < 3 && L + 1 < this.meta.density.levels) {
       const m = 2 * n, qx = (b.x1 - b.x0) / 4, qy = (b.y1 - b.y0) / 4;
-      let left = 16;
+      let left = 4;   // a few at a time: the public tunnel is ~1 MB/s, and a tap must not wait behind them
       for (let ty = Math.max(0, Math.floor((cy - qy) * m)); ty <= Math.min(m - 1, Math.floor((cy + qy) * m)) && left; ty++)
         for (let tx = Math.max(0, Math.floor((cx - qx) * m)); tx <= Math.min(m - 1, Math.floor((cx + qx) * m)) && left; tx++) {
           const k = `${L + 1}/${tx}/${ty}`;

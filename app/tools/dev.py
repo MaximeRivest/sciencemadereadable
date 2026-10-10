@@ -48,7 +48,8 @@ RELOAD_JS = """// dev only (app/tools/dev.py): a badge, and a reload when the fi
 """
 
 
-MAP_V2 = re.compile(r"^/api/data/map/tiles/([\w-]{1,40})/v2/((?:map|labels)\.json|[dpi]/\d{1,2}/\d{1,6}/\d{1,6}\.bin)$")
+MAP_V2 = re.compile(r"^/api/data/map/tiles/([\w-]{1,40})/v2/((?:map|labels|names)\.json|[dpi]/\d{1,2}/\d{1,6}/\d{1,6}\.bin"
+                    r"|t/\d{1,2}/\d{1,6}/\d{1,6}\.json)$")
 MAP_V2_ROOT = Path(os.environ["SMR_MAP_V2_ROOT"]) if os.environ.get("SMR_MAP_V2_ROOT") else None
 
 
