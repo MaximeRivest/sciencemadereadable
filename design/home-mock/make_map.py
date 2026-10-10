@@ -18,7 +18,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageFilter
 
-BUILD = Path("/mnt/fast/science-atlas/build/20261008T131030-tsne")
+BUILD = Path("/mnt/fast/science-atlas/build/20261009T190750-tsne-mode")   # same geography, placement "mode"
 OUT = Path(__file__).resolve().parent
 SIZE = 1400
 
@@ -68,7 +68,11 @@ def saturate(rgb: np.ndarray, k: float) -> np.ndarray:
     return np.clip(grey + (rgb - grey) * k, 0, None)
 
 
-ref = np.percentile(count[count > 0], 99.7)   # exposure: the densest 0.3 % of places saturate
+import os
+# exposure: the densest places saturate. 99.7 for the first atlas; the "mode" placement packs papers into their
+# clusters (higher peaks), so the same brightness overall needs a lower percentile (EXPOSURE_PCT, matched by eye
+# and by mean brightness against the first images)
+ref = np.percentile(count[count > 0], float(os.environ.get("EXPOSURE_PCT", 96.5 if "mode" in BUILD.name else 99.7)))
 for theme in ("light", "dark"):
     pal = palette(theme)
     # summed colour per place (not averaged): dense places collect more light / more ink

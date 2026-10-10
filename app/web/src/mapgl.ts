@@ -82,7 +82,9 @@ void main() {
   float pur = texelFetch(u_pur, p, 0).r;
   // as make_map.py: one colour per field, paler where fields mix; only-unclassified places muted (x 0.3)
   vec3 col = f.a > 0.5 ? mix(u_grey, f.rgb, 0.35 + 0.65 * pur) : u_grey * 0.3;
-  o = u_lin > 0.5 ? vec4(col * n, n)                       // float: light adds up under filtering
+  // float: light adds up under filtering; stored / 64 so the densest pixels (100,000+ studies with the "mode"
+  // placement) stay inside half-float range (65,504) instead of overflowing to Inf, which the blur turned into a black square
+  o = u_lin > 0.5 ? vec4(col * n, n) / 64.0
                   : vec4(col, log2(1.0 + n) / 16.0);       // 8-bit fallback: colour and log studies
 }`;
 
@@ -104,13 +106,19 @@ uniform float u_w;         // weight (cross-fade between a tile and its parent)
 uniform float u_cubic;     // 1 when a texel is several pixels wide
 uniform float u_scale;     // light buffer scale (8-bit fallback)
 uniform float u_lin;       // baked as linear light (float) or colour + log studies (8-bit)
+uniform float u_knee;      // exposure level of the 99.7th percentile: brighter than this is compressed
 out vec4 o;
 ${CUBIC}
 void main() {
   vec4 t = u_cubic > 0.5 ? cubic(u_t, v_uv, vec2(258.0)) : texture(u_t, v_uv);
-  vec3 light = u_lin > 0.5 ? t.rgb : t.rgb * (exp2(t.a * 16.0) - 1.0);
-  if (max(light.r, max(light.g, light.b)) <= 1e-6) discard;
-  o = vec4(light / u_area * u_k * u_w * u_scale, 1.0);
+  float n = u_lin > 0.5 ? t.a * 64.0 : exp2(t.a * 16.0) - 1.0;      // studies in the texel
+  if (n <= 1e-6) discard;
+  vec3 col = u_lin > 0.5 ? t.rgb / t.a : t.rgb;
+  // light: linear up to the 99.7th percentile of the screen (calibrated against the homepage image), square root
+  // beyond, so the densest clusters glow instead of burning a white halo through the blur
+  float x = n / u_area * u_k;
+  float y = x <= u_knee ? x : u_knee * sqrt(x / u_knee);
+  o = vec4(col * y * u_w * u_scale, 1.0);
 }`;
 
 // ------------------------------------------------------------------ 1. light: stars
@@ -632,6 +640,7 @@ export class MapGL {
     const hazeW = Math.max(0.5, Math.min(1, 1 - (Math.log2(c.z) - 5) / 3));
     gl.uniform1f(P.u.u_k, this.k * hazeW); gl.uniform1f(P.u.u_scale, sc);
     gl.uniform1i(P.u.u_t, 0); gl.uniform1f(P.u.u_lin, this.hdr ? 1 : 0);
+    gl.uniform1f(P.u.u_knee, this.kneeLevel());
     for (const d of draws) {
       if (d.w <= 0 || !this.dbg.haze) continue;
       const texelPx = spanDev / ((1 << d.t.z) * TILE);
@@ -651,6 +660,9 @@ export class MapGL {
     this.pLevel = Lp;
     this.wantP.clear();
     this.into(stars); if (!merged) gl.clear(gl.COLOR_BUFFER_BIT);
+    // overlapping stars keep the brightest instead of adding up: a cluster of thousands of studies is a bright
+    // patch, not a white-hot blob (and in the light theme, not a black stain of ink)
+    gl.blendEquation(gl.MAX);
     const S = this.progs.stars;
     gl.useProgram(S.p);
     gl.uniform2f(S.u.u_view, Wr, Hr);
@@ -698,6 +710,7 @@ export class MapGL {
 
     this.mark("stars");
     // ------------------------------------------------------------- 2. glow: down chain, blur at two sizes
+    gl.blendEquation(gl.FUNC_ADD);
     gl.disable(gl.BLEND);
     gl.bindVertexArray(this.quad);
     const D = this.progs.down;
@@ -777,15 +790,18 @@ export class MapGL {
     const ref = (Math.pow(2, ((i << 4) + 8) / this.meta.density.log_scale) - 1) / area;
     // EXPOSURE: matched to the homepage image at the whole-map view (measured on 1x and 2x screens), so the
     // swap from the image to the live map is not a jump; light needs more, low-density screens a little less
-    const e = this.EXPOSURE ?? (this.pal.dark ? 0.5 : 0.7) * Math.pow(dpr / 2, 0.45);
+    const e = this.kneeLevel();
     // capped: where studies are few, a lone study stays a faint glow (its star carries it), not a bright patch
     return Math.min(e / ref, 60);
   }
   EXPOSURE: number | null = null;
+  /** the light the 99.7th percentile gets (exposure() sets k so that ref x k = this); matched to the homepage images
+   *  (make_map.py) on 1x and 2x screens, 2026-10-10, with stars blended by MAX */
+  kneeLevel() { const hi = Math.min(devicePixelRatio || 1, 2) >= 1.5; return this.EXPOSURE ?? (this.pal.dark ? (hi ? 2 : 1) : (hi ? 3 : 2.2)); }
   /** Star light: faint far out (the density carries the picture, as on the homepage image), stronger closer in,
    *  where single studies are what there is to see. */
   STARS = 0.003;
-  GRAIN = 0.04;
+  GRAIN = 0.06;
   starGain(z: number) { return Math.min(0.2, this.STARS * Math.pow(Math.max(1, z), 0.95)); }
   /** light theme: ink per star; fine dust far out, real dots close in */
   grain(z: number) { return Math.min(0.28, this.GRAIN * Math.pow(Math.max(1, z), 0.6)); }

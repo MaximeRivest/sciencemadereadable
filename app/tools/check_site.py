@@ -90,13 +90,16 @@ def desktop(b, errs):
     pg.evaluate("window.__fly(0.62, 0.45, 150)"); pg.wait_for_timeout(3000)
     pg.evaluate('document.querySelector("#pick-close").click()')
     ring = None
-    for mx in range(400, 900, 17):          # find a study under the mouse (the hover ring shows on it)
-        pg.mouse.move(mx, 420); pg.wait_for_timeout(40)
-        ring = pg.evaluate('(() => { const r = document.querySelector("#hover-ring"); if (r.hidden) return null;'
-                           f' if (document.elementFromPoint({mx}, 420).closest(".dot")) return null;'
-                           ' const b = r.getBoundingClientRect(); return [b.x + b.width / 2, b.y + b.height / 2] })()')
+    for my in range(220, 640, 31):          # find a study under the mouse (the hover ring shows on it); at this
+        for mx in range(300, 1000, 17):     # zoom studies sit in clusters with empty space between them
+            pg.mouse.move(mx, my); pg.wait_for_timeout(25)
+            ring = pg.evaluate('(() => { const r = document.querySelector("#hover-ring"); if (r.hidden) return null;'
+                               f' if (document.elementFromPoint({mx}, {my}).closest(".dot")) return null;'
+                               ' const b = r.getBoundingClientRect(); return [b.x + b.width / 2, b.y + b.height / 2] })()')
+            if ring:
+                pg.mouse.click(mx, my)
+                break
         if ring:
-            pg.mouse.click(mx, 420)
             break
     until(pg, '!!document.querySelector(".picked")', 10)
     c = pg.evaluate('(() => { const b = document.querySelector(".picked")?.getBoundingClientRect(); return b ? [b.x + b.width / 2, b.y + b.height / 2] : null })()')
