@@ -47,14 +47,17 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
   api = opts.api;
   openSpot = opts.open;
   const map = $("#map");
-  // sharp images after the page is up, the current theme first
-  const order = document.documentElement.dataset.theme === "dark" ? ["dark", "light"] : ["light", "dark"];
-  const first = new URLSearchParams(location.search).has("map") ? 0 : 400;
-  order.forEach((th, n) => setTimeout(() => {
-    const im = new Image();
-    im.onload = () => { ($(`.map-img.${th}`) as HTMLImageElement).src = im.src; };
-    im.src = `map/science-map-${th}.webp`;
-  }, first + n * 1500));
+  // the sharp image of the current theme only (preloaded by index.html), shown once decoded; no blurry
+  // placeholder first. The other theme's image loads when the theme changes.
+  const showImage = (th: string) => {
+    const el = $(`.map-img.${th}`) as HTMLImageElement;
+    if (el.getAttribute("src")) return;
+    el.onload = () => el.classList.add("ready");
+    el.src = `map/science-map-${th}.webp`;
+  };
+  showImage(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
+  new MutationObserver(() => showImage(document.documentElement.dataset.theme === "dark" ? "dark" : "light"))
+    .observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
   fetch("map/regions.json").then((r) => r.json()).then((d) => {
     const big = new Set([...d.fields].sort((a: any, b: any) => b.dots - a.dots).slice(0, 10).map((f: any) => f.name));
     const box = $("#labels");
