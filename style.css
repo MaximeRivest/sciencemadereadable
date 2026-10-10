@@ -551,3 +551,8 @@ body:not([data-view="explore"]) #sdots, body:not([data-view="explore"]) #slinks 
 #slinks .ln-y-cand { stroke: var(--accent); stroke-dasharray: 3 4; opacity: .5; }
 /* "you are here" and the question mark only mark a place: a tap on them goes to the map (identifies the study there) */
 #sdots .dot.here, #sdots .qmark { pointer-events: none; }
+
+/* the map image fades in once loaded (no blurry placeholder) */
+.map-img:not(.ready) { opacity: 0 !important; }
+.map-img.ready { animation: map-in .5s ease; }
+@keyframes map-in { from { opacity: 0; } }
