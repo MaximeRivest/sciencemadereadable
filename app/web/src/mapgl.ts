@@ -355,8 +355,12 @@ export class MapGL {
     t.baked = this.palKey;
   }
 
+  /** At most this many tile downloads at once. The public door is one tunnel that delivers responses strictly in
+   *  order (~1 MB/s): with 150 tiles asked for at once, a tapped study's 8-byte answer arrived 9 s later. Tiles
+   *  are asked for nearest-first every frame, so a cap keeps the order and costs no throughput. */
+  MAX_FLIGHT = 6;
   private loadDensity(key: string) {
-    if (this.loading.has(key)) return;
+    if (this.loading.has(key) || this.loading.size >= this.MAX_FLIGHT) return;
     const p = (async () => {
       try {
         const r = await fetch(`${this.base}/d/${key}.bin`);
@@ -424,7 +428,7 @@ export class MapGL {
   }
 
   private loadPoints(key: string) {
-    if (this.loading.has("p" + key)) return;
+    if (this.loading.has("p" + key) || this.loading.size >= this.MAX_FLIGHT) return;
     const p = (async () => {
       try {
         const r = await fetch(`${this.base}/p/${key}.bin`);
