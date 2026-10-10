@@ -20,7 +20,8 @@ GET /api/check?ids=PMC1,PMC2,...   which search results can be opened: "ok", or 
                          the page asks again for the rest ("?": couldn't be checked).
 GET /api/status          is the home GPU worker online, how long is the queue.
 GET /api/data/...        the data API (search/srl_search, release in DATA.md), read-only, as is: search,
-                         similar/REF, works/REF, map/place, map/regions, map/counts, map/tiles/RELEASE/..., walk.
+                         similar/REF, works/REF, map/place, map/regions, map/counts, map/tiles/RELEASE/..., walk;
+                         its guide for programs and agents (llms.txt), reference (docs) and spec (openapi.json).
                          Per-address limits; tiles are immutable (cached a year).
 GET /api/now             what is being rewritten right now (titles, progress) and the latest finished.
 GET /api/support         what the GPU costs a day, support of the last 24 h (Stripe, GitHub Sponsors), the
@@ -756,7 +757,7 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 SEARCH_API = os.environ.get("SRL_SEARCH_API", "http://127.0.0.1:8810")
-DATA_ROUTES = re.compile(r"^/api/data/(search|walk|map/place|map/regions|map/counts|similar/[\w./:%-]{2,300}|works/[\w./:%-]{2,300}"
+DATA_ROUTES = re.compile(r"^/api/data/(search|walk|map/place|map/regions|map/counts|llms\.txt|docs|openapi\.json|similar/[\w./:%-]{2,300}|works/[\w./:%-]{2,300}"
                          r"|map/tiles/[\w-]{1,40}/(?:index\.json|\d{1,2}/\d{1,6}/\d{1,6}\.(?:pts|ids)"
                          r"|v2/(?:map|labels)\.json|v2/[dpi]/\d{1,2}/\d{1,6}/\d{1,6}\.bin))$")
 SEARCHES: dict[str, list[float]] = {}
