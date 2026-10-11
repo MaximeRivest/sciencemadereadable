@@ -20,6 +20,7 @@ GET /api/check?ids=PMC1,PMC2,...   which search results can be opened: "ok", or 
                          the page asks again for the rest ("?": couldn't be checked).
 GET /api/status          is the home GPU worker online, how long is the queue.
 GET /api/data/...        the data API (search/srl_search, release in DATA.md), read-only, as is: search,
+                         search/WORDS (the question in the address, answered as plain text),
                          similar/REF, works/REF, map/place, map/regions, map/counts, map/tiles/RELEASE/..., walk;
                          its guide for programs and agents (llms.txt), reference (docs) and spec (openapi.json).
                          Per-address limits a minute (DATA_LIMITS): 30 for programs and agents, 60 for the
@@ -598,7 +599,13 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_header("Retry-After", str(wait))
             self.end_headers()
             return self.wfile.write(body)
-        req = urllib.request.Request(SEARCH_API + u.path[len("/api/data"):] + (("?" + u.query) if u.query else ""))
+        path = u.path[len("/api/data"):]
+        if path.startswith("/search/"):
+            # the question is in the address: pass it on in clean percent-encoding (a client may send
+            # quotes or UTF-8 unencoded, which http.server hands over as Latin-1 characters)
+            words = urllib.parse.unquote(path[len("/search/"):].encode("latin-1", "ignore").decode("utf-8", "replace"))
+            path = "/search/" + urllib.parse.quote(words, safe="+")
+        req = urllib.request.Request(SEARCH_API + path + (("?" + u.query) if u.query else ""))
         if tiles and self.headers.get("Range"):
             req.add_header("Range", self.headers["Range"])
         try:
@@ -766,7 +773,7 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 SEARCH_API = os.environ.get("SRL_SEARCH_API", "http://127.0.0.1:8810")
-DATA_ROUTES = re.compile(r"^/api/data/(search|walk|map/place|map/regions|map/counts|llms\.txt|docs|openapi\.json|similar/[\w./:%-]{2,300}|works/[\w./:%-]{2,300}"
+DATA_ROUTES = re.compile(r"^/api/data/(search|search/[^\s?#]{2,6000}|walk|map/place|map/regions|map/counts|llms\.txt|docs|openapi\.json|similar/[\w./:%-]{2,300}|works/[\w./:%-]{2,300}"
                          r"|map/tiles/[\w-]{1,40}/(?:index\.json|\d{1,2}/\d{1,6}/\d{1,6}\.(?:pts|ids)"
                          r"|v2/(?:map|labels|names)\.json|v2/[dpi]/\d{1,2}/\d{1,6}/\d{1,6}\.bin|v2/t/\d{1,2}/\d{1,6}/\d{1,6}\.json))$")
 SEARCHES: dict[str, list[float]] = {}
