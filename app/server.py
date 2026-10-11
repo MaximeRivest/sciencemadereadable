@@ -602,7 +602,9 @@ class Handler(SimpleHTTPRequestHandler):
         if not words:
             return self.send_text(200, ASK_HELP)
         if words == "robots.txt":
-            return self.send_text(200, "User-agent: *\nDisallow: /\n")
+            # open to all: AI tools fetching for a person obey robots.txt (Claude refused a "Disallow: /").
+            # Search engines are kept out of their index by X-Robots-Tag: noindex on every answer instead.
+            return self.send_text(200, ROBOTS_OPEN)
         # what robots and scanners ask for (favicon.ico, wp-login.php, .env, a/b/c) is not a question
         if not re.search(r"\s", words) and (re.search(r"[./\\]", words) or words.lower().startswith(("wp-", "cgi-"))):
             return self.send_text(404, "Not a question. Ask one in the address: https://ask.sciencemadereadable.com/why do cats purr\n")
@@ -806,6 +808,7 @@ SEARCH_API = os.environ.get("SRL_SEARCH_API", "http://127.0.0.1:8810")
 DATA_ROUTES = re.compile(r"^/api/data/(search|search/[^\s?#]{2,6000}|walk|map/place|map/regions|map/counts|llms\.txt|docs|openapi\.json|similar/[\w./:%-]{2,300}|works/[\w./:%-]{2,300}"
                          r"|map/tiles/[\w-]{1,40}/(?:index\.json|\d{1,2}/\d{1,6}/\d{1,6}\.(?:pts|ids)"
                          r"|v2/(?:map|labels|names)\.json|v2/[dpi]/\d{1,2}/\d{1,6}/\d{1,6}\.bin|v2/t/\d{1,2}/\d{1,6}/\d{1,6}\.json))$")
+ROBOTS_OPEN = "User-agent: *\nAllow: /\n"
 ASK_HELP = """# Ask science
 
 Put a question at the end of this address and get the scientific studies about it, as plain text:
@@ -897,6 +900,12 @@ class PublicHandler(Handler):
                 or (method == "POST" and path.startswith("/api/worker/jobs/")))
 
     def do_GET(self):
+        path = urllib.parse.urlparse(self.path).path
+        if path == "/robots.txt":
+            return self.send_text(200, ROBOTS_OPEN)
+        if path in ("/", "/api", "/api/", "/api/data", "/api/data/"):
+            # an agent given just the address gets the guide, not a 404
+            return self.data_proxy(urllib.parse.urlparse("/api/data/llms.txt"))
         if not self.allowed("GET"):
             return self.send_json(404, {"error": "not found"})
         super().do_GET()
