@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Science, made readable</title>
 <meta name="description" content="Search all of science, see where it sits on the map of research, and read open papers rewritten in plain words.">
-<link rel="stylesheet" href="style.css?v=0128a93215">
+<link rel="stylesheet" href="style.css?v=d0a1b22a5c">
 <!-- the sharp map image first: the page shows it while the live map loads (atlas.ts); the theme's own only -->
 <link rel="preload" as="image" href="map/science-map-dark.webp" media="(prefers-color-scheme: dark)" fetchpriority="high">
 <link rel="preload" as="image" href="map/science-map-light.webp" media="(prefers-color-scheme: light)" fetchpriority="high">
@@ -22,6 +22,7 @@
   <span class="nav-right">
     <span id="gpu" class="gpu">GPU</span>
     <a href="?library" id="open-library">Library</a>
+    <a href="?api" id="open-api" title="Use this search from your code or AI agent">API</a>
     <a href="#" id="open-support" class="support-link">♥ Support</a>
     <a href="#" id="open-settings">Settings</a>
     <a href="#" id="open-about">About</a>
@@ -35,9 +36,14 @@
 <main id="home" class="view">
   <h1 class="hero">Science, made readable.</h1>
   <form class="search big" role="search">
-    <input type="search" placeholder="What are you curious about?" aria-label="Search all of science" autofocus>
+    <span class="field">
+      <input type="search" placeholder="What are you curious about?" aria-label="Search all of science" autofocus>
+      <button type="button" class="help" aria-label="How search works" title="How search works"
+              aria-expanded="false" aria-controls="home-tips">?</button>
+    </span>
     <button>Search</button>
   </form>
+  <!-- #home-tips: a copy of the results page's .search-tips, made by app.ts -->
 </main>
 
 <div id="map" role="button" tabindex="0" aria-label="The map of science: open it">
@@ -79,6 +85,84 @@
   <div id="library"></div>
 </main>
 
+<!-- The search API for programs and AI agents. Plain HTML on purpose: an agent that fetches this page reads it all. -->
+<main id="api-view" class="view">
+  <h1 class="lib-title">Search science from your code and AI agents</h1>
+  <p class="api-lead">The search behind this site is open to your programs and AI agents: about 200 million studies, by
+    meaning or by exact words, with their citations and their place on the map of science. Free, with no key and no
+    sign-up.</p>
+  <p class="api-links">
+    <a class="chip" href="https://api.sciencemadereadable.com/api/data/llms.txt" target="_blank" rel="noopener">Full guide for agents</a>
+    <a class="chip" href="https://api.sciencemadereadable.com/api/data/docs" target="_blank" rel="noopener">Try every call</a>
+    <a class="chip" href="https://api.sciencemadereadable.com/api/data/openapi.json" target="_blank" rel="noopener">OpenAPI spec</a>
+    <a class="chip" href="https://github.com/MaximeRivest/srl-search" target="_blank" rel="noopener">Source code</a>
+  </p>
+
+  <h2>Give it to your AI agent</h2>
+  <div class="api-card">
+    <h3>The quickest way: tell it</h3>
+    <p>Paste this into Claude Code, Codex, Cursor, or any agent that can make web requests:</p>
+    <pre data-copy="prompt">When you need scientific papers, use the free search API at https://api.sciencemadereadable.com/api/data (no key needed). First read https://api.sciencemadereadable.com/api/data/llms.txt: it explains every call and how to search well.</pre>
+  </div>
+  <div class="api-card">
+    <h3>Or install it as a skill</h3>
+    <p>The agent then knows about the search in every conversation, and reaches for it by itself when research would
+      help. One command, in a terminal:</p>
+    <p class="api-for">Claude Code</p>
+    <pre data-copy="skill-claude">mkdir -p ~/.claude/skills/science-search && curl -fsSL https://sciencemadereadable.com/agents/science-search/SKILL.md -o ~/.claude/skills/science-search/SKILL.md</pre>
+    <p class="api-for">Codex, Pi and other agents that read <code>~/.agents/skills</code></p>
+    <pre data-copy="skill-agents">mkdir -p ~/.agents/skills/science-search && curl -fsSL https://sciencemadereadable.com/agents/science-search/SKILL.md -o ~/.agents/skills/science-search/SKILL.md</pre>
+    <p class="quiet small">It's a short text file: <a href="agents/science-search/SKILL.md" target="_blank" rel="noopener">read it</a>
+      before you install it. Start a new conversation afterwards.</p>
+  </div>
+  <p class="quiet small">No MCP server yet. The two ways above work with any agent that can fetch a web address.</p>
+
+  <h2>Call it from code</h2>
+  <p>Plain HTTPS and JSON. Click a link to see a real answer in your browser.</p>
+  <pre data-copy="curl">B=https://api.sciencemadereadable.com/api/data
+curl -G "$B/search" --data-urlencode "q=does intermittent fasting help weight loss" -d k=5 -d abstracts=false
+curl -G "$B/search" --data-urlencode 'q="gut microbiome" AND (autism OR ASD) NOT mice' -d k=5
+curl "$B/works/10.1126/science.aan8048"</pre>
+  <pre data-copy="python">import requests
+B = "https://api.sciencemadereadable.com/api/data"
+r = requests.get(f"{B}/search", params={"q": "microplastics in human placenta", "k": 20,
+                                        "year_from": 2020, "abstracts": "false"}, timeout=30)
+r.raise_for_status()
+for p in r.json()["results"]:
+    print(p["year"], p["citations"], p["title"], p["doi"] or p["openalex"])</pre>
+
+  <table class="api-calls">
+    <tr><td><code>/search?q=…</code></td><td>Studies by meaning (ask in plain words) or by exact words (quotes, AND, OR, NOT).
+      Filters for years, type, open access. <a href="https://api.sciencemadereadable.com/api/data/search?q=why+do+cats+purr&amp;k=5&amp;abstracts=false" target="_blank" rel="noopener">Try&nbsp;↗</a></td></tr>
+    <tr><td><code>/works/{id}</code></td><td>One study's full record, by DOI, OpenAlex id or PubMed Central id.
+      <a href="https://api.sciencemadereadable.com/api/data/works/10.1126/science.aan8048" target="_blank" rel="noopener">Try&nbsp;↗</a></td></tr>
+    <tr><td><code>/similar/{id}</code></td><td>The studies closest in meaning to one study.
+      <a href="https://api.sciencemadereadable.com/api/data/similar/W2782456798?k=5&amp;abstracts=false" target="_blank" rel="noopener">Try&nbsp;↗</a></td></tr>
+    <tr><td><code>/walk?id=…</code></td><td>A citation walk: what studies like this one cite that it does not. Good for "what
+      should I read next?". <a href="https://api.sciencemadereadable.com/api/data/walk?id=10.1126/science.aan8048&amp;k=30" target="_blank" rel="noopener">Try&nbsp;↗</a></td></tr>
+    <tr><td><code>/map/place</code></td><td>Where studies, or a question, sit on the map of science.</td></tr>
+  </table>
+  <p class="quiet small">To send a person to a study on this site, link to
+    <code>https://sciencemadereadable.com/?work=</code> followed by its DOI.</p>
+
+  <h2>Good to know</h2>
+  <ul class="api-notes">
+    <li><b>Be gentle:</b> 60 requests a minute per address. Ask for up to 100 results at once rather than looping.</li>
+    <li><b>What it covers:</b> English titles and abstracts from OpenAlex, not full texts. New papers arrive with each
+      data update, so the very latest may be missing. The <a href="https://api.sciencemadereadable.com/api/data/llms.txt" target="_blank" rel="noopener">guide</a>
+      gives today's exact numbers.</li>
+    <li><b>Ask like a paper, not like a search box:</b> "effects of dietary interventions on weight loss in adults"
+      finds better studies than "how to lose weight".</li>
+    <li><b>Judge results yourself:</b> each result has a <code>junk</code> score (likely spam or not research), but a
+      clean score doesn't mean a study is right. Subject labels are often wrong.</li>
+    <li><b>A free experiment, not a service with guarantees:</b> it runs on one server and can be down for a few
+      minutes during updates.</li>
+    <li><b>Privacy:</b> the server's request log includes what was searched, but not who searched it.</li>
+    <li>Study records come from <a href="https://openalex.org" target="_blank" rel="noopener">OpenAlex</a> (CC0).
+      The search code is open source (Apache 2.0).</li>
+  </ul>
+</main>
+
 <main id="results-view" class="view">
   <div class="search-opts">
     <span class="seg" role="radiogroup" aria-label="Search by">
@@ -94,6 +178,9 @@
     <button type="button" class="tips-toggle" aria-expanded="false">How to search</button>
   </div>
   <div class="search-tips" hidden>
+    <p class="tips-intro">We search the titles and abstracts of about 200 million studies (not their full texts).
+      Ask a question and we find studies about the same idea, even when they use other words. Put words in quotes,
+      or use AND, OR, NOT, and we look for those exact words instead.</p>
     <p class="tips-head">Ask in your own words <span class="quiet">· finds papers by meaning</span></p>
     <p><button type="button" class="tip" data-by="meaning" data-q="Why do we need sleep?">Why do we need sleep?</button>
        <button type="button" class="tip" data-by="meaning" data-q="Can exercise help with depression?">Can exercise help with depression?</button></p>
@@ -105,6 +192,8 @@
       <li><button type="button" class="tip" data-by="words" data-q="title:coral bleaching"><code>title:coral bleaching</code></button> "coral" in the title, "bleaching" anywhere</li>
     </ul>
     <p class="quiet">Have a DOI or a PubMed Central ID (PMC…)? Paste it to open that paper.</p>
+    <p class="quiet">After a search you can switch between meaning and exact words, keep only recent years, or keep only
+      studies we can rewrite in plain words.</p>
   </div>
   <div id="results"></div>
 </main>
@@ -131,7 +220,7 @@
 </main>
 
 <p id="sotd-bar" class="sotd-bar" hidden></p>
-<footer>A free demo by Maxime Rivest · the small models we trained run on a single GPU · <a href="#" id="open-about-2">How it works</a> · <a href="#" id="open-support-2">♥ Support it</a></footer>
+<footer>A free demo by Maxime Rivest · the small models we trained run on a single GPU · <a href="#" id="open-about-2">How it works</a> · <a href="?api" id="open-api-2">Search API for agents</a> · <a href="#" id="open-support-2">♥ Support it</a></footer>
 
 <dialog id="settings">
   <form method="dialog" autocomplete="off">
@@ -207,7 +296,8 @@
       models, so check the original before relying on a detail. With your own API key you can compare with six commercial models.</p>
     <p><b>What can I search?</b> About 200 million studies: every English title and abstract in OpenAlex, the open
       catalogue of the world's research. Search by meaning (we read your question like the studies) or by exact words.
-      Each study sits on the map of science, near the studies most like it.</p>
+      Each study sits on the map of science, near the studies most like it. Your own programs and AI agents can use the
+      same search: <a href="?api" id="open-api-3">here's how</a>.</p>
     <p><b>Which can be made readable?</b> Open-access research articles in PubMed Central under the CC BY licence,
       which allows republishing an adapted version with credit (about 5 million). Figures and tables are always the
       original ones. For the others we show what is known and link to the original.</p>
@@ -218,6 +308,6 @@
   </form>
 </dialog>
 
-<script type="module" src="app.js?v=a2d460edf5"></script>
+<script type="module" src="app.js?v=ac4c97e0b5"></script>
 </body>
 </html>

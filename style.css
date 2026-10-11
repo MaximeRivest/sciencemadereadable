@@ -21,7 +21,7 @@ a { color: var(--accent); }
 /* views */
 .view { display: none; width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 24px; flex: 1; }
 body[data-view="home"] #home, body[data-view="results"] #results-view, body[data-view="reader"] #reader-view,
-body[data-view="library"] #library-view, body[data-view="work"] #work-view { display: block; }
+body[data-view="library"] #library-view, body[data-view="work"] #work-view, body[data-view="api"] #api-view { display: block; }
 body[data-view="home"] nav.top .search, body[data-view="home"] nav.top #brand { visibility: hidden; }
 
 /* top bar */
@@ -56,7 +56,16 @@ body[data-view="home"] footer, body[data-view="explore"] footer, body[data-view=
 .hero-sub { font: 20px/1.5 var(--serif); color: var(--muted); margin: 0 auto 36px; max-width: 560px; }
 form.search.big { display: flex; gap: 10px; }
 form.search.big input { box-shadow: 0 10px 40px rgba(60, 50, 30, .08); }
-form.search.big input { font-size: 18px; padding: 16px 24px; }
+form.search.big input { font-size: 18px; padding: 16px 56px 16px 24px; }
+/* the "?" sits inside the box, at its right end: quiet until hovered or open */
+form.search.big .field { position: relative; flex: 1; display: flex; }
+form.search.big .help { position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  width: 28px; height: 28px; padding: 0; border-radius: 50%; font: 600 14px/1 var(--sans);
+  background: transparent; border: 1px solid var(--line); color: var(--faint); }
+form.search.big .help:hover, form.search.big .help[aria-expanded="true"] { color: var(--accent); border-color: var(--accent); }
+form.search.big .help:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+#home .search-tips { margin-top: 14px; box-shadow: 0 16px 50px rgba(0, 0, 0, .18); overflow-y: auto; overscroll-behavior: contain; }
+.tips-intro { color: var(--ink); line-height: 1.5; margin-top: 12px !important; }
 #examples-wrap { margin-top: 48px; text-align: left; }
 #examples-wrap > p { text-align: center; }
 #examples { display: grid; gap: 12px; }
@@ -218,6 +227,37 @@ body.solo .thanks { margin-left: auto; margin-right: auto; }
 #recent { display: grid; gap: 10px; }
 .more { display: block; text-align: center; margin-top: 16px; text-decoration: none; font-weight: 600; }
 
+/* the search API, for programs and agents */
+#api-view { max-width: 820px; padding-top: 24px; padding-bottom: 40px; }
+#api-view h2 { font: 500 26px/1.2 var(--serif); margin: 40px 0 12px; }
+#api-view h3 { font-size: 16px; margin: 0 0 4px; }
+#api-view p { margin: 8px 0; }
+.api-lead { font: 19px/1.5 var(--serif); color: var(--muted); margin: 6px 0 14px !important; }
+.api-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.api-links .chip { text-decoration: none; color: var(--ink); padding: 5px 14px; }
+.api-links .chip:hover { border-color: var(--accent); color: var(--accent); }
+.api-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; margin: 12px 0; }
+.api-for { font-size: 13.5px; font-weight: 600; margin: 14px 0 4px !important; }
+#api-view code, #api-view pre { font: 13.5px/1.55 ui-monospace, "SF Mono", Menlo, monospace; }
+#api-view :not(pre) > code { background: var(--accent-soft); border-radius: 5px; padding: 1px 5px; font-size: 13px; }
+.codebox { position: relative; margin: 8px 0; }
+.codebox pre { margin: 0; padding: 14px 84px 14px 16px; background: var(--explore); border: 1px solid var(--line); border-radius: 10px;
+               white-space: pre; overflow-x: auto; }
+/* words to paste and one-line commands wrap; programs keep their lines (and scroll sideways) */
+.codebox pre[data-copy="prompt"], .codebox pre[data-copy^="skill"] { white-space: pre-wrap; overflow-wrap: anywhere; }
+.codebox .copy { position: absolute; top: 8px; right: 8px; padding: 3px 12px; font-size: 13px; color: var(--muted); }
+.codebox .copy:hover, .codebox .copy.done { color: var(--accent); border-color: var(--accent); }
+.api-calls { width: 100%; border-collapse: collapse; margin: 18px 0 8px; font-size: 15px; }
+.api-calls td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.api-calls td:first-child { white-space: nowrap; width: 1%; }
+.api-calls a { white-space: nowrap; font-size: 14px; }
+.api-notes { padding-left: 20px; }
+.api-notes li { margin: 8px 0; }
+@media (max-width: 560px) {
+  .api-calls td { display: block; border: 0; padding: 2px 0; width: auto !important; }
+  .api-calls tr { display: block; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .codebox pre { padding-right: 16px; padding-top: 40px; }
+}
 /* library */
 #library-view { max-width: 820px; padding-top: 24px; }
 .lib-title { font: 500 40px/1.1 var(--serif); margin: 10px 0 6px; }
@@ -332,10 +372,10 @@ body[data-view="home"] #map { --s: max(1250px, 125vw); width: var(--s); height: 
 body[data-view="results"] #map { --s: min(400px, 34vw); width: var(--s); height: var(--s);
   left: min(calc(50vw + 250px), calc(100vw - var(--s) - 32px)); top: 120px; }
 body[data-view="results"] .map-img, body[data-view="work"] .map-img, body[data-view="reader"] .map-img,
-body[data-view="library"] .map-img { filter: grayscale(1) contrast(1.1); opacity: .42; }
+body[data-view="library"] .map-img, body[data-view="api"] .map-img { filter: grayscale(1) contrast(1.1); opacity: .42; }
 /* a study: a small "you are here"; the reader and the library: a small round map button */
 body[data-view="work"] #map { --s: 170px; width: var(--s); height: var(--s); left: calc(100vw - 200px); top: calc(100vh - 200px); }
-body[data-view="reader"] #map, body[data-view="library"] #map { --s: 56px; width: var(--s); height: var(--s);
+body[data-view="reader"] #map, body[data-view="library"] #map, body[data-view="api"] #map { --s: 56px; width: var(--s); height: var(--s);
   left: calc(100vw - 76px); top: calc(100vh - 76px); }
 @media (max-width: 1100px) {
   body[data-view="results"] #map, body[data-view="work"] #map { --s: 56px; left: calc(100vw - 76px); top: calc(100vh - 76px); } }
@@ -406,7 +446,7 @@ body:not([data-view="work"]) .you-are-here { display: none; }
 
 @media (prefers-reduced-motion: reduce) { #map, .map-img, #globe { transition: none !important; } .qmark { animation: none; } }
 /* beside text the map is a control: above the (wide, transparent) content boxes, so it can be clicked */
-body[data-view="results"] #map, body[data-view="work"] #map, body[data-view="reader"] #map, body[data-view="library"] #map { z-index: 6; }
+body[data-view="results"] #map, body[data-view="work"] #map, body[data-view="reader"] #map, body[data-view="library"] #map, body[data-view="api"] #map { z-index: 6; }
 /* small screens: the search gets its own row under the brand and links */
 @media (max-width: 820px) {
   nav.top { flex-wrap: wrap; row-gap: 10px; }
@@ -435,7 +475,8 @@ body[data-view="explore"] .dot::after { content: ""; position: absolute; inset: 
 
 @media (max-width: 560px) {
   /* 16 px: phones don't zoom the page when the box is tapped */
-  form.search.big input { font-size: 16px; padding: 14px 18px; }
+  form.search.big input { font-size: 16px; padding: 14px 48px 14px 18px; }
+  form.search.big .help { right: 9px; }
   form.search.big button { padding: 0 18px; }
   form.search.mini input, input[type=search] { font-size: 16px; }
   .hero { margin-bottom: 26px; }
