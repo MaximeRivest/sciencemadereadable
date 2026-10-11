@@ -44,8 +44,12 @@ function saveKeyForm() {
 }
 
 // ---------------------------------------------------------------- views
-function show(view: "home" | "results" | "reader" | "library" | "work" | "explore") {
+function show(view: "home" | "results" | "reader" | "library" | "work" | "explore" | "api") {
   document.body.dataset.view = view;
+  if (view !== "home") {   // leaving home closes its search tips, so Back finds the page as it was first seen
+    document.getElementById("home-tips")?.setAttribute("hidden", "");
+    document.querySelector("#home .help")?.setAttribute("aria-expanded", "false");
+  }
   track("view", { view });
   window.scrollTo(0, 0);
   mapView(view);
@@ -653,6 +657,7 @@ function route() {
   clearInterval(nowTimer);
   if (q.has("support")) setTimeout(() => openSupport("link"), 300);
   if (q.has("library")) return openLibrary();
+  if (q.has("api")) return show("api");
   if (q.has("map")) {
     if (q.get("work") || q.get("paper")) useContext("walk"); else if (q.get("q")) useContext("results");
     return openExplore(q.get("work"));
@@ -698,8 +703,32 @@ for (const t of document.querySelectorAll<HTMLButtonElement>(".tips-toggle"))
     panel.hidden = !panel.hidden;
     t.setAttribute("aria-expanded", String(!panel.hidden));
   };
+// home: the "?" in the search box opens the same tips (a copy, so the two pages stay in step)
+const homeTips = $("#results-view .search-tips").cloneNode(true) as HTMLElement;
+homeTips.id = "home-tips";
+$("#home").append(homeTips);
+const homeHelp = $("#home .help") as HTMLButtonElement;
+function homeTipsOpen(open: boolean) {
+  homeTips.hidden = !open;
+  homeHelp.setAttribute("aria-expanded", String(open));
+  if (open) fitHomeTips();
+}
+// the home page does not scroll: the panel ends above the bottom of the screen and scrolls inside itself
+function fitHomeTips() {
+  homeTips.style.maxHeight = `${Math.max(160, innerHeight - homeTips.getBoundingClientRect().top - 16)}px`;
+}
+addEventListener("resize", () => { if (!homeTips.hidden) fitHomeTips(); });
+homeHelp.onclick = () => homeTipsOpen(homeTips.hidden);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !homeTips.hidden) { homeTipsOpen(false); homeHelp.focus(); }
+});
+document.addEventListener("click", (e) => {
+  const t = e.target as Node;
+  if (!homeTips.hidden && !homeTips.contains(t) && !homeHelp.contains(t)) homeTipsOpen(false);
+});
 for (const tip of document.querySelectorAll<HTMLButtonElement>(".tip"))
   tip.onclick = () => {
+    homeTipsOpen(false);
     opts.by = tip.dataset.by as "meaning" | "words";
     ($("form.search.big input") as HTMLInputElement).value = tip.dataset.q!;
     runSearch(tip.dataset.q!);
@@ -717,6 +746,30 @@ initMap({
 });
 $("#brand").onclick = (e) => { e.preventDefault(); go(""); };
 for (const id of ["#open-library"]) $(id).onclick = (e) => { e.preventDefault(); go("?library"); };
+for (const id of ["#open-api", "#open-api-2", "#open-api-3"])
+  $(id).onclick = (e) => { e.preventDefault(); ($("#about") as HTMLDialogElement).close(); go("?api"); };
+// the API page: a Copy button on every code box (counted, to know whether anyone sets up an agent)
+for (const pre of document.querySelectorAll<HTMLElement>("#api-view pre")) {
+  const box = document.createElement("div");
+  box.className = "codebox";
+  pre.replaceWith(box);
+  const copy = document.createElement("button");
+  copy.type = "button";
+  copy.className = "copy";
+  copy.textContent = "Copy";
+  copy.onclick = async () => {
+    try { await navigator.clipboard.writeText(pre.textContent!.trim()); }
+    catch {   // no clipboard access: select the text, so Ctrl+C / long-press copies it
+      getSelection()?.selectAllChildren(pre);
+      return;
+    }
+    copy.textContent = "Copied";
+    copy.classList.add("done");
+    setTimeout(() => { copy.textContent = "Copy"; copy.classList.remove("done"); }, 1600);
+    track("copy", { src: pre.dataset.copy });
+  };
+  box.append(pre, copy);
+}
 $("#lib-filter").oninput = drawLibrary;
 ($("#model") as HTMLSelectElement).onchange = (e) => {
   chosen = MODELS.find((m) => m.id === (e.target as HTMLSelectElement).value)!;
