@@ -22,7 +22,7 @@ GET /api/status          is the home GPU worker online, how long is the queue.
 GET /api/data/...        the data API (search/srl_search, release in DATA.md), read-only, as is: search,
                          similar/REF, works/REF, map/place, map/regions, map/counts, map/tiles/RELEASE/..., walk;
                          its guide for programs and agents (llms.txt), reference (docs) and spec (openapi.json).
-                         Per-address limits a minute (DATA_LIMITS): 10 for programs and agents, 60 for the
+                         Per-address limits a minute (DATA_LIMITS): 30 for programs and agents, 60 for the
                          site's own pages, the guide apart; tiles are immutable (cached a year).
 GET /api/now             what is being rewritten right now (titles, progress) and the latest finished.
 GET /api/support         what the GPU costs a day, support of the last 24 h (Stripe, GitHub Sponsors), the
@@ -772,11 +772,12 @@ SEARCHES: dict[str, list[float]] = {}
 SEARCHES_LOCK = threading.Lock()
 # Data requests one address may make a minute through the public door. The site's own pages (a browser sends
 # the site as Origin) need room for a busy reader: a search, its places on the map, a study, its citation walk
-# come to ~25 a minute. Programs and agents get 10: one search with k=100 beats many small ones. Reading the
+# come to ~25 a minute. Programs and agents get 30 (10 cut off an ordinary agent's literature search on its 11th
+# call, 2026-10-11); one search with k=100 still beats many small ones. Reading the
 # guide is not counted against that. Origin can be faked: this keeps use polite, it is not a lock.
 SITE_ORIGINS = {"https://sciencemadereadable.com", "https://www.sciencemadereadable.com"}
 DOC_ROUTES = {"llms.txt", "docs", "openapi.json"}
-DATA_LIMITS = {"site": 60, "api": 10, "doc": 30, "tile": 1200}
+DATA_LIMITS = {"site": 60, "api": 30, "doc": 30, "tile": 1200}
 
 
 def rate_wait(who: str, limit: int) -> int:
