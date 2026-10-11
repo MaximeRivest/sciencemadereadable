@@ -20,6 +20,23 @@ for f in ("index.html", "style.css", "app.js", "theme.js"):
 shutil.copytree(DEMO / "web" / "map", SITE / "map")   # the map of science (images, field labels)
 shutil.copy(DEMO / "web" / "llms.txt", SITE / "llms.txt")          # the site, for AI agents (points to the API guide)
 shutil.copytree(DEMO / "web" / "agents", SITE / "agents")         # the search skill agents can install
+# /api (the address people share): a browser goes on to the ?api page at once; an agent that reads the
+# page without running scripts gets the agents' guide as plain text right there
+import html as _html
+(SITE / "api").mkdir()
+(SITE / "api" / "index.html").write_text(f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>ScienceMadeReadable search API: for programs and AI agents</title>
+<meta name="description" content="Free search over about 200 million scientific studies, for programs and AI agents. No key.">
+<link rel="canonical" href="https://sciencemadereadable.com/?api">
+<meta http-equiv="refresh" content="0; url=/?api">
+<script>location.replace("/?api" + location.hash)</script>
+</head><body>
+<p>Opening <a href="/?api">the search API page</a>. For AI agents: the guide is below, and in full at
+<a href="https://api.sciencemadereadable.com/api/data/llms.txt">https://api.sciencemadereadable.com/api/data/llms.txt</a>.</p>
+<pre>{_html.escape((DEMO / "web" / "llms.txt").read_text())}</pre>
+</body></html>
+""")
 domain = sys.argv[2] if len(sys.argv) > 2 else ""
 # support links: the Stripe ones only when they are live (test links take no real payment)
 support = json.loads((DEMO / "support.json").read_text()) if (DEMO / "support.json").exists() else {}
