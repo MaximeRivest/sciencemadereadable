@@ -43,6 +43,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import ipaddress
 import json
 import os
 import re
@@ -622,7 +623,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def client(self) -> str:
         # behind tailscale serve / a tunnel, the reader's address is in X-Forwarded-For
-        return (self.headers.get("X-Forwarded-For") or self.client_address[0]).split(",")[0].strip()
+        return who_is((self.headers.get("X-Forwarded-For") or self.client_address[0]).split(",")[0].strip())
 
     def do_OPTIONS(self):
         self.send_response(204)
@@ -778,6 +779,20 @@ SEARCHES_LOCK = threading.Lock()
 SITE_ORIGINS = {"https://sciencemadereadable.com", "https://www.sciencemadereadable.com"}
 DOC_ROUTES = {"llms.txt", "docs", "openapi.json"}
 DATA_LIMITS = {"site": 60, "api": 30, "doc": 30, "tile": 1200}
+
+
+def who_is(address: str) -> str:
+    """One reader, for limits and counts. IPv4: the address. IPv6: its /64, the block a home or a phone is given
+    (a device picks new addresses inside it at will, so per address it could dodge every limit)."""
+    try:
+        ip = ipaddress.ip_address(address)
+    except ValueError:
+        return address
+    if ip.version == 6 and ip.ipv4_mapped:
+        return str(ip.ipv4_mapped)
+    if ip.version == 6:
+        return str(ipaddress.ip_network(f"{ip}/64", strict=False))
+    return str(ip)
 
 
 def rate_wait(who: str, limit: int) -> int:
