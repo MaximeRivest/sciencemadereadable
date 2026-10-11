@@ -143,7 +143,7 @@ support of the last 24 hours. Settings in `support.json` (not published; `suppor
 `stats.py`, on our own server: no cookies, no third party. A visitor is an anonymous code made
 each day from address and browser with a random key that is thrown away the next day (unique
 visitors per day, no following anyone across days, addresses never stored). Search words are not
-stored. Do Not Track / Global Privacy Control: nothing sent. Events in `stats/events-YYYY-MM.jsonl`;
+counted, but they appear in the request logs (this server's and the search API's), without the address. Do Not Track / Global Privacy Control: nothing sent. Events in `stats/events-YYYY-MM.jsonl`;
 the dashboard is `/stats`, shown only to tailnet devices (Tailscale adds who is asking; requests
 from the internet don't carry it).
 

@@ -13,7 +13,7 @@ GET /api/search?q=...&mode=auto|semantic|keyword&year_from=YYYY
                          query uses quotes, AND / OR / NOT, brackets or word*. Answers
                          {"hits": [...], "mode": "semantic"|"keyword", "matches": n}; the page
                          falls back to Europe PMC when this fails. At most 30 searches a minute per
-                         address. The words searched are not stored.
+                         address. The words searched are not counted (stats.py), but appear in the request log, without the address.
 GET /api/check?ids=PMC1,PMC2,...   which search results can be opened: "ok", or why not ("licence",
                          "layout", "no full text"), by the same rules as opening the paper. Kept forever
                          in app/checks.jsonl. Answers as soon as one is known, with all known then;

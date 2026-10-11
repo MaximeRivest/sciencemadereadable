@@ -44,7 +44,7 @@ Filters: `year_from`, `year_to`, `type=review|article|preprint|...`, `open_acces
 - 60 requests a minute per address; HTTP 429 means wait a minute. Ask for up to `k=100` at once instead of
   looping, and do not run searches in parallel.
 - 502/503 for a minute or two: a data update or a restart. Retry later.
-- A free experimental service run by one person. Requests, including search words, appear in the server's
-  request log, which does not record the caller's address.
+- Requests, including search words, appear in the server's request log, which does not record the caller's
+  address.
 
 To point a person to a paper in a readable page: `https://sciencemadereadable.com/?work=<DOI>`.
