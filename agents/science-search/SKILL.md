@@ -21,8 +21,9 @@ curl -s  "$B/similar/W2782456798?k=10&abstracts=false"
 curl -s  "$B/walk?id=10.1126/science.aan8048"          # 'answers' = what similar papers cite and this one doesn't
 ```
 
-No shell or HTTP library, only a "fetch this web address" tool? `<base>/search/<question, %20 for spaces>`
-answers as plain text (Markdown), e.g. `$B/search/why%20do%20cats%20purr?k=20`; it takes the same options.
+No shell or HTTP library, only a "fetch this web address" tool? `https://ask.sciencemadereadable.com/<question>`
+(%20 for spaces) answers as plain text (Markdown), e.g. `https://ask.sciencemadereadable.com/why%20do%20cats%20purr?k=20`;
+it takes the same options as /search. (`$B/search/<question>` is the same thing.)
 
 Results: `id` (OpenAlex W-number), `doi`, `title`, `year`, `type`, `authors` (first 12, " | "), `venue`,
 `citations`, `abstract`, `score`, `junk` (0-1, likelihood of spam or not scholarship), `openalex`, `pmcid`.

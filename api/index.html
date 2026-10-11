@@ -16,7 +16,7 @@
 ## Search API (for programs and AI agents)
 
 - Base URL: https://api.sciencemadereadable.com/api/data (read-only, no key, 30 requests a minute per address)
-- Only able to open a web address? https://api.sciencemadereadable.com/api/data/search/why%20do%20cats%20purr answers as plain text (the question is the end of the address; options after ?, e.g. ?k=30&amp;year_from=2020)
+- Only able to open a web address? https://ask.sciencemadereadable.com/why%20do%20cats%20purr answers as plain text (the question is the whole address; options after ?, e.g. ?k=30&amp;year_from=2020). Same as &lt;base&gt;/search/&lt;question&gt;.
 - [Full guide](https://api.sciencemadereadable.com/api/data/llms.txt): every call, today&#x27;s coverage, result fields, limits. Read this before using the API.
 - [Interactive reference](https://api.sciencemadereadable.com/api/data/docs) and [OpenAPI spec](https://api.sciencemadereadable.com/api/data/openapi.json)
 - [Agent skill](https://sciencemadereadable.com/agents/science-search/SKILL.md): install in `~/.claude/skills/science-search/` or `~/.agents/skills/science-search/`
