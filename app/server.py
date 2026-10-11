@@ -906,6 +906,9 @@ class PublicHandler(Handler):
         if path in ("/", "/api", "/api/", "/api/data", "/api/data/"):
             # an agent given just the address gets the guide, not a 404
             return self.data_proxy(urllib.parse.urlparse("/api/data/llms.txt"))
+        if path in ("/docs", "/openapi.json", "/llms.txt", "/search", "/walk") or path.startswith(("/search/", "/works/", "/similar/")):
+            # the addresses an agent guesses at the root are the data API's own (/docs, /search?q=...)
+            return self.data_proxy(urllib.parse.urlparse(self.path)._replace(path="/api/data" + path))
         if not self.allowed("GET"):
             return self.send_json(404, {"error": "not found"})
         super().do_GET()
