@@ -532,6 +532,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json(200, library())
         if u.path.startswith("/api/data/"):
             return self.data_proxy(u)
+        if u.path == "/api/ask" or u.path.startswith("/api/ask/"):
+            return self.ask(u)
         if u.path == "/api/search":
             args = urllib.parse.parse_qs(u.query)
             q = (args.get("q") or [""])[0].strip()
@@ -580,6 +582,32 @@ class Handler(SimpleHTTPRequestHandler):
     def body_json(self, limit=4_000_000):
         return json.loads(self.rfile.read(min(int(self.headers.get("Content-Length") or 0), limit)) or b"{}")
 
+    def send_text(self, status: int, text: str):
+        body = text.encode()
+        self.send_response(status)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "public, max-age=3600" if status == 200 else "no-store")
+        self.send_header("X-Robots-Tag", "noindex")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def ask(self, u):
+        """ask.sciencemadereadable.com/<question> (the relay's Caddy puts /api/ask in front): the search with
+        the question as the whole address, answered as plain text. The address alone says how to use it."""
+        rest = u.path[len("/api/ask/"):]
+        if u.query and "=" not in u.query:   # "is coffee bad? for teens": the ? was part of the question
+            rest, u = rest + "%3F" + u.query, u._replace(query="")
+        words = urllib.parse.unquote(rest).strip()
+        if not words:
+            return self.send_text(200, ASK_HELP)
+        if words == "robots.txt":
+            return self.send_text(200, "User-agent: *\nDisallow: /\n")
+        # what robots and scanners ask for (favicon.ico, wp-login.php, .env, a/b/c) is not a question
+        if not re.search(r"\s", words) and (re.search(r"[./\\]", words) or words.lower().startswith(("wp-", "cgi-"))):
+            return self.send_text(404, "Not a question. Ask one in the address: https://ask.sciencemadereadable.com/why do cats purr\n")
+        return self.data_proxy(u._replace(path="/api/data/search/" + rest))
+
     def data_proxy(self, u):
         """Read-only pass-through to the data API, for the routes in DATA_ROUTES only."""
         route = DATA_ROUTES.match(u.path)
@@ -625,6 +653,8 @@ class Handler(SimpleHTTPRequestHandler):
         if cenc == "gzip" and tiles:
             self.send_header("Content-Encoding", "gzip")
         self.send_header("Cache-Control", "public, max-age=31536000, immutable" if tiles and status < 300 else "no-store")
+        if route.group(1).startswith("search/"):
+            self.send_header("X-Robots-Tag", "noindex")   # every question is an address: keep them out of search engines
         self.end_headers()
         self.wfile.write(body)
 
@@ -776,6 +806,24 @@ SEARCH_API = os.environ.get("SRL_SEARCH_API", "http://127.0.0.1:8810")
 DATA_ROUTES = re.compile(r"^/api/data/(search|search/[^\s?#]{2,6000}|walk|map/place|map/regions|map/counts|llms\.txt|docs|openapi\.json|similar/[\w./:%-]{2,300}|works/[\w./:%-]{2,300}"
                          r"|map/tiles/[\w-]{1,40}/(?:index\.json|\d{1,2}/\d{1,6}/\d{1,6}\.(?:pts|ids)"
                          r"|v2/(?:map|labels|names)\.json|v2/[dpi]/\d{1,2}/\d{1,6}/\d{1,6}\.bin|v2/t/\d{1,2}/\d{1,6}/\d{1,6}\.json))$")
+ASK_HELP = """# Ask science
+
+Put a question at the end of this address and get the scientific studies about it, as plain text:
+
+    https://ask.sciencemadereadable.com/why do cats purr
+
+(Spaces may be typed as they are, or as %20 or +.) About 200 million studies: titles and abstracts from OpenAlex,
+searched by meaning. Quotes or AND / OR / NOT search for those exact words instead:
+
+    https://ask.sciencemadereadable.com/"gut microbiome" AND autism
+
+Options after a ?: k=30 (more results, up to 100), year_from=2020, year_to, type=review, open_access=true,
+abstracts=false. For example: https://ask.sciencemadereadable.com/does coffee affect sleep?k=20&year_from=2020
+
+Free, no key, 30 questions a minute per address. Each answer links to the paper and to its page on
+https://sciencemadereadable.com (its place on the map of science, its citations, and a plain-language version
+when the paper is open). For programs: the JSON API and its guide, https://api.sciencemadereadable.com/api/data/llms.txt
+"""
 SEARCHES: dict[str, list[float]] = {}
 SEARCHES_LOCK = threading.Lock()
 # Data requests one address may make a minute through the public door. The site's own pages (a browser sends
@@ -845,7 +893,7 @@ class PublicHandler(Handler):
 
     def allowed(self, method: str) -> bool:
         path = urllib.parse.urlparse(self.path).path
-        return ((method, path) in PUBLIC or (method == "GET" and path.startswith(("/api/jobs/", "/api/data/")))
+        return ((method, path) in PUBLIC or (method == "GET" and path.startswith(("/api/jobs/", "/api/data/", "/api/ask")))
                 or (method == "POST" and path.startswith("/api/worker/jobs/")))
 
     def do_GET(self):

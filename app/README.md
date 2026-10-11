@@ -6,7 +6,11 @@ machine, reached at **https://api.sciencemadereadable.com**: DNS → the OVH rel
 144.217.95.30, also Chattering Anywhere's), whose Caddy (`/etc/caddy/conf.d/sciencemadereadable.caddy`, Let's
 Encrypt, no access log) proxies to 127.0.0.1:18799 there, the end of an outbound SSH tunnel lambda keeps open
 (user service `smr-public-tunnel`, key `~/.ssh/smr-tunnel_ed25519`; on the relay the account `smr-tunnel` may only
-listen on that one address, `sshd_config.d/10-smr-tunnel.conf`). The relay cannot open connections into lambda
+listen on that one address, `sshd_config.d/10-smr-tunnel.conf`). **https://ask.sciencemadereadable.com/<question>**
+(since 2026-10-11) is the same relay and tunnel: its block in the same Caddy file puts `/api/ask` in front of the
+address, and `server.py` (`ask()`) answers with the search as plain text (the bare address explains itself;
+`robots.txt` says keep out; file-like addresses such as `favicon.ico` are 404, not searches). Caddy there has no
+reload (`ExecReload=` is cleared): `sudo systemctl restart caddy`, a few seconds' break for every site on the relay. The relay cannot open connections into lambda
 (tailnet policy); lambda reaches out. `server.py`'s public port 8799 answers: queue, saved rewrites, examples,
 counts, and `/api/data/*` (search, map, works; srl_search on :8810). The old Funnel door
 (https://lambda.tail69222b.ts.net:10000) still serves the rented-GPU worker scripts. Publish a new version of the
