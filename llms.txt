@@ -5,7 +5,7 @@
 
 ## Search API (for programs and AI agents)
 
-- Base URL: https://api.sciencemadereadable.com/api/data (read-only, no key, 10 requests a minute per address)
+- Base URL: https://api.sciencemadereadable.com/api/data (read-only, no key, 30 requests a minute per address)
 - [Full guide](https://api.sciencemadereadable.com/api/data/llms.txt): every call, today's coverage, result fields, limits. Read this before using the API.
 - [Interactive reference](https://api.sciencemadereadable.com/api/data/docs) and [OpenAPI spec](https://api.sciencemadereadable.com/api/data/openapi.json)
 - [Agent skill](https://sciencemadereadable.com/agents/science-search/SKILL.md): install in `~/.claude/skills/science-search/` or `~/.agents/skills/science-search/`

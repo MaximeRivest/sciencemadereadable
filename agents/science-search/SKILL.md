@@ -41,7 +41,7 @@ Filters: `year_from`, `year_to`, `type=review|article|preprint|...`, `open_acces
 
 ## Limits
 
-- 10 requests a minute per address (reading `/llms.txt` does not count). Spend them well: one search with
+- 30 requests a minute per address (reading `/llms.txt` does not count). Spend them well: one search with
   `k=100` instead of several small ones, `/works` only for the papers you keep, never calls in parallel.
 - HTTP 429: wait the seconds given in the `Retry-After` header (also `retry_after` in the body), then retry.
 - 502/503 for a minute or two: a data update or a restart. Retry later.
