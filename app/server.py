@@ -22,7 +22,8 @@ GET /api/status          is the home GPU worker online, how long is the queue.
 GET /api/data/...        the data API (search/srl_search, release in DATA.md), read-only, as is: search,
                          similar/REF, works/REF, map/place, map/regions, map/counts, map/tiles/RELEASE/..., walk;
                          its guide for programs and agents (llms.txt), reference (docs) and spec (openapi.json).
-                         Per-address limits; tiles are immutable (cached a year).
+                         Per-address limits a minute (DATA_LIMITS): 10 for programs and agents, 60 for the
+                         site's own pages, the guide apart; tiles are immutable (cached a year).
 GET /api/now             what is being rewritten right now (titles, progress) and the latest finished.
 GET /api/support         what the GPU costs a day, support of the last 24 h (Stripe, GitHub Sponsors), the
                          Stripe links, today's sponsor.
@@ -583,12 +584,19 @@ class Handler(SimpleHTTPRequestHandler):
         if not route or len(u.query) > 2000 or ".." in urllib.parse.unquote(u.path):
             return self.send_json(404, {"error": "not found"})
         tiles = route.group(1).startswith("map/tiles/")
-        now, who_ = time.time(), ("t:" if tiles else "d:") + self.client()
-        with SEARCHES_LOCK:
-            recent = [t for t in SEARCHES.get(who_, []) if now - t < 60]
-            SEARCHES[who_] = recent + [now]
-        if len(recent) >= (1200 if tiles else 60):
-            return self.send_json(429, {"error": "Too many requests. Wait a minute."})
+        kind = ("tile" if tiles else "doc" if route.group(1) in DOC_ROUTES
+                else "site" if self.headers.get("Origin") in SITE_ORIGINS else "api")
+        wait = rate_wait(kind + ":" + self.client(), DATA_LIMITS[kind])
+        if wait:
+            body = json.dumps({"error": f"Too many requests: {DATA_LIMITS[kind]} a minute per address. "
+                                        f"Try again in {wait} seconds.", "retry_after": wait}).encode()
+            self.send_response(429)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Retry-After", str(wait))
+            self.end_headers()
+            return self.wfile.write(body)
         req = urllib.request.Request(SEARCH_API + u.path[len("/api/data"):] + (("?" + u.query) if u.query else ""))
         if tiles and self.headers.get("Range"):
             req.add_header("Range", self.headers["Range"])
@@ -762,6 +770,29 @@ DATA_ROUTES = re.compile(r"^/api/data/(search|walk|map/place|map/regions|map/cou
                          r"|v2/(?:map|labels|names)\.json|v2/[dpi]/\d{1,2}/\d{1,6}/\d{1,6}\.bin|v2/t/\d{1,2}/\d{1,6}/\d{1,6}\.json))$")
 SEARCHES: dict[str, list[float]] = {}
 SEARCHES_LOCK = threading.Lock()
+# Data requests one address may make a minute through the public door. The site's own pages (a browser sends
+# the site as Origin) need room for a busy reader: a search, its places on the map, a study, its citation walk
+# come to ~25 a minute. Programs and agents get 10: one search with k=100 beats many small ones. Reading the
+# guide is not counted against that. Origin can be faked: this keeps use polite, it is not a lock.
+SITE_ORIGINS = {"https://sciencemadereadable.com", "https://www.sciencemadereadable.com"}
+DOC_ROUTES = {"llms.txt", "docs", "openapi.json"}
+DATA_LIMITS = {"site": 60, "api": 10, "doc": 30, "tile": 1200}
+
+
+def rate_wait(who: str, limit: int) -> int:
+    """0 if this request may go (and it is counted), else the seconds until it may. Refused requests are not
+    counted, so a program that waits as long as told always gets in."""
+    now = time.time()
+    with SEARCHES_LOCK:
+        recent = [t for t in SEARCHES.get(who, []) if now - t < 60]
+        if len(recent) >= limit:
+            SEARCHES[who] = recent
+            return max(1, int(60 - (now - recent[-limit])) + 1)
+        SEARCHES[who] = recent + [now]
+        if len(SEARCHES) > 20000:   # forget addresses with nothing in the last minute
+            for k in [k for k, v in SEARCHES.items() if not v or now - v[-1] >= 60]:
+                del SEARCHES[k]
+        return 0
 
 
 def our_search(q: str, mode: str = "auto", year_from: int | None = None) -> dict:
