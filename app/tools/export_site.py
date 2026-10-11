@@ -18,6 +18,8 @@ shutil.rmtree(SITE, ignore_errors=True)
 for f in ("index.html", "style.css", "app.js", "theme.js"):
     shutil.copy(DEMO / "web" / f, SITE / f)
 shutil.copytree(DEMO / "web" / "map", SITE / "map")   # the map of science (images, field labels)
+shutil.copy(DEMO / "web" / "llms.txt", SITE / "llms.txt")          # the site, for AI agents (points to the API guide)
+shutil.copytree(DEMO / "web" / "agents", SITE / "agents")         # the search skill agents can install
 domain = sys.argv[2] if len(sys.argv) > 2 else ""
 # support links: the Stripe ones only when they are live (test links take no real payment)
 support = json.loads((DEMO / "support.json").read_text()) if (DEMO / "support.json").exists() else {}

@@ -31,7 +31,7 @@ from pathlib import Path
 DIR = Path(__file__).resolve().parent / "stats"
 DIR.mkdir(exist_ok=True)
 LOCK = threading.Lock()
-TYPES = {"view", "search", "open", "read", "make", "done", "fail", "job", "job_done", "job_failed", "support", "give", "thanks_shown", "supported"}
+TYPES = {"view", "search", "open", "read", "make", "done", "fail", "job", "job_done", "job_failed", "support", "give", "thanks_shown", "supported", "copy"}
 FIELDS = {"view": 12, "ref": 80, "doi": 120, "model": 20, "err": 40, "src": 12, "n": 0, "s": 0, "wait": 0, "w": 0, "ok": 0}
 RECENT = collections.defaultdict(collections.deque)   # address → times of its last events (rate limit)
 
