@@ -519,7 +519,9 @@ body.gl #gl, body.gl #glabels { display: block; }
 /* until the live map is final (atlas.ts "gl-ready"), the rendered image shows and the canvas waits, invisible */
 body.gl #gl { opacity: 0; transition: opacity .6s ease; }
 body.gl.gl-ready #gl { opacity: 1; }
-body.gl.gl-ready .map-img { opacity: 0 !important; transition: opacity .6s ease .45s; }
+/* #world in the selector: it must outrank `#world.deep .map-img` (.55), or the image, frozen where the live map took
+   over, shows through at 7-24x zoom as a blurred copy of the whole map */
+body.gl.gl-ready #world .map-img { opacity: 0 !important; transition: opacity .6s ease .45s; }
 body.gl #tiles, body.gl.gl-names #labels { display: none; }
 body.gl:not(.gl-names) #glabels { display: none; }
 body.gl #map::before, body.gl #world::before { opacity: 0; }
