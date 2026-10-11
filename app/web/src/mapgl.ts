@@ -247,6 +247,7 @@ export class MapGL {
   targets: Record<string, Target> = {};
   /** The last frame was final: every visible tile loaded and faded in, exposure settled. */
   complete = false;
+  allNow = 0;   // allStars() of the frame being drawn
   targetKey = "";
 
   constructor(public canvas: HTMLCanvasElement) {
@@ -526,6 +527,13 @@ export class MapGL {
   /** Stars per css px^2 at most: many fine grains far out (they make the texture), fewer and bigger close in.
    *  A tile draws the first N of its studies (most cited first), N = its share of this budget. */
   starDensity(z: number) { return 1 / (9 * Math.pow(Math.max(1, z), 0.75)); }
+  /** 0 -> 1: share of the studies left out by the star budget that are drawn anyway. Set by the on-screen size of the
+   *  point tiles, like pointLevel (same look on any screen): all of them once a level-8 tile is 256 css px wide
+   *  (99.99 % of studies are on levels 0-8; a desktop map at about 50x), starting 1.5 levels before. */
+  allStars(c: Cam) {
+    const u = Math.max(0, Math.min(1, (Math.log2(c.S * c.z / 256) - 6.5) / 1.5));
+    return u * u * (3 - 2 * u);
+  }
 
   /** timing of the last frames (dev checks): CPU ms of draw(), and GPU ms when the timer extension exists */
   perf = { cpu: [] as number[], gpu: [] as number[], q: [] as WebGLQuery[], phases: [] as Record<string, number>[] };
@@ -640,13 +648,26 @@ export class MapGL {
     gl.useProgram(P.p);
     gl.bindVertexArray(this.quad);
     gl.uniform2f(P.u.u_view, Wr, Hr);
-    // very close in, the stars lead and the haze steps back
-    const hazeW = Math.max(0.5, Math.min(1, 1 - (Math.log2(c.z) - 5) / 3));
+    // very close in, the stars lead and the haze steps back; then every study is a star and the haze goes, as far
+    // as the point tiles of the view are loaded (magnified past its finest level, the density only shows its own
+    // texels as fuzzy blobs that look like studies but are not)
+    const Lp = this.pointLevel(c), all = this.allStars(c);
+    this.allNow = all;
+    let want = 0, have = 0;
+    if (all > 0) for (let l = 0; l <= Lp; l++) {
+      const m = 1 << l;
+      for (let ty = Math.max(0, Math.floor(b.y0 * m)); ty <= Math.min(m - 1, Math.floor(b.y1 * m)); ty++)
+        for (let tx = Math.max(0, Math.floor(b.x0 * m)); tx <= Math.min(m - 1, Math.floor(b.x1 * m)); tx++) {
+          const k = `${l}/${tx}/${ty}`;
+          if (this.pHave.has(k)) { want++; if (this.ptiles.has(k)) have++; }
+        }
+    }
+    const hazeW = Math.max(0.5, Math.min(1, 1 - (Math.log2(c.z) - 5) / 3)) * (1 - all * (want ? have / want : 0));
     gl.uniform1f(P.u.u_k, this.k * hazeW); gl.uniform1f(P.u.u_scale, sc);
     gl.uniform1i(P.u.u_t, 0); gl.uniform1f(P.u.u_lin, this.hdr ? 1 : 0);
     gl.uniform1f(P.u.u_knee, this.kneeLevel());
     for (const d of draws) {
-      if (d.w <= 0 || !this.dbg.haze) continue;
+      if (d.w <= 0 || hazeW <= 0.002 || !this.dbg.haze) continue;
       const texelPx = spanDev / ((1 << d.t.z) * TILE);
       gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, d.t.tex);
       gl.uniform1f(P.u.u_area, texelPx * texelPx);
@@ -660,7 +681,6 @@ export class MapGL {
 
     this.mark("haze");
     // ------------------------------------------------------------- 1b. stars
-    const Lp = this.pointLevel(c);
     this.pLevel = Lp;
     this.wantP.clear();
     this.into(stars); if (!merged) gl.clear(gl.COLOR_BUFFER_BIT);
@@ -689,7 +709,8 @@ export class MapGL {
           const fade = Math.min(1, (now - t.born) / 400);
           if (fade < 1) { busy = true; pending = true; }
           const side = c.S * c.z / m;
-          t.shown = Math.min(t.n, Math.ceil(budget * side * side / (Lp + 1)));
+          const base = Math.ceil(budget * side * side / (Lp + 1));   // studies are most cited first: more = less cited added
+          t.shown = Math.min(t.n, Math.round(base + Math.max(0, t.n - base) * all));
           gl.uniform4f(S.u.u_tile, tx / m, ty / m, 1 / m, 0);
           gl.uniform1f(S.u.u_gain, fade * this.starGain(c.z));
           gl.bindVertexArray(t.vao);
@@ -759,7 +780,9 @@ export class MapGL {
     // make_map.py: sharp x1.6 + fine blur x1.4 (both "sharp" here), glow 6 px x2.2, glow 22 px x3.0
     // light theme: each star is one grain of ink whatever its light (undo the star gain)
     gl.uniform1f(C.u.u_grain, this.grain(c.z) / Math.max(1e-6, this.starGain(c.z)));
-    gl.uniform1f(C.u.u_wSharp, 3.0); gl.uniform1f(C.u.u_wMid, 2.2); gl.uniform1f(C.u.u_wBig, 3.0);
+    // every study drawn (allStars): dense clusters would fill the blurs and flare into blobs; the dots stay, crisp
+    const glowW = 1 - 0.8 * this.allNow;
+    gl.uniform1f(C.u.u_wSharp, 3.0); gl.uniform1f(C.u.u_wMid, 2.2 * glowW); gl.uniform1f(C.u.u_wBig, 3.0 * glowW);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     gl.bindVertexArray(null);
     gl.activeTexture(gl.TEXTURE0);
