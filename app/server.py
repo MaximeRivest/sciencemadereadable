@@ -602,6 +602,8 @@ class Handler(SimpleHTTPRequestHandler):
         if not words:
             return self.send_text(200, ASK_HELP)
         if words == "robots.txt":
+            # who reads it, so we can see when an AI tool picks up the open version (journalctl | grep robots-reader)
+            sys.stderr.write(f"robots-reader ask. {self.headers.get('User-Agent', '-')[:120]}\n")
             # open to all: AI tools fetching for a person obey robots.txt (Claude refused a "Disallow: /").
             # Search engines are kept out of their index by X-Robots-Tag: noindex on every answer instead.
             return self.send_text(200, ROBOTS_OPEN)
