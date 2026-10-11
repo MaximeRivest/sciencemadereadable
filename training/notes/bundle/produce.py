@@ -267,6 +267,41 @@ def select() -> None:
           f"{sum(p['teacher'] == 'astra' for p in papers)} astra); {len(refused)} refused")
 
 
+def select_more() -> None:
+    """Add every remaining eligible paper to papers.json (same rules, same order), as a new batch.
+    Teachers alternate; papers already chosen or refused are never added again."""
+    import dpyr
+    data = json.loads((OUT / "papers.json").read_text())
+    taken = {p["paper_id"] for p in data["papers"]} | {r["paper_id"] for r in data["refused"]}
+    taboo = set((ROOT / "training/data/validation_ids.txt").read_text().split())
+    taboo |= set((ROOT / "paper_corpus/test_ids.txt").read_text().split()) | HELD_OUT | taken
+    rows = [p for p in dpyr.read_parquet(ROOT / "paper_corpus/papers.parquet").to_dicts()
+            if p["paper_id"] not in taboo and PAPER_WORDS[0] <= p["words"] <= PAPER_WORDS[1] and p.get("discussion")
+            and (XML / f"{p['paper_id']}.xml").exists()]
+    random.Random(SEED + 1).shuffle(rows)
+    by_field: dict[str, list] = {}
+    for p in rows:
+        by_field.setdefault(p["subfield"], []).append(p)
+    batch = 1 + max(p.get("batch", 1) for p in data["papers"])
+    added, refused = [], []
+    while any(by_field.values()):
+        for field in sorted(by_field):
+            if not by_field[field]:
+                continue
+            p = by_field[field].pop()
+            reason = quality_problem(p)
+            if reason:
+                refused.append({"paper_id": p["paper_id"], "reason": reason})
+                continue
+            added.append({"paper_id": p["paper_id"], "subfield": p["subfield"], "words": p["words"], "journal": p["journal"],
+                          "year": p["year"], "teacher": "opus" if len(added) % 2 == 0 else "astra", "batch": batch})
+    data["papers"] += added
+    data["refused"] += refused
+    data.setdefault("changes", []).append({"at": now(), "batch": batch, "added": len(added), "refused": len(refused)})
+    (OUT / "papers.json").write_text(json.dumps(data, indent=1))
+    print(f"batch {batch}: {len(added)} papers added, {len(refused)} refused")
+
+
 def quality_problem(p: dict) -> str:
     """Why a paper would make poor training data (None if fine)."""
     xml = (XML / f"{p['paper_id']}.xml").read_text()
@@ -527,4 +562,4 @@ def status() -> None:
 
 if __name__ == "__main__":
     command = sys.argv[1] if len(sys.argv) > 1 else "status"
-    {"select": select, "status": status}.get(command, lambda: run(sys.argv[2]))()
+    {"select": select, "select-more": select_more, "status": status}.get(command, lambda: run(sys.argv[2]))()
