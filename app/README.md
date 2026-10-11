@@ -1,4 +1,4 @@
-# Science made readable · the app
+# ScienceMadeReadable · the app
 
 **Live: https://sciencemadereadable.com**, served by GitHub Pages from the `gh-pages` branch of this
 repository (DNS at GoDaddy: apex A/AAAA → GitHub Pages, www → maximerivest.github.io). Its back end is this

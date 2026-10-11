@@ -27,7 +27,6 @@ body[data-view="home"] nav.top .search, body[data-view="home"] nav.top #brand { 
 /* top bar */
 nav.top { display: flex; align-items: center; gap: 18px; padding: 14px 24px; max-width: 1240px; margin: 0 auto; width: 100%; }
 #brand { font: 600 18px/1 var(--serif); color: var(--ink); text-decoration: none; letter-spacing: .01em; white-space: nowrap; }
-#brand::before { content: "✦ "; color: var(--accent); }
 .nav-right { margin-left: auto; display: flex; gap: 18px; align-items: center; font-size: 14px; }
 .nav-right a { color: var(--muted); text-decoration: none; }
 .nav-right a:hover { color: var(--ink); }

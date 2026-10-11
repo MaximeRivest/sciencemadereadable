@@ -217,7 +217,7 @@ async function openWork(ref: string) {
     }
   }
   if (run !== workRun) return;
-  document.title = `${d.title} · made readable`;
+  document.title = `${d.title} · ScienceMadeReadable`;
   track("open", { doi: d.doi ?? d.id, src: "work" });
   const original = d.doi ? `https://doi.org/${d.doi}` : d.url || d.openalex;
   const readable = Boolean(d.smr);
@@ -415,7 +415,7 @@ async function openPaper(id: string) {
       : /couldn't find|isn't a DOI/i.test(msg) ? "not found" : /openly|full text/i.test(msg) ? "no full text" : "other" });
     return;
   }
-  document.title = `${paper.title} · made readable`;
+  document.title = `${paper.title} · ScienceMadeReadable`;
   track("open", { doi: paper.doi });
   setHere(null);
   setWalk([], []);
@@ -655,6 +655,7 @@ function go(url: string, load = true) {
 function route() {
   const q = new URLSearchParams(location.search);
   clearInterval(nowTimer);
+  document.title = "ScienceMadeReadable";   // a paper or study page puts its own title in front
   if (q.has("support")) setTimeout(() => openSupport("link"), 300);
   if (q.has("library")) return openLibrary();
   if (q.has("api")) return show("api");
