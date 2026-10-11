@@ -5,9 +5,9 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://pmc-oa-opendata.s3.amazonaws.com; connect-src 'self' https:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Science, made readable</title>
+<title>ScienceMadeReadable</title>
 <meta name="description" content="Search all of science, see where it sits on the map of research, and read open papers rewritten in plain words.">
-<link rel="stylesheet" href="style.css?v=d0a1b22a5c">
+<link rel="stylesheet" href="style.css?v=a67c47a2a0">
 <!-- the sharp map image first: the page shows it while the live map loads (atlas.ts); the theme's own only -->
 <link rel="preload" as="image" href="map/science-map-dark.webp" media="(prefers-color-scheme: dark)" fetchpriority="high">
 <link rel="preload" as="image" href="map/science-map-light.webp" media="(prefers-color-scheme: light)" fetchpriority="high">
@@ -17,7 +17,7 @@
 <body data-view="home">
 
 <nav class="top">
-  <a id="brand" href="./">made readable</a>
+  <a id="brand" href="./">ScienceMadeReadable</a>
   <form class="search mini" role="search"><input id="search-results" type="search" placeholder="Search all of science" aria-label="Search all of science"></form>
   <span class="nav-right">
     <span id="gpu" class="gpu">GPU</span>
@@ -300,12 +300,13 @@ for p in r.json()["results"]:
       which allows republishing an adapted version with credit (about 5 million). Figures and tables are always the
       original ones. For the others we show what is known and link to the original.</p>
     <p class="quiet small">A demo, not a product. We count visits on our own server, without cookies: each visitor is an anonymous
-      code that changes every day, and what you search for is never stored. If your browser asks not to be tracked, nothing is
-      counted. Rewrites made by our models are kept so the next reader gets them instantly.</p>
+      code that changes every day, and the counts don't include what you search for. Your search words do pass through our
+      server's technical log, without your address. If our search is down, "Readable only" searches go to Europe PMC instead,
+      straight from your browser. If your browser asks not to be tracked, nothing is counted. Rewrites made by our models are kept so the next reader gets them instantly.</p>
     <menu><button value="ok" class="primary">Close</button></menu>
   </form>
 </dialog>
 
-<script type="module" src="app.js?v=caf5c4315e"></script>
+<script type="module" src="app.js?v=f1f316dd73"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-# Science, made readable
+# ScienceMadeReadable
 
 > Search about 200 million scientific studies, see where each sits on the map of science, and read open-access
 > papers rewritten in plain words. The search is also a free JSON API for programs and AI agents (no key).
