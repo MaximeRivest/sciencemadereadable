@@ -41,8 +41,9 @@ Filters: `year_from`, `year_to`, `type=review|article|preprint|...`, `open_acces
 
 ## Limits
 
-- 60 requests a minute per address; HTTP 429 means wait a minute. Ask for up to `k=100` at once instead of
-  looping, and do not run searches in parallel.
+- 10 requests a minute per address (reading `/llms.txt` does not count). Spend them well: one search with
+  `k=100` instead of several small ones, `/works` only for the papers you keep, never calls in parallel.
+- HTTP 429: wait the seconds given in the `Retry-After` header (also `retry_after` in the body), then retry.
 - 502/503 for a minute or two: a data update or a restart. Retry later.
 - Requests, including search words, appear in the server's request log, which does not record the caller's
   address.
