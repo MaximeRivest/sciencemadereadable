@@ -115,7 +115,15 @@
     <p class="quiet small">It's a short text file: <a href="agents/science-search/SKILL.md" target="_blank" rel="noopener">read it</a>
       before you install it. Start a new conversation afterwards.</p>
   </div>
-  <p class="quiet small">No MCP server yet. The two ways above work with any agent that can fetch a web address.</p>
+  <div class="api-card">
+    <h3>In a chat that can only open links</h3>
+    <p>ChatGPT, Claude, Gemini and other chats that browse but can't run code can search with a plain address: the
+      question goes in the address, the answer comes back as text. Paste this:</p>
+    <pre data-copy="link">To find scientific studies, open https://api.sciencemadereadable.com/api/data/search/ followed by the question, for example https://api.sciencemadereadable.com/api/data/search/why%20do%20cats%20purr (add ?k=30 for more results, ?year_from=2020 for recent ones). Cite the links it gives.</pre>
+    <p class="quiet small"><a href="https://api.sciencemadereadable.com/api/data/search/why%20do%20cats%20purr" target="_blank" rel="noopener">See what it answers</a>.
+      Some chats only open addresses that appear in the conversation: then paste the full link with your question in it.</p>
+  </div>
+  <p class="quiet small">No MCP server yet. The ways above work with any agent that can fetch a web address.</p>
 
   <h2>Call it from code</h2>
   <p>Plain HTTPS and JSON. Click a link to see a real answer in your browser.</p>
