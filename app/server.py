@@ -916,6 +916,13 @@ class PublicHandler(Handler):
         super().do_POST()
 
     def do_HEAD(self):
+        # some link checkers and fetch tools ask for the headers first: the addresses meant for them say "here"
+        path = urllib.parse.urlparse(self.path).path
+        if path in ("/", "/robots.txt", "/api", "/api/", "/api/data", "/api/data/", "/api/data/llms.txt") or path.startswith("/api/ask"):
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            return self.end_headers()
         self.send_json(404, {"error": "not found"})
 
 
