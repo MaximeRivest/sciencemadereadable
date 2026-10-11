@@ -1,0 +1,26 @@
+# Science, made readable
+
+> Search about 200 million scientific studies, see where each sits on the map of science, and read open-access
+> papers rewritten in plain words. The search is also a free JSON API for programs and AI agents (no key).
+
+## Search API (for programs and AI agents)
+
+- Base URL: https://api.sciencemadereadable.com/api/data (read-only, no key, 60 requests a minute per address)
+- [Full guide](https://api.sciencemadereadable.com/api/data/llms.txt): every call, today's coverage, result fields, limits. Read this before using the API.
+- [Interactive reference](https://api.sciencemadereadable.com/api/data/docs) and [OpenAPI spec](https://api.sciencemadereadable.com/api/data/openapi.json)
+- [Agent skill](https://sciencemadereadable.com/agents/science-search/SKILL.md): install in `~/.claude/skills/science-search/` or `~/.agents/skills/science-search/`
+- [Source code](https://github.com/MaximeRivest/srl-search) (Apache 2.0); paper records from OpenAlex (CC0)
+
+```sh
+B=https://api.sciencemadereadable.com/api/data
+curl -G "$B/search" --data-urlencode "q=does intermittent fasting help weight loss" -d k=5 -d abstracts=false
+curl "$B/works/10.1126/science.aan8048"
+```
+
+## Links into the website
+
+- A search: https://sciencemadereadable.com/?q=<words>
+- A study (its record, citation walk and place on the map): https://sciencemadereadable.com/?work=<DOI or OpenAlex id>
+- The map of science: https://sciencemadereadable.com/?map
+- Every paper already rewritten in plain words: https://sciencemadereadable.com/?library
+- For people setting up an agent: https://sciencemadereadable.com/?api
