@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>ScienceMadeReadable search API: for programs and AI agents</title>
+<meta name="description" content="Free search over about 200 million scientific studies, for programs and AI agents. No key.">
+<link rel="canonical" href="https://sciencemadereadable.com/?api">
+<meta http-equiv="refresh" content="0; url=/?api">
+<script>location.replace("/?api" + location.hash)</script>
+</head><body>
+<p>Opening <a href="/?api">the search API page</a>. For AI agents: the guide is below, and in full at
+<a href="https://api.sciencemadereadable.com/api/data/llms.txt">https://api.sciencemadereadable.com/api/data/llms.txt</a>.</p>
+<pre># ScienceMadeReadable
+
+&gt; Search about 200 million scientific studies, see where each sits on the map of science, and read open-access
+&gt; papers rewritten in plain words. The search is also a free JSON API for programs and AI agents (no key).
+
+## Search API (for programs and AI agents)
+
+- Base URL: https://api.sciencemadereadable.com/api/data (read-only, no key, 30 requests a minute per address)
+- [Full guide](https://api.sciencemadereadable.com/api/data/llms.txt): every call, today&#x27;s coverage, result fields, limits. Read this before using the API.
+- [Interactive reference](https://api.sciencemadereadable.com/api/data/docs) and [OpenAPI spec](https://api.sciencemadereadable.com/api/data/openapi.json)
+- [Agent skill](https://sciencemadereadable.com/agents/science-search/SKILL.md): install in `~/.claude/skills/science-search/` or `~/.agents/skills/science-search/`
+- [Source code](https://github.com/MaximeRivest/srl-search) (Apache 2.0); paper records from OpenAlex (CC0)
+
+```sh
+B=https://api.sciencemadereadable.com/api/data
+curl -G &quot;$B/search&quot; --data-urlencode &quot;q=does intermittent fasting help weight loss&quot; -d k=5 -d abstracts=false
+curl &quot;$B/works/10.1126/science.aan8048&quot;
+```
+
+## Links into the website
+
+- A search: https://sciencemadereadable.com/?q=&lt;words&gt;
+- A study (its record, citation walk and place on the map): https://sciencemadereadable.com/?work=&lt;DOI or OpenAlex id&gt;
+- The map of science: https://sciencemadereadable.com/?map
+- Every paper already rewritten in plain words: https://sciencemadereadable.com/?library
+- For people setting up an agent: https://sciencemadereadable.com/?api
+</pre>
+</body></html>
