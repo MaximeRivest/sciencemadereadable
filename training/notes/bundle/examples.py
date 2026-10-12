@@ -55,11 +55,17 @@ def serious(log: dict) -> list[str]:
 def main():
     papers = json.loads((DATA / "papers.json").read_text())["papers"]
     done = [p for p in papers if (DATA / p["teacher"] / p["paper_id"] / "done.json").exists()]
-    rng = random.Random(2026)
-    validation = set()
-    for t in ("opus", "astra"):
-        ids = sorted(p["paper_id"] for p in done if p["teacher"] == t)
-        validation |= set(rng.sample(ids, VALIDATION_PER_TEACHER))
+    # The held-back papers never change once chosen (first build, 300 papers), so every model is
+    # tested on the same 20 papers.
+    first = OUT.parent / "examples-bundle-300.parquet"
+    if first.exists():
+        validation = set(pd.read_parquet(first).query("split == 'validation'").paper_id)
+    else:
+        rng = random.Random(2026)
+        validation = set()
+        for t in ("opus", "astra"):
+            ids = sorted(p["paper_id"] for p in done if p["teacher"] == t)
+            validation |= set(rng.sample(ids, VALIDATION_PER_TEACHER))
     rows, dropped, small_additions = [], Counter(), 0
     for p in done:
         folder = DATA / p["teacher"] / p["paper_id"]

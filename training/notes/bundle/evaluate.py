@@ -49,9 +49,12 @@ PR = _load("prompts")
 render = _load("render")
 EX = _load("examples")                              # the exact training prompt
 
-RUN = ROOT / "training/runs/bundle-0.8b"
+RUN = ROOT / "training/runs" / os.environ.get("EVAL_RUN", "bundle-0.8b")
 DATA = HERE / "out" / "data300"
-OUT = HERE / "out" / "eval"
+OUT = HERE / "out" / ("eval" if RUN.name == "bundle-0.8b" else f"eval-{RUN.name}")
+GPU = os.environ.get("EVAL_GPU", "0")
+TRACE_PAPERS = int(os.environ.get("EVAL_TRACE_PAPERS", "999"))   # papers per checkpoint that get the Opus checks
+JUDGE = os.environ.get("EVAL_JUDGE", "1") == "1"
 VLLM = "/nix/store/skvyvs8jj0k7q4vw2137blrnfp3y5cb2-vllm-runtime-0.29.0/bin/vllm"
 PORT = 8031
 
@@ -60,7 +63,8 @@ def validation_papers() -> list[dict]:
     frame = pd.read_parquet(ROOT / "training/data/examples-bundle.parquet")
     ids = sorted(set(frame[frame.split == "validation"].paper_id))
     papers = {p["paper_id"]: p for p in json.loads((DATA / "papers.json").read_text())["papers"]}
-    return [papers[i] for i in ids]
+    by = {t: [papers[i] for i in ids if papers[i]["teacher"] == t] for t in ("opus", "astra")}
+    return [p for pair in zip(by["opus"], by["astra"]) for p in pair]   # alternate, so any first N is balanced
 
 
 def chat(messages: list[dict]) -> str:
@@ -73,7 +77,7 @@ def chat(messages: list[dict]) -> str:
 
 def generate(checkpoint: str) -> None:
     folder = RUN / "adapters" / checkpoint
-    env = {**os.environ, "CUDA_DEVICE_ORDER": "PCI_BUS_ID", "CUDA_VISIBLE_DEVICES": "0"}
+    env = {**os.environ, "CUDA_DEVICE_ORDER": "PCI_BUS_ID", "CUDA_VISIBLE_DEVICES": GPU}
     server = subprocess.Popen([VLLM, "serve", str(folder), "--tokenizer", "Qwen/Qwen3.5-0.8B", "--served-model-name", "student",
                                "--host", "127.0.0.1", "--port", str(PORT), "--max-model-len", "32768",
                                "--gpu-memory-utilization", "0.85", "--dtype", "bfloat16", "--enable-prefix-caching",
@@ -134,19 +138,29 @@ def score(checkpoints: list[str]) -> None:
         figures = "\n\n".join(render._figure(x) for x in v["figures"]) or "(none)"
         scores = {}
 
+        with_model = papers.index(p) < TRACE_PAPERS
+
         def score_part(n):
             text = d["texts"].get(n, "")
             part = b["parts"][n]
             form = P.form_checks(text, part, [x["id"] for x in v["figures"] if x["part"] == n], len(v["references"]))
+            free = {"numbers_of_facts_kept": P.numbers_kept(" ".join(f["note"] for f in part["facts"]), text),
+                    "teacher_numbers_of_facts_kept": P.numbers_kept(" ".join(f["note"] for f in part["facts"]), teacher[n]["final"])}
+            if not with_model:
+                return {"form": form, "free": free, "readability": P.RD.measure(P.prose(text)),
+                        "readability_teacher": P.RD.measure(P.prose(teacher[n]["final"]))}
             tr = P.ask(PR.TRACE, "trace", items=render.trace_view(v, n, part), text=text, allowed_sources=bundle,
                        reader=PR.READER).model_dump()
+            if not JUDGE:
+                return {"form": form, "free": free, "trace": tr, "readability": P.RD.measure(P.prose(text)),
+                        "readability_teacher": P.RD.measure(P.prose(teacher[n]["final"]))}
             nothing = "(nothing: this is the first part)"
             before = lambda x: nothing if n == names[0] else x
             j = P.judge(parts_text[n], "\n\n".join(parts_text[m] for m in names if m != n), figures,
                         P.for_judge(before(d["texts"][names[0]])), P.for_judge(text),
                         P.for_judge(before(teacher[names[0]]["final"])), P.for_judge(teacher[n]["final"]))
             j["winner"] = {"first": "student", "second": "teacher"}.get(j["winner"], j["winner"])
-            return {"form": form, "trace": tr, "judge": j, "readability": P.RD.measure(P.prose(text)),
+            return {"form": form, "free": free, "trace": tr, "judge": j, "readability": P.RD.measure(P.prose(text)),
                     "readability_teacher": P.RD.measure(P.prose(teacher[n]["final"]))}
 
         for n in names:
@@ -167,18 +181,25 @@ def score(checkpoints: list[str]) -> None:
     for ck in checkpoints:
         rs = [r for (c, _), r in zip(jobs, results) if c == ck]
         parts = [(r["teacher"], s) for r in rs for s in r["scores"].values() if "error" not in s]
-        errors = sum("error" in s for r in rs for s in r["scores"].values())
-        status = Counter(x["status"] for _, s in parts for x in s["trace"]["facts"])
-        adds = Counter(x["kind"] for _, s in parts for x in s["trace"]["additions"])
+        traced = [(t, s) for t, s in parts if "trace" in s]
+        judged = [(t, s) for t, s in parts if "judge" in s]
+        status = Counter(x["status"] for _, s in traced for x in s["trace"]["facts"])
+        adds = Counter(x["kind"] for _, s in traced for x in s["trace"]["additions"])
         form = Counter()
         for _, s in parts:
             form.update({k: (len(v) if isinstance(v, list) else v) for k, v in s["form"].items()})
+        mean = lambda xs: round(sum(xs) / len(xs), 3) if xs else None
         rd = lambda key: {k: round(sum(s[key][k] for _, s in parts) / len(parts), 1) for k in ("sent_mean", "para_mean", "fk_grade", "words")}
-        summary[ck] = {"parts": len(parts), "parts that could not be scored": errors,
-                       "judge vs teacher": dict(Counter(s["judge"]["winner"] for _, s in parts)),
-                       "judge vs teacher, by teacher": {t: dict(Counter(s["judge"]["winner"] for tt, s in parts if tt == t))
-                                                        for t in ("opus", "astra")},
-                       "facts": dict(status), "additions": dict(adds), "form": dict(form),
+        summary[ck] = {"parts": len(parts), "parts traced": len(traced), "parts judged": len(judged),
+                       "numbers of the facts kept": mean([s["free"]["numbers_of_facts_kept"] for _, s in parts if "free" in s]),
+                       "teacher: numbers of the facts kept": mean([s["free"]["teacher_numbers_of_facts_kept"] for _, s in parts if "free" in s]),
+                       "form errors per part": mean([sum((len(v) if isinstance(v, list) else v) for k, v in s["form"].items()
+                                                         if k != "citations_not_in_facts") for _, s in parts]),
+                       "facts": dict(status),
+                       "facts kept share": round(status["kept"] / sum(status.values()), 3) if status else None,
+                       "additions": dict(adds),
+                       "judge vs teacher": dict(Counter(s["judge"]["winner"] for _, s in judged)),
+                       "form": dict(form),
                        "readability (mean per part)": rd("readability"), "teacher readability": rd("readability_teacher")}
     (OUT / "summary.json").write_text(json.dumps(summary, indent=1))
     print(json.dumps(summary, indent=1))
