@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teaching a small model to take notes on science</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f4f6f1;--fg:#1c201b;--muted:#687064;--card:#fcfdf9;--line:#dfe5d8;--accent:#3d7a4f;--accent2:#8bc39b;--good:#2e8b57;--opus:#7a5af8;--astra:#0f9bb3;--warn:#c4870d;--bad:#c24a3a}
+@media (prefers-color-scheme:dark){:root{--bg:#121411;--fg:#e8ece4;--muted:#949c8f;--card:#1b1e1a;--line:#30352d}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 ui-serif,Georgia,serif}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 18px 60px}
+h1{font-size:30px;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+h2{font:600 13px/1 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+.lede{color:var(--muted);max-width:780px;margin:0 0 22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-bottom:18px}
+.grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.big{font:700 44px/1 system-ui,sans-serif;letter-spacing:-.02em}
+.sub{font:14px/1.4 system-ui,sans-serif;color:var(--muted)}
+.bar{height:14px;border-radius:99px;background:var(--line);overflow:hidden;margin:14px 0 8px}
+.bar>div{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .8s}
+.pill{display:inline-block;font:600 12px/1 system-ui;padding:6px 10px;border-radius:99px;background:var(--line)}
+.pill.live{background:#e3f2e6;color:var(--good)}.pill.wait{background:#fff3dc;color:var(--warn)}
+@media (prefers-color-scheme:dark){.pill.live{background:#163322}.pill.wait{background:#3a2e12}}
+.explain{font-size:15px;color:var(--muted);margin-top:10px}.explain b{color:var(--fg)}
+table{width:100%;border-collapse:collapse;font:14px/1.4 system-ui,sans-serif}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted);font-weight:600}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.cols3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}@media (max-width:900px){.cols3{grid-template-columns:1fr}}
+.text{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;max-height:560px;overflow:auto;white-space:pre-wrap;font:13px/1.55 ui-monospace,Menlo,monospace}
+.text.prose{font:14.5px/1.6 ui-serif,Georgia,serif}
+select{font:14px system-ui;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);margin-right:6px;max-width:100%}
+.row{display:flex;gap:10px;align-items:center;font:14px system-ui;margin:6px 0}
+.meter{flex:1;height:10px;border-radius:99px;background:var(--line);overflow:hidden;position:relative}
+.meter>div{position:absolute;height:100%;left:0;top:0;border-radius:99px}
+.legend,.note{font:13px/1.5 system-ui;color:var(--muted)}
+.chip{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
+.good{color:var(--good)}.bad{color:var(--bad)}
+.example{font:13px/1.5 ui-monospace,Menlo,monospace;background:var(--bg);border-radius:10px;padding:10px 12px;border:1px solid var(--line);white-space:pre-wrap}
+</style></head><body><div class="wrap">
+
+<h1>Teaching a small model to take notes on science</h1>
+<p class="lede">The <b>bundle-maker</b> reads one section of a scientific paper and writes it down as dense, checkable notes:
+every number, name, citation and hedge ("may", "suggests"), nothing else. Those notes are what the small writer turns into
+a paper a 14-year-old can read. Today the big models (Opus, Astra) take the notes; if a 0.8B model can, the whole chain gets cheap.</p>
+
+<div class="card"><h2>What it learns to do</h2>
+<div class="grid"><div><div class="sub">A paragraph of the paper</div><div class="example">Plant height was reduced in response to drought in both accessions (Figures 1a and S1). A greater proportion of height was lost in BTx642 compared with TX7078 after one (p &lt; 0.0001), four (p = 0.0006) and six (p &lt; 0.0001) cycles…</div></div>
+<div><div class="sub">Its notes</div><div class="example">¶1 drought shortens both; TX7078 keeps its height better
+R1 [main · result] drought → height ↓ in both accessions (F1a)
+R2 [main · result] height lost: BTx642 &gt; TX7078 after cycles 1 (p&lt;0.0001), 4 (p=0.0006), 6 (p&lt;0.0001)</div></div></div>
+</div>
+
+<div class="card"><h2>Where the run is</h2>
+<div class="grid">
+ <div><div class="big" id="pct">–</div><div class="sub" id="steps"></div><div class="bar"><div id="barfill" style="width:0"></div></div><span class="pill" id="state">…</span></div>
+ <div><div class="big" id="eta">–</div><div class="sub" id="etasub">estimated time left</div></div>
+ <div><div class="big" id="n">–</div><div class="sub">sections of papers to learn from</div></div>
+</div>
+<p class="explain">One pass over the data. Each <b>step</b> reads 16 sections and compares its notes with the teacher's final,
+checked notes (after the code check, the meaning check and the fixes).</p></div>
+
+<div class="card"><h2>How well it is learning</h2><canvas id="loss" height="115"></canvas>
+<p class="legend"><span class="chip" style="background:#3d7a4f"></span>on sections it learns from &nbsp;
+<span class="chip" style="background:#d9622b"></span>on 97 sections of 20 held-back papers it never learns from</p>
+<p class="explain"><b>Lower is better</b>: how surprised the model is by the teacher's next word. The orange line is the honest one. <span id="lossnote"></span></p></div>
+
+<div class="grid">
+ <div class="card"><h2>By teacher (held-back)</h2><canvas id="teach" height="160"></canvas>
+ <p class="note">Notes by <b style="color:var(--opus)">Opus</b> and <b style="color:var(--astra)">Astra</b>.</p></div>
+ <div class="card"><h2>Speed</h2><canvas id="speed" height="160"></canvas><p class="note">Seconds per step.</p></div>
+</div>
+
+<div class="card"><h2>Testing each checkpoint</h2><div class="note" id="evalstate"></div><div id="evalbars" style="margin-top:10px"></div></div>
+
+<div class="card"><h2>Are its notes good?</h2>
+<table id="evaltab"><thead><tr><th>Notes by</th><th class="num">Every number, citation and hedge kept</th>
+<th class="num">Facts vs teacher</th><th class="num">Words vs the section</th><th class="num">Meaning check: problems per section</th><th class="num">…sections with a serious problem</th></tr></thead><tbody></tbody></table>
+<p class="explain"><b>Every number, citation and hedge kept</b>: a free code check, per section; the teachers' final notes all pass it.
+<b>Meaning check</b>: Opus compares the notes with the paper (missing, changed or added information), the same check the teachers'
+notes pass before the writer sees them. The yardstick is the <b>teachers' first notes</b>, before any fixing: the small model's
+notes are as usable as theirs if they have about as many problems, because the same checks and fixes can follow.
+Opus checks 4 papers per checkpoint (about 20 sections), and all 20 papers for the best and the last.</p></div>
+
+<div class="card"><h2>Read it yourself</h2>
+<div><select id="ck"></select><select id="key"></select></div>
+<div class="note" id="sampnote">Notes appear here once a checkpoint is tested.</div>
+<div class="cols3"><div><h2>The section</h2><div class="text prose" id="sec"></div></div>
+<div><h2>The small model's notes</h2><div class="text" id="m"></div></div>
+<div><h2 id="tname">The teacher's final notes</h2><div class="text" id="t"></div></div></div>
+<div class="note" id="sampcheck" style="margin-top:10px"></div></div>
+
+<div class="grid">
+ <div class="card"><h2>The data being made</h2><div id="data"></div></div>
+ <div class="card"><h2>The machine</h2><div id="gpus"></div><p class="note">The bundle-maker trains on GPU 0; GPU 1 runs the voice, dictation and search services.</p></div>
+</div>
+<p class="note">Updates every 20 seconds · <span id="updated"></span></p>
+</div>
+<script>
+const C=getComputedStyle(document.documentElement);const col=n=>C.getPropertyValue(n).trim();
+Chart.defaults.font.family="system-ui,sans-serif";Chart.defaults.color=col('--muted');
+const opts=()=>({animation:false,responsive:true,plugins:{legend:{display:false}},scales:{x:{type:'linear',min:0,title:{display:true,text:'step'},grid:{color:col('--line')}},y:{grid:{color:col('--line')}}}});
+const mk=(id,o)=>new Chart(document.getElementById(id),o);
+const loss=mk('loss',{type:'line',data:{datasets:[{data:[],borderColor:'#3d7a4f',pointRadius:0,borderWidth:2,tension:.3},{data:[],borderColor:'#d9622b',pointRadius:4,borderWidth:3}]},options:opts()});
+const teach=mk('teach',{type:'line',data:{datasets:[{data:[],borderColor:'#7a5af8',pointRadius:3},{data:[],borderColor:'#0f9bb3',pointRadius:3}]},options:opts()});
+const speed=mk('speed',{type:'bar',data:{datasets:[{data:[],backgroundColor:'#3d7a4f88'}]},options:opts()});
+const smooth=(xs,k=10)=>xs.map((p,i)=>{const s=xs.slice(Math.max(0,i-k+1),i+1);return{x:p.x,y:s.reduce((a,b)=>a+b.y,0)/s.length}});
+const fmt=s=>{if(s==null)return'–';const h=Math.floor(s/3600),m=Math.round(s%3600/60);return h?`${h} h ${m} min`:`${m} min`};
+const pct=x=>x==null?'–':Math.round(x*100)+'%';
+const esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let idx=null;
+async function tick(){
+ const d=await (await fetch('/api')).json();const p=d.total?d.step/d.total:0;
+ pctEl('pct',Math.round(p*100)+'%');pctEl('steps',`step ${d.step} of ${d.total}`);document.getElementById('barfill').style.width=p*100+'%';
+ const st=(d.status.state||'').toString();const live=st.startsWith('train')||st.startsWith('valid');
+ const s=document.getElementById('state');s.textContent=live?'training now':(st||'starting');s.className='pill '+(live?'live':'wait');
+ pctEl('eta',live?fmt(d.seconds_left):'done');
+ if(live&&d.seconds_left)pctEl('etasub','left · ends around '+new Date(Date.now()+d.seconds_left*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+ pctEl('n',(d.config.train_conversations||0).toLocaleString());
+ for(const c of [loss,teach,speed]){c.options.scales.x.max=d.total}
+ loss.data.datasets[0].data=smooth(d.train.map(r=>({x:r.step,y:r.loss})));loss.data.datasets[1].data=d.validation.map(r=>({x:r.step,y:r.all}));loss.update();
+ const v=d.validation;if(v.length>1)document.getElementById('lossnote').innerHTML=`From <b>${v[0].all.toFixed(3)}</b> before training to <b>${v[v.length-1].all.toFixed(3)}</b> now.`;
+ teach.data.datasets[0].data=v.map(r=>({x:r.step,y:r.opus}));teach.data.datasets[1].data=v.map(r=>({x:r.step,y:r.astra}));teach.update();
+ speed.data.datasets[0].data=d.train.map(r=>({x:r.step,y:r.seconds}));speed.update();
+ const ev=d.evaluation,pr=ev.progress||{},S=ev.sections||97;
+ pctEl('evalstate',pr.state?('Now: '+pr.state+(pr.current?` (${pr.current})`:'')+(pr.best?` · best: ${pr.best}`:'')):'Waiting.');
+ document.getElementById('evalbars').innerHTML=`<table><thead><tr><th>Checkpoint</th><th style="width:38%">Progress</th><th class="num">Sections noted</th><th class="num">Tokens written</th><th class="num">Speed</th><th class="num">Sections checked</th></tr></thead><tbody>`+
+  (ev.checkpoints||[]).map(c=>{const label=!c.saved?'not saved yet':c.checked>=S?(c.checked_opus>40?'full test ✓':'tested ✓'):c.written<S&&c.written?'writing notes':c.written>=S?'checking':(c.current?'starting':'waiting');
+   return `<tr style="opacity:${c.saved?1:.4}"><td><b style="${c.current?'color:var(--accent)':''}">${c.checkpoint}</b><div class="note">${label}</div></td>
+   <td><div class="meter"><div style="width:${c.written/S*100}%;background:var(--accent2)"></div><div style="width:${c.checked/S*100}%;background:var(--accent)"></div></div></td>
+   <td class="num">${c.written} / ${S}</td><td class="num">${c.tokens_out?c.tokens_out.toLocaleString():'–'}</td><td class="num">${c.current&&c.tokens_per_second?c.tokens_per_second+' tok/s':'–'}</td>
+   <td class="num">${c.checked} / ${S}${c.checked_opus?`<div class="note">${c.checked_opus} by Opus</div>`:''}</td></tr>`}).join('')+
+  `</tbody></table><p class="legend"><span class="chip" style="background:var(--accent2)"></span>sections noted &nbsp;<span class="chip" style="background:var(--accent)"></span>sections checked. Training uses GPU 0, so checkpoints are tested right after it ends (a few minutes each).</p>`;
+ const sm=ev.summary||{};
+ const line=(name,s,ref)=>!s?'':`<tr><td>${name}</td><td class="num">${pct(s['sections clean on code checks'])}</td><td class="num">${pct(s['facts vs teacher'])}</td>
+  <td class="num">${pct(s['words vs section'])}<div class="note">teacher ${pct(s['teacher words vs section'])}</div></td>
+  <td class="num">${s['Opus: problems per section']??'–'}<div class="note">${s['sections checked by Opus']||0} sections</div></td>
+  <td class="num">${s['sections checked by Opus']?s['Opus: sections with a major problem']+' of '+s['sections checked by Opus']:'–'}</td></tr>`;
+ document.querySelector('#evaltab tbody').innerHTML=line('<i>the teachers\' first notes (before fixes)</i>',sm['teacher-first'])+
+  Object.entries(sm).filter(([k])=>k!='teacher-first').map(([k,s])=>line(k,s)).join('');
+ if(d.samples.checkpoints.length&&(!idx||idx.checkpoints.length!=d.samples.checkpoints.length)){idx=d.samples;
+  document.getElementById('ck').innerHTML=idx.checkpoints.map(x=>`<option>${x}</option>`).join('');
+  document.getElementById('key').innerHTML=idx.keys.map(x=>`<option value="${x}">${x.replace('|',' · ')}</option>`).join('');
+  ck.onchange=key.onchange=loadSample;loadSample()}
+ document.getElementById('data').innerHTML=['opus','astra'].map(t=>{const x=d.data[t];return `<div class="row"><b style="width:60px;color:var(--${t})">${t}</b><div class="meter"><div style="width:${x.done/x.total*100}%;background:var(--${t})"></div></div><span>${x.done} / ${x.total}</span></div>`}).join('')+'<p class="note">Papers turned into bundles by the big models. Every one adds training examples for both small models.</p>';
+ document.getElementById('gpus').innerHTML=d.gpus.map(g=>`<div class="row"><b style="width:60px">GPU ${g.gpu}</b><div class="meter"><div style="width:${g.busy}%;background:var(--accent)"></div></div><span>${g.busy}% · ${g.mem.toFixed(1)}/${g.total.toFixed(0)} GB · ${g.temp}°C</span></div>`).join('');
+ pctEl('updated','last update '+new Date().toLocaleTimeString());
+}
+function pctEl(id,t){document.getElementById(id).textContent=t}
+async function loadSample(){
+ const s=await (await fetch('/sample?'+new URLSearchParams({checkpoint:ck.value,key:key.value}))).json();
+ document.getElementById('sec').textContent=s.section;document.getElementById('m').textContent=s.model||'(not written yet)';
+ document.getElementById('t').textContent=s.teacher;document.getElementById('tname').textContent=`The teacher's final notes (${s.teacher_name})`;
+ pctEl('sampnote','');const sc=s.score;let c=[];
+ if(sc){c.push(sc.code_problems.length?`<span class="bad">Code check: ${sc.code_problems.map(x=>`¶${x.paragraph} ${x.kind}: ${esc(x.detail)}`).join(' · ')}</span>`:'<span class="good">Code check: every number, citation and hedge kept.</span>');
+  c.push(`${sc.facts} facts (teacher ${sc.teacher_facts}) · ${sc.words} words (teacher ${sc.teacher_words}; section ${sc.section_words})`);
+  if(sc.opus)c.push(sc.opus.length?'<b>Meaning check:</b><ul>'+sc.opus.map(x=>`<li><b>${x.kind} (${x.severity})</b>: ${esc(x.detail)}</li>`).join('')+'</ul>':'<span class="good">Meaning check: no problem found.</span>')}
+ document.getElementById('sampcheck').innerHTML=c.join('<br>');
+}
+tick();setInterval(tick,20000);
+</script></body></html>
