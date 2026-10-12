@@ -21,7 +21,8 @@ a { color: var(--accent); }
 /* views */
 .view { display: none; width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 24px; flex: 1; }
 body[data-view="home"] #home, body[data-view="results"] #results-view, body[data-view="reader"] #reader-view,
-body[data-view="library"] #library-view, body[data-view="work"] #work-view, body[data-view="api"] #api-view { display: block; }
+body[data-view="library"] #library-view, body[data-view="work"] #work-view, body[data-view="api"] #api-view,
+body[data-view="support"] #support-view { display: block; }
 body[data-view="home"] nav.top .search, body[data-view="home"] nav.top #brand { visibility: hidden; }
 
 /* top bar */
@@ -294,8 +295,22 @@ body.solo .thanks { margin-left: auto; margin-right: auto; }
 .now-bar i.w19 { width: 95%; }
 .now-bar i.w20 { width: 100%; }
 
-/* support: voluntary amounts (2026-10-12: no funding meter, no paid sponsorship) */
-#support .from { font: 17px/1.55 var(--serif); }
+/* support page (2026-10-12): the two services it keeps running, then voluntary amounts (no funding meter, no paid sponsorship) */
+#support-view { max-width: 820px; padding-top: 24px; padding-bottom: 56px; }
+#support-view > h2 { font: 500 26px/1.2 var(--serif); margin: 40px 0 10px; }
+#support-view p { margin: 8px 0; }
+.sup-lead { font: 19px/1.5 var(--serif); color: var(--muted); margin: 6px 0 22px !important; }
+.sup-what { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 700px) { .sup-what { grid-template-columns: 1fr; } }
+.sup-card { display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+            padding: 18px 20px; color: var(--ink); text-decoration: none; transition: border-color .15s, transform .15s; }
+.sup-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.sup-card h2 { font: 500 21px/1.25 var(--serif); margin: 0 0 6px; }
+.sup-card p { color: var(--muted); font-size: 15.5px; line-height: 1.5; flex: 1; }
+.sup-more { color: var(--accent); font-weight: 600; font-size: 15px; margin-top: 8px; }
+.sup-give { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 6px 20px 12px; margin: 18px 0 0; }
+.sup-fine { margin-top: 32px !important; }
+@media (max-width: 520px) { #support-view .lib-title { font-size: 31px; } }
 .amounts { display: flex; gap: 8px; margin: 18px 0 6px; }
 .amounts button { flex: 1; padding: 10px 0; border-radius: 10px; border: 1px solid var(--line); background: transparent;
                   color: var(--ink); font: 600 17px/1 var(--sans); cursor: pointer; }
@@ -365,10 +380,10 @@ body[data-view="home"] #map { --s: max(1250px, 125vw); width: var(--s); height: 
 body[data-view="results"] #map { --s: min(400px, 34vw); width: var(--s); height: var(--s);
   left: min(calc(50vw + 250px), calc(100vw - var(--s) - 32px)); top: 120px; }
 body[data-view="results"] .map-img, body[data-view="work"] .map-img, body[data-view="reader"] .map-img,
-body[data-view="library"] .map-img, body[data-view="api"] .map-img { filter: grayscale(1) contrast(1.1); opacity: .42; }
+body[data-view="library"] .map-img, body[data-view="api"] .map-img, body[data-view="support"] .map-img { filter: grayscale(1) contrast(1.1); opacity: .42; }
 /* a study: a small "you are here"; the reader and the library: a small round map button */
 body[data-view="work"] #map { --s: 170px; width: var(--s); height: var(--s); left: calc(100vw - 200px); top: calc(100vh - 200px); }
-body[data-view="reader"] #map, body[data-view="library"] #map, body[data-view="api"] #map { --s: 56px; width: var(--s); height: var(--s);
+body[data-view="reader"] #map, body[data-view="library"] #map, body[data-view="api"] #map, body[data-view="support"] #map { --s: 56px; width: var(--s); height: var(--s);
   left: calc(100vw - 76px); top: calc(100vh - 76px); }
 @media (max-width: 1100px) {
   body[data-view="results"] #map, body[data-view="work"] #map { --s: 56px; left: calc(100vw - 76px); top: calc(100vh - 76px); } }
@@ -439,7 +454,7 @@ body:not([data-view="work"]) .you-are-here { display: none; }
 
 @media (prefers-reduced-motion: reduce) { #map, .map-img, #globe { transition: none !important; } .qmark { animation: none; } }
 /* beside text the map is a control: above the (wide, transparent) content boxes, so it can be clicked */
-body[data-view="results"] #map, body[data-view="work"] #map, body[data-view="reader"] #map, body[data-view="library"] #map, body[data-view="api"] #map { z-index: 6; }
+body[data-view="results"] #map, body[data-view="work"] #map, body[data-view="reader"] #map, body[data-view="library"] #map, body[data-view="api"] #map, body[data-view="support"] #map { z-index: 6; }
 /* small screens: the search gets its own row under the brand and links */
 @media (max-width: 820px) {
   nav.top { flex-wrap: wrap; row-gap: 10px; }

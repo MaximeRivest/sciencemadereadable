@@ -44,7 +44,7 @@ function saveKeyForm() {
 }
 
 // ---------------------------------------------------------------- views
-function show(view: "home" | "results" | "reader" | "library" | "work" | "explore" | "api") {
+function show(view: "home" | "results" | "reader" | "library" | "work" | "explore" | "api" | "support") {
   document.body.dataset.view = view;
   if (view !== "home") {   // leaving home closes its search tips, so Back finds the page as it was first seen
     document.getElementById("home-tips")?.setAttribute("hidden", "");
@@ -656,7 +656,7 @@ function route() {
   const q = new URLSearchParams(location.search);
   clearInterval(nowTimer);
   document.title = "ScienceMadeReadable";   // a paper or study page puts its own title in front
-  if (q.has("support")) setTimeout(() => openSupport("link"), 300);
+  if (q.has("support")) return openSupport();
   if (q.has("library")) return openLibrary();
   if (q.has("api")) return show("api");
   if (q.has("map")) {
@@ -781,11 +781,9 @@ $("#lib-filter").oninput = drawLibrary;
 ;
 $("#go").onclick = () => makeReadable();
 ($("#side") as HTMLInputElement).onchange = (e) => document.body.classList.toggle("solo", !(e.target as HTMLInputElement).checked);
-for (const [btn, dlg] of [["#open-settings", "#settings"], ["#open-about", "#about"], ["#open-about-2", "#about"],
-                          ["#open-support", "#support"], ["#open-support-2", "#support"], ["#open-support-3", "#support"]]) {
+for (const [btn, dlg] of [["#open-settings", "#settings"], ["#open-about", "#about"], ["#open-about-2", "#about"]]) {
   $(btn).onclick = (e) => {
     e.preventDefault();
-    if (dlg === "#support") return openSupport(btn.slice(1));
     if (dlg === "#settings") loadKeyForm();
     ($(dlg) as HTMLDialogElement).showModal();
   };
@@ -829,10 +827,19 @@ function drawSupport() {
   for (const b of document.querySelectorAll<HTMLButtonElement>(".amounts button")) b.classList.toggle("on", +b.dataset.amount! === amount);
 }
 
-async function openSupport(src: string) {
-  track("support", { src });
+// The support page (?support). `supportFrom` says which link led there; a shared or typed address is "link".
+let supportFrom = "link";
+for (const id of ["#open-support", "#open-support-2", "#open-support-3"])
+  $(id).onclick = (e) => { e.preventDefault(); supportFrom = id.slice(1); go("?support"); };
+$("#sup-read").onclick = (e) => { e.preventDefault(); go(""); };
+$("#sup-api").onclick = (e) => { e.preventDefault(); go("?api"); };
+
+async function openSupport() {
+  track("support", { src: supportFrom });
+  supportFrom = "link";
+  show("support");
+  document.title = "Support · ScienceMadeReadable";
   drawSupport();
-  ($("#support") as HTMLDialogElement).showModal();
   sup = (await supportState()) ?? sup;
   drawSupport();
 }

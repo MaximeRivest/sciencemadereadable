@@ -23,7 +23,7 @@
     <span id="gpu" class="gpu">GPU</span>
     <a href="?library" id="open-library">Library</a>
     <a href="?api" id="open-api" title="Use this search from your code or AI agent">API</a>
-    <a href="#" id="open-support" class="support-link">♥ Support</a>
+    <a href="?support" id="open-support" class="support-link">♥ Support</a>
     <a href="#" id="open-settings">Settings</a>
     <a href="#" id="open-about">About</a>
     <button id="theme" type="button" aria-label="Switch between light and dark" title="Light or dark">
@@ -219,6 +219,62 @@ for p in r.json()["results"]:
   </ul>
 </main>
 
+<!-- Support: what the money keeps running (both services), then the amounts. Voluntary support only. -->
+<main id="support-view" class="view">
+  <h1 class="lib-title">Support ScienceMadeReadable</h1>
+  <p class="sup-lead">Hi, I'm Maxime. I built this on my own so that anyone, people and their AI agents alike, can
+    find and understand real science. It's free: no ads, no accounts, no paywall, no API key. If it's useful to you,
+    you can help keep it running.</p>
+
+  <div class="sup-what">
+    <a class="sup-card" id="sup-read" href="./">
+      <h2>Science in plain words</h2>
+      <p>Search all of science, then read research papers rewritten for a curious 14-year-old by small models I
+        trained. The authors' voice, their results, numbers and caveats, and the original figures are kept.</p>
+      <span class="sup-more">Search a topic →</span>
+    </a>
+    <a class="sup-card" id="sup-api" href="?api">
+      <h2>Science search for AI agents</h2>
+      <p>Let Claude, ChatGPT, Cursor or your own code search about 200 million studies, by meaning or by exact words,
+        and follow their citations. Connect it as an MCP server, or call plain web addresses.</p>
+      <span class="sup-more">Connect your agent →</span>
+    </a>
+  </div>
+
+  <h2>Where your support goes</h2>
+  <p>Both run on one server in my home: graphics cards for the rewriting models, and enough memory and disk to keep
+    the whole index of studies ready to search. Your support helps pay for that hardware, the power, and the internet
+    connection that keeps it online.</p>
+
+  <div class="sup-give">
+    <div class="amounts" role="radiogroup" aria-label="Amount">
+      <button type="button" data-amount="5">$5</button>
+      <button type="button" data-amount="10" class="on">$10</button>
+      <button type="button" data-amount="25">$25</button>
+      <button type="button" data-amount="50">$50</button>
+      <button type="button" data-amount="0">Other</button>
+    </div>
+    <div class="give">
+      <a id="give-card" class="primary-btn" target="_blank" rel="noopener" hidden>Support with $10</a>
+      <a id="give-github" class="primary-btn" target="_blank" rel="noopener">Support with $10 on GitHub</a>
+    </div>
+    <p class="give-alt"><a id="give-monthly" class="ghost-link" target="_blank" rel="noopener">or $3 a month</a><span id="gh-alt"></span></p>
+    <p id="pay-note" class="quiet small"></p>
+  </div>
+
+  <h2>Other ways to help</h2>
+  <p>Tell a friend, a teacher or your favourite AI agent about it. Everything is open, so you can also build on it:</p>
+  <p class="api-links">
+    <a class="chip" href="https://huggingface.co/maximerivest/qwen3.5-9b-paper-rewriter" target="_blank" rel="noopener">The rewriting model</a>
+    <a class="chip" href="https://huggingface.co/datasets/maximerivest/paper-rewrites-for-young-readers" target="_blank" rel="noopener">Its training data</a>
+    <a class="chip" href="https://github.com/MaximeRivest/srl-search" target="_blank" rel="noopener">The search code</a>
+    <a class="chip" href="https://github.com/MaximeRivest/sciencemadereadable" target="_blank" rel="noopener">This site's code</a>
+  </p>
+
+  <p class="quiet small sup-fine">This is voluntary support for an independent project, not a donation to a charity:
+    there is no tax receipt. Both services stay free for everyone, whether you chip in or not.</p>
+</main>
+
 <main id="results-view" class="view">
   <div class="search-opts">
     <span class="seg" role="radiogroup" aria-label="Search by">
@@ -271,11 +327,11 @@ for p in r.json()["results"]:
   <div id="progress" class="progress" hidden></div>
   <article id="paper"></article>
   <p id="thanks" class="thanks" hidden>✦ <span id="thanks-text">This rewrite was free for you, but it ran on a real graphics card.</span>
-    If it helped, <a href="#" id="open-support-3">you can chip in to keep it running</a>.</p>
+    If it helped, <a href="?support" id="open-support-3">you can chip in to keep it running</a>.</p>
   <p id="credit" class="credit"></p>
 </main>
 
-<footer>A free demo by Maxime Rivest · the small models we trained run on a single GPU · <a href="#" id="open-about-2">How it works</a> · <a href="?api" id="open-api-2">Search API for agents</a> · <a href="#" id="open-support-2">♥ Support it</a></footer>
+<footer>A free demo by Maxime Rivest · the small models we trained run on a single GPU · <a href="#" id="open-about-2">How it works</a> · <a href="?api" id="open-api-2">Search API for agents</a> · <a href="?support" id="open-support-2">♥ Support it</a></footer>
 
 <dialog id="settings">
   <form method="dialog" autocomplete="off">
@@ -286,31 +342,6 @@ for p in r.json()["results"]:
     <label>OpenAI (GPT-6 Astra, Sol, Luna; GPT-5.6 Terra)<input id="key-openai" type="password" placeholder="sk-…"></label>
     <label class="check"><input id="remember" type="checkbox"> Remember on this device</label>
     <menu><button value="cancel" formnovalidate>Cancel</button><button value="ok" class="primary">Save</button></menu>
-  </form>
-</dialog>
-
-<dialog id="support">
-  <form method="dialog">
-    <h2>Keep science readable, and free</h2>
-    <p class="from">Hi, I'm Maxime. I trained these models and built this site on my own, so that anyone, at any age,
-      can read real science in plain words. No ads, no accounts, no paywall. It all runs on my own computers at home,
-      and I pay for the hardware, the power and the internet. If the site is useful to you, you're welcome to chip in.</p>
-    <div class="amounts" role="radiogroup" aria-label="Amount">
-      <button type="button" data-amount="5">$5</button>
-      <button type="button" data-amount="10" class="on">$10</button>
-      <button type="button" data-amount="25">$25</button>
-      <button type="button" data-amount="50">$50</button>
-      <button type="button" data-amount="0">Other</button>
-    </div>
-    <div class="give">
-      <a id="give-card" class="primary-btn" target="_blank" rel="noopener" hidden>Support with $10</a>
-      <a id="give-github" class="primary-btn" target="_blank" rel="noopener">Support with $10 on GitHub</a>
-    </div>
-    <p class="give-alt"><a id="give-monthly" class="ghost-link" target="_blank" rel="noopener">or $3 a month</a><span id="gh-alt"></span></p>
-    <p id="pay-note" class="quiet small"></p>
-    <p class="quiet small">This is voluntary support for an independent project, not a donation to a charity: there is
-      no tax receipt. The site stays free for everyone, whether you chip in or not.</p>
-    <menu><button value="ok">Close</button></menu>
   </form>
 </dialog>
 
