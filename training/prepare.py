@@ -34,10 +34,9 @@ import sys
 from pathlib import Path
 
 import dpyr
-import lmcc
 from functai import _ai, ai, engine
 from functai import adapters as functai_adapters
-from functai.bake import sft
+from functai.bake import functions as bake_functions
 from functai.bake.examples import row_inputs
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -98,17 +97,13 @@ OPENING_G, SECTION_G = _with_glossary()
 
 def conversation(fn, inputs: dict, answer: dict) -> tuple[list[dict], str]:
     """The chat messages functai sends for this call, and the reply it expects
-    (the same code path as functai.bake.sft)."""
+    (the same code path as functai.bake: the student's layout, replies written from values)."""
     spec = fn._variant_spec(reasoning=False, tools=False)
-    adapter = sft._layout(fn, None)
-    if adapter.replay != "values":
-        adapter = lmcc.adapter(name=adapter.name, messages=adapter.template, reader=adapter.reader,
-                               transports=adapter.transports, formats=adapter.formats,
-                               extensions=adapter.extensions, replay="values", strict=adapter.strict)
+    adapter = bake_functions.layout_of(fn)
     plan = adapter.bind(spec.signature, {"instruct": True}, registry=functai_adapters.REGISTRY)
     prepared = engine.prepare_inputs(spec, row_inputs(fn, inputs))
     request = plan.render(plan.turn(prepared), turns=[plan.example(prepared, answer)]).request("student")
-    messages = sft.chat_messages(request)
+    messages = bake_functions.chat_messages(request)
     at = max(k for k, m in enumerate(messages) if m["role"] == "assistant")
     return messages[:at], messages[at]["content"]
 
