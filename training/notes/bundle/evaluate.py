@@ -67,12 +67,29 @@ def validation_papers() -> list[dict]:
     return [p for pair in zip(by["opus"], by["astra"]) for p in pair]   # alternate, so any first N is balanced
 
 
-def chat(messages: list[dict]) -> str:
+def chat(messages: list[dict], track: tuple | None = None) -> str:
+    """One generation. track = (folder, paper, part): one line per finished section in
+    <folder>/_progress.jsonl (tokens in and out, seconds), for the dashboard."""
+    t = time.time()
     body = json.dumps({"model": "student", "messages": messages, "temperature": 0, "max_tokens": 6000,
                        "chat_template_kwargs": {"enable_thinking": False}}).encode()
     r = urllib.request.Request(f"http://127.0.0.1:{PORT}/v1/chat/completions", body, {"Content-Type": "application/json"})
     with urllib.request.urlopen(r, timeout=1800) as resp:
-        return json.load(resp)["choices"][0]["message"]["content"]
+        data = json.load(resp)
+    if track:
+        note(track[0], {"phase": "written", "paper": track[1], "part": track[2],
+                        "tokens_in": data["usage"]["prompt_tokens"], "tokens_out": data["usage"]["completion_tokens"],
+                        "seconds": round(time.time() - t, 1)})
+    return data["choices"][0]["message"]["content"]
+
+
+_note_lock = __import__("threading").Lock()
+
+
+def note(folder: Path, row: dict) -> None:
+    folder.mkdir(parents=True, exist_ok=True)
+    with _note_lock, (folder / "_progress.jsonl").open("a") as f:
+        f.write(json.dumps({**row, "at": time.time()}) + "\n")
 
 
 def generate(checkpoint: str) -> None:
@@ -105,9 +122,10 @@ def generate(checkpoint: str) -> None:
             msg = lambda n, already: [{"role": "system", "content": EX.SYSTEM},
                                       {"role": "user", "content": EX.user(bundle, n, already)}]
             t = time.time()
-            texts = {names[0]: chat(msg(names[0], ""))}
+            pid = p["paper_id"]
+            texts = {names[0]: chat(msg(names[0], ""), (out, pid, names[0]))}
             with ThreadPoolExecutor(4) as pool:
-                texts.update(dict(zip(names[1:], pool.map(lambda n: chat(msg(n, texts[names[0]])), names[1:]))))
+                texts.update(dict(zip(names[1:], pool.map(lambda n: chat(msg(n, texts[names[0]]), (out, pid, n)), names[1:]))))
             target.write_text(json.dumps({"paper_id": p["paper_id"], "teacher": p["teacher"], "texts": texts,
                                           "seconds": round(time.time() - t)}, indent=1, ensure_ascii=False))
             print(f"{checkpoint} {p['paper_id']} {round(time.time() - t)} s", flush=True)
@@ -166,6 +184,8 @@ def score(checkpoints: list[str]) -> None:
         for n in names:
             try:
                 scores[n] = score_part(n)
+                note(OUT / ck, {"phase": "checked", "paper": p["paper_id"], "part": n,
+                                "with_opus": "trace" in scores[n], "judged": "judge" in scores[n]})
             except Exception as error:                                   # noqa: BLE001  one part must not stop the rest
                 scores[n] = {"error": f"{type(error).__name__}: {str(error)[:300]}"}
                 print(f"{ck} {p['paper_id']} {n}: {scores[n]['error']}", flush=True)

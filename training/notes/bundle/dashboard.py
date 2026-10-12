@@ -85,11 +85,25 @@ def evaluation() -> dict:
         files = list((folder / ck).glob("*.json")) if (folder / ck).exists() else []
         scores = [read(f, {}).get("scores") for f in files]
         full = sum(1 for sc in scores if sc and any("judge" in v for v in sc.values()))
+        events = []
+        try:
+            events = [json.loads(l) for l in (folder / ck / "_progress.jsonl").read_text().splitlines() if l.strip()]
+        except FileNotFoundError:
+            pass
+        written = [e for e in events if e["phase"] == "written"]
+        checked = [e for e in events if e["phase"] == "checked"]
+        recent = [e for e in written if e["at"] > time.time() - 120]
         rows.append({"checkpoint": ck, "saved": ck in saved, "written": len(files),
                      "scored": sum(1 for sc in scores if sc), "full": full,
-                     "current": progress.get("current") == ck})
+                     "current": progress.get("current") == ck,
+                     "sections_written": len(written), "sections_checked": len(checked),
+                     "sections_checked_opus": sum(e.get("with_opus", False) for e in checked),
+                     "sections_judged": sum(e.get("judged", False) for e in checked),
+                     "tokens_out": sum(e["tokens_out"] for e in written), "tokens_in": sum(e["tokens_in"] for e in written),
+                     "tokens_per_second": round(sum(e["tokens_out"] for e in recent) / 120) if recent else 0,
+                     "tracked": bool(events)})
     return {"progress": progress, "summary": read(folder / "summary.json", {}),
-            "first_run": read(first / "summary.json", {}), "checkpoints": rows, "papers": 20}
+            "first_run": read(first / "summary.json", {}), "checkpoints": rows, "papers": 20, "sections": 100}
 
 
 def sample(checkpoint: str, paper: str, part: str) -> dict:

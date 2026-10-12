@@ -144,12 +144,17 @@ async function tick(){
  const ev=d.evaluation;const pr=ev.progress||{};
  document.getElementById('evalstate').textContent=pr.state?('Testing: '+pr.state+(pr.current?` (now ${pr.current})`:'')+(pr.best?` · best so far: ${pr.best}`:'')):'Waiting for training to finish.';
  const N=ev.papers||20;
- document.getElementById('evalbars').innerHTML=(ev.checkpoints||[]).map(c=>{
-  const w=c.written/N,sc=c.scored/N;
-  const label=!c.saved?'not saved yet':c.full?`full test: ${c.full}/${N} papers judged`:c.scored==N?'tested ✓':c.written<N?`writing ${c.written}/${N} papers`:`checking ${c.scored}/${N} papers`;
-  return `<div class="gpu"><b style="width:110px;${c.current?'color:var(--accent)':''}">${c.checkpoint}</b>
-   <div class="meter" style="position:relative;opacity:${c.saved?1:.35}"><div style="width:${w*100}%;background:#f0a35e;position:absolute;height:100%"></div><div style="width:${sc*100}%;background:var(--good);position:absolute;height:100%"></div></div>
-   <span style="width:200px">${label}</span></div>`}).join('')+`<p class="legend"><span class="chip" style="background:#f0a35e"></span>papers written by the checkpoint &nbsp; <span class="chip" style="background:#2e8b57"></span>papers checked</p>`;
+ const S=ev.sections||100;
+ document.getElementById('evalbars').innerHTML=`<table><thead><tr><th>Checkpoint</th><th style="width:40%">Progress</th><th class="num">Sections written</th><th class="num">Words written (tokens)</th><th class="num">Speed</th><th class="num">Sections checked</th></tr></thead><tbody>`+
+ (ev.checkpoints||[]).map(c=>{
+  const wr=c.tracked?c.sections_written:c.written*5, ch=c.tracked?c.sections_checked:c.scored*5;
+  const label=!c.saved?'not saved yet':c.full?`full test · ${c.sections_judged||c.full*5}/${S} judged`:ch>=S?'tested ✓':wr<S?'writing':'checking';
+  return `<tr style="opacity:${c.saved?1:.4}"><td><b style="${c.current?'color:var(--accent)':''}">${c.checkpoint}</b><div class="note">${label}</div></td>
+   <td><div class="meter" style="position:relative;height:12px"><div style="width:${wr/S*100}%;background:#f0a35e;position:absolute;height:100%"></div><div style="width:${ch/S*100}%;background:var(--good);position:absolute;height:100%"></div></div></td>
+   <td class="num">${wr} / ${S}</td><td class="num">${c.tokens_out?c.tokens_out.toLocaleString():'–'}</td>
+   <td class="num">${c.current&&c.tokens_per_second?c.tokens_per_second+' tok/s':'–'}</td>
+   <td class="num">${ch} / ${S}${c.sections_checked_opus?`<div class="note">${c.sections_checked_opus} by Opus</div>`:''}</td></tr>`}).join('')+
+ `</tbody></table><p class="legend"><span class="chip" style="background:#f0a35e"></span>sections written (20 papers × 5 sections) &nbsp; <span class="chip" style="background:#2e8b57"></span>sections checked. Code checks every section; Opus checks the sections of 4 papers, and all 20 for the best and last checkpoints.</p>`;
  const rows=Object.entries(ev.summary||{});const f=ev.first_run['step-00072'];
  const line=(name,s)=>`<tr><td>${name}</td><td class="num">${pct(s['facts kept share']??(s.facts&&s.facts.kept/Object.values(s.facts).reduce((a,b)=>a+b,0)))}</td><td class="num">${pct(s['numbers of the facts kept'])}</td><td class="num">${s['form errors per part']??'–'}</td><td class="num">${(s.additions||{})['wrong explanation']??'–'}</td><td class="num">${s['judge vs teacher']&&Object.keys(s['judge vs teacher']).length?[(s['judge vs teacher'].student||0),(s['judge vs teacher']['no clear winner']||0),(s['judge vs teacher'].teacher||0)].join(' / '):'–'}</td></tr>`;
  document.querySelector('#evaltab tbody').innerHTML=(f?line('<i>first run, step 72 (300 papers)</i>',f):'')+rows.map(([k,s])=>line(k,s)).join('');
