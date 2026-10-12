@@ -794,24 +794,19 @@ for (const [btn, dlg] of [["#open-settings", "#settings"], ["#open-about", "#abo
 // ---------------------------------------------------------------- support
 // Support goes to Stripe (card, Apple Pay, Google Pay; no account; one link per amount, made by
 // tools/stripe_setup.py) or GitHub Sponsors (for developers; no fee). The links come from the queue
-// (support.json) or config.js, when the queue can't be reached. The meter: what the GPU costs a day,
-// and the support of the last 24 hours.
+// (support.json) or config.js, when the queue can't be reached.
+// Voluntary support only (2026-10-12): no funding meter, no cost-per-hour pitch, no paid "sponsor a day".
+// Those read as crowdfunding to Stripe, which restricts it.
 const SPONSORS = (window.SRL_CONFIG?.support?.github ?? "https://github.com/sponsors/MaximeRivest").replace(/\/$/, "");
 const githubLink = (amount: number, frequency: "one-time" | "recurring") =>
   `${SPONSORS}/sponsorships?preview=false&frequency=${frequency}` + (amount ? `&amount=${amount}` : "");
-const PAPERS_PER_HOUR = 800;   // the 9B on one H100, many papers at once (training/speed/throughput-h100-9b.json)
 let sup: Support | null = null;
 let amount = 10;               // 0: the supporter chooses
 const usd = (n: number) => `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 const stripeLinks = (): Record<string, string> => ({ ...(window.SRL_CONFIG?.support?.stripe ?? {}), ...(sup?.stripe ?? {}) });
 
 function drawSupport() {
-  const cost = sup?.daily_cost ?? 108;
   const st = stripeLinks();
-  const hours = (amount || 10) / (cost / 24);
-  $("#impact").textContent = amount === 0 ? "Any amount helps: $4.50 pays for an hour of a rented H100."
-    : `${usd(amount)} pays for about ${hours < 1.5 ? `${Math.round(hours * 60)} minutes` : `${Math.round(hours)} hours`} of a rented H100: ` +
-      `time to make up to ${(Math.round(hours * PAPERS_PER_HOUR / 100) * 100).toLocaleString("en-US")} papers readable.`;
   const label = amount ? `Support with ${usd(amount)}` : "Support with any amount";
   const card = st[amount ? String(amount) : "custom"];
   const gh = $("#give-github") as HTMLAnchorElement;
@@ -831,32 +826,7 @@ function drawSupport() {
     ($("#give-monthly") as HTMLAnchorElement).href = githubLink(3, "recurring");
     $("#pay-note").textContent = "GitHub Sponsors needs a GitHub account (free), and GitHub keeps no fee.";
   }
-  ($("#give-day") as HTMLAnchorElement).href = st.day ?? githubLink(110, "one-time");
-  $("#day-note").innerHTML = st.day ? ": you'll be asked for the name to show and the day."
-    : `, then tell me the name and the day on X, <a href="https://x.com/MaximeRivest" target="_blank" rel="noopener">@MaximeRivest</a>.`;
   for (const b of document.querySelectorAll<HTMLButtonElement>(".amounts button")) b.classList.toggle("on", +b.dataset.amount! === amount);
-  const meter = sup?.daily_cost && sup.day_dollars !== undefined;
-  $("#meter").hidden = !meter;
-  if (meter) {
-    const got = sup!.day_dollars!, n = sup!.day_count!;
-    $("#meter-text").textContent = got > 0 ? `${usd(got)} from ${n} ${n === 1 ? "supporter" : "supporters"} in the last 24 hours`
-      : "No support yet in the last 24 hours";
-    $("#meter-cost").textContent = `a rented-GPU day costs ${usd(cost)}`;
-    ($("#meter-fill") as HTMLElement).style.width = `${Math.min(100, Math.max(got > 0 ? 3 : 0, (got / cost) * 100))}%`;
-    const notes: string[] = [];
-    if (sup!.monthly_supporters) notes.push(`${sup!.monthly_supporters} ${sup!.monthly_supporters === 1 ? "person supports" : "people support"} it every month.`);
-    if (sup!.recent?.length) notes.push(`Thank you, ${sup!.recent.slice(0, 5).map((l) => "@" + l).join(", ")}.`);
-    if (got === 0) notes.push("You could be the first today.");
-    $("#meter-note").textContent = notes.join(" ");
-  }
-  drawSponsorOfTheDay();
-}
-
-function drawSponsorOfTheDay() {
-  const d = sup?.sponsor_of_the_day;   // the queue only sends today's, once approved (tools/sponsor_day.py)
-  const html = d?.name ? `Today's rewrites are sponsored by ${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener sponsored">${esc(d.name)}</a>`
-    : `<b>${esc(d.name)}</b>`}. Thank you!` : "";
-  for (const id of ["#sotd", "#sotd-bar"]) { $(id).innerHTML = html; $(id).hidden = !html; }
 }
 
 async function openSupport(src: string) {
@@ -869,10 +839,10 @@ async function openSupport(src: string) {
 
 for (const b of document.querySelectorAll<HTMLButtonElement>(".amounts button"))
   b.onclick = () => { amount = +b.dataset.amount!; drawSupport(); };
-const clicked: Record<string, () => number> = { "#give-card": () => amount, "#give-github": () => amount, "#give-monthly": () => 3, "#give-day": () => 110 };
+const clicked: Record<string, () => number> = { "#give-card": () => amount, "#give-github": () => amount, "#give-monthly": () => 3 };
 for (const [a, n] of Object.entries(clicked))
   $(a).addEventListener("click", () => track("give", { src: a.slice(6), amount: n() }));
-supportState().then((s) => { sup = s; drawSponsorOfTheDay(); });
+supportState().then((s) => { sup = s; });
 if (new URLSearchParams(location.search).has("thanks")) {   // back from Stripe
   track("supported", {});
   history.replaceState(null, "", location.pathname);
@@ -884,8 +854,6 @@ new IntersectionObserver((entries) => {
   if (!entries.some((e) => e.isIntersecting) || sessionStorage.getItem("thanked")) return;
   if (!paper || !saved[chosen.id] || document.body.dataset.view !== "reader") return;
   sessionStorage.setItem("thanked", "1");
-  if (sup?.daily_cost) $("#thanks-text").textContent =
-    `This rewrite was free for you. Busy days need a rented GPU, about ${usd(sup.daily_cost)} a day, and readers pay for them.`;
   $("#thanks").hidden = false;
   track("thanks_shown", {});
 }, { rootMargin: "0px 0px -20% 0px" }).observe($("#credit"));

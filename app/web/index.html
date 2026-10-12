@@ -275,7 +275,6 @@ for p in r.json()["results"]:
   <p id="credit" class="credit"></p>
 </main>
 
-<p id="sotd-bar" class="sotd-bar" hidden></p>
 <footer>A free demo by Maxime Rivest · the small models we trained run on a single GPU · <a href="#" id="open-about-2">How it works</a> · <a href="?api" id="open-api-2">Search API for agents</a> · <a href="#" id="open-support-2">♥ Support it</a></footer>
 
 <dialog id="settings">
@@ -294,15 +293,8 @@ for p in r.json()["results"]:
   <form method="dialog">
     <h2>Keep science readable, and free</h2>
     <p class="from">Hi, I'm Maxime. I trained these models and built this site on my own, so that anyone, at any age,
-      can read real science in plain words. No ads, no accounts, no paywall. Day to day, the rewrites run on a graphics
-      card in my home. When many people read at once, I rent a fast one (an Nvidia H100, about $108 a day) so nobody
-      waits. Your support pays for those days.</p>
-    <div id="meter" class="meter" hidden>
-      <div class="meter-line"><span id="meter-text"></span><span id="meter-cost" class="quiet"></span></div>
-      <div class="meter-bar"><i id="meter-fill"></i></div>
-      <p id="meter-note" class="quiet small"></p>
-    </div>
-    <p id="sotd" class="sotd" hidden></p>
+      can read real science in plain words. No ads, no accounts, no paywall. It all runs on my own computers at home,
+      and I pay for the hardware, the power and the internet. If the site is useful to you, you're welcome to chip in.</p>
     <div class="amounts" role="radiogroup" aria-label="Amount">
       <button type="button" data-amount="5">$5</button>
       <button type="button" data-amount="10" class="on">$10</button>
@@ -310,20 +302,14 @@ for p in r.json()["results"]:
       <button type="button" data-amount="50">$50</button>
       <button type="button" data-amount="0">Other</button>
     </div>
-    <p id="impact" class="impact"></p>
     <div class="give">
       <a id="give-card" class="primary-btn" target="_blank" rel="noopener" hidden>Support with $10</a>
       <a id="give-github" class="primary-btn" target="_blank" rel="noopener">Support with $10 on GitHub</a>
     </div>
     <p class="give-alt"><a id="give-monthly" class="ghost-link" target="_blank" rel="noopener">or $3 a month</a><span id="gh-alt"></span></p>
     <p id="pay-note" class="quiet small"></p>
-    <div class="org">
-      <b>Sponsor a whole day</b> · $110 pays for a day of a rented H100, and your name or your organization's is shown on
-      this site that day: "Today's rewrites are sponsored by …".
-      <a id="give-day" target="_blank" rel="noopener">Sponsor a day</a><span id="day-note"></span>
-    </div>
-    <p class="quiet small">This is support for an independent project, not a donation to a charity: there is no tax
-      receipt.</p>
+    <p class="quiet small">This is voluntary support for an independent project, not a donation to a charity: there is
+      no tax receipt. The site stays free for everyone, whether you chip in or not.</p>
     <menu><button value="ok">Close</button></menu>
   </form>
 </dialog>
@@ -333,7 +319,6 @@ for p in r.json()["results"]:
     <h2>Thank you!</h2>
     <p class="from">Your support keeps science readable, and free, for the next reader. Stripe has emailed you a
       receipt.</p>
-    <p class="quiet small">Sponsored a day? I'll put your name on the site and confirm the day by email.</p>
     <menu><button value="ok" class="primary">Back to reading</button></menu>
   </form>
 </dialog>
@@ -345,7 +330,7 @@ for p in r.json()["results"]:
       the authors' own voice, keeping every result, number and caveat, but in words anyone can follow.</p>
     <p><b>The rewriting is done by small open models we trained</b> (Qwen 3.5 with 9, 4 and 0.8 billion parameters). They
       learned from thousands of papers rewritten by frontier AI models. They are small enough to run on a gaming graphics card, and that is where they run: an RTX 3090 in my home. On busy
-      days a rented Nvidia H100 joins it. When many people are reading, a paper may wait in line, and the page says when
+      days I can rent a faster one (an Nvidia H100). When many people are reading, a paper may wait in line, and the page says when
       the GPU is offline.</p>
     <p><b>How good is it?</b> On our test papers, a judge model scored our 9B 7.8 out of 10, a little above GPT-6 Luna (7.5),
       below Claude Opus (8.5); it costs about half a cent per paper. It still makes mistakes more often than the big
