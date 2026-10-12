@@ -25,6 +25,12 @@ GET /api/data/...        the data API (search/srl_search, release in DATA.md), r
                          its guide for programs and agents (llms.txt), reference (docs) and spec (openapi.json).
                          Per-address limits a minute (DATA_LIMITS): 30 for programs and agents, 60 for the
                          site's own pages, the guide apart; tiles are immutable (cached a year).
+POST /mcp                the same search as an MCP server for AI apps (search/srl_search/mcp_server.py),
+                         passed through as is. Tool calls count against the programs' limit (DATA_LIMITS
+                         "api"); a call over it is answered as a tool error the model can read (wait N
+                         seconds), not an HTTP error that would break the app's connection. GET /mcp in a
+                         browser: how to add it. Logged: the method, the tool and the app's name, never
+                         the search words.
 GET /api/now             what is being rewritten right now (titles, progress) and the latest finished.
 GET /api/support         what the GPU costs a day, support of the last 24 h (Stripe, GitHub Sponsors), the
                          Stripe links, today's sponsor.
@@ -44,6 +50,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import http.client
 import ipaddress
 import json
 import os
@@ -457,10 +464,11 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def end_headers(self):
-        if self.path.startswith("/api/") and not self.path.startswith("/api/worker/"):
+        api = self.path.startswith("/api/") or is_mcp(self.path)
+        if api and not self.path.startswith("/api/worker/"):
             # the page may live elsewhere (GitHub Pages); nothing here uses cookies or logins
             self.send_header("Access-Control-Allow-Origin", "*")
-        if not self.path.startswith("/api/"):
+        if not api:
             # the page holds API keys: run only this site's own code, send only to the providers,
             # this server, or a model server the reader typed in
             self.send_header("Content-Security-Policy", "default-src \'self\'; script-src \'self\'; style-src \'self\'; img-src \'self\' data: https://pmc-oa-opendata.s3.amazonaws.com; connect-src \'self\' https:; base-uri \'none\'; form-action \'none\'; object-src \'none\'; frame-ancestors 'none'")
@@ -662,6 +670,78 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def mcp_proxy(self):
+        """POST /mcp: the search API's MCP endpoint, passed through. Stateless JSON on that side, so one request
+        gets one complete answer (nothing to stream)."""
+        size = int(self.headers.get("Content-Length") or 0)
+        if size > MCP_MAX_BODY:
+            return self.send_json(413, {"error": f"request too large (at most {MCP_MAX_BODY:,} bytes)"})
+        raw = self.rfile.read(size)
+        try:
+            msg = json.loads(raw)
+        except ValueError:
+            msg = None   # the server answers that with a proper JSON-RPC parse error
+        msgs = msg if isinstance(msg, list) else [msg]
+        for m in msgs:
+            if not isinstance(m, dict) or "method" not in m:
+                continue
+            params = m.get("params") if isinstance(m.get("params"), dict) else {}
+            meta = params.get("_meta") if isinstance(params.get("_meta"), dict) else {}
+            app = (params.get("clientInfo") or meta.get("io.modelcontextprotocol/clientInfo") or {})
+            # counts adoption: which apps connect and which tools they use; never the arguments (the search words)
+            sys.stderr.write(f"mcp {str(m['method'])[:40]} {str(params.get('name', ''))[:40]} "
+                             f"{str(app.get('name', '') if isinstance(app, dict) else '')[:60]}\n")
+            if m["method"] != "tools/call":
+                continue   # handshake, listing tools, reading the guide: free, like the guide itself
+            wait = rate_wait("api:" + self.client(), DATA_LIMITS["api"])
+            if not wait:
+                continue
+            if isinstance(msg, list):   # an old-style batch: no single call to answer for
+                return self.send_json(429, {"error": f"Too many requests: {DATA_LIMITS['api']} tool calls a minute "
+                                                     f"per address. Try again in {wait} seconds.", "retry_after": wait})
+            version = self.headers.get("Mcp-Protocol-Version") or meta.get("io.modelcontextprotocol/protocolVersion")
+            modern = bool(version) and version not in HANDSHAKE_VERSIONS
+            result = {"content": [{"type": "text", "text": (
+                f"Rate limit: this search allows {DATA_LIMITS['api']} tool calls a minute per address. Wait {wait} "
+                "seconds, then retry the same call. To need fewer calls: one search with a larger limit instead of "
+                "several small ones, and get_papers with several ids at once.")}], "isError": True}
+            if modern:
+                result["resultType"] = "complete"   # required by 2026-07-28; older clients may reject unknown keys
+            body = json.dumps({"jsonrpc": "2.0", "id": m.get("id"), "result": result}).encode()
+            return self.mcp_send(200, body, "application/json", {"Retry-After": str(wait)})
+        headers = {k: v for k, v in self.headers.items()
+                   if k.lower() in ("content-type", "accept", "last-event-id") or k.lower().startswith("mcp-")}
+        req = urllib.request.Request(SEARCH_API + "/mcp", data=raw, method="POST", headers=headers)
+        try:
+            with urllib.request.urlopen(req, timeout=75) as r:
+                status, body, rh = r.status, r.read(), r.headers
+        except urllib.error.HTTPError as e:
+            status, body, rh = e.code, e.read(), e.headers
+        except (OSError, http.client.HTTPException) as e:   # down, restarting, or cut off mid-answer
+            err = {"jsonrpc": "2.0", "id": msg.get("id") if isinstance(msg, dict) else None,
+                   "error": {"code": -32603, "message": f"search unavailable for a moment ({type(e).__name__}); "
+                                                         "retry in a minute"}}
+            return self.mcp_send(502, json.dumps(err).encode(), "application/json")
+        self.mcp_send(status, body, rh.get("Content-Type", "application/json"),
+                      {k: v for k, v in rh.items() if k.lower().startswith("mcp-")})
+
+    def mcp_send(self, status: int, body: bytes, ctype: str, extra: dict | None = None):
+        self.send_response(status)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        for k, v in (extra or {}).items():
+            self.send_header(k, v)
+        self.end_headers()
+        self.wfile.write(body)
+
+    def mcp_get(self):
+        """GET /mcp: an MCP client asking for a server-to-client stream (this server has none: 405, as the spec
+        says), or a person who opened the address (how to add it)."""
+        if "text/event-stream" in (self.headers.get("Accept") or ""):
+            return self.mcp_send(405, b"", "text/plain", {"Allow": "POST"})
+        return self.send_text(200, MCP_HELP)
+
     def client(self) -> str:
         # behind tailscale serve / a tunnel, the reader's address is in X-Forwarded-For
         return who_is((self.headers.get("X-Forwarded-For") or self.client_address[0]).split(",")[0].strip())
@@ -669,7 +749,11 @@ class Handler(SimpleHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(204)
         self.send_header("Access-Control-Allow-Methods", "GET, POST")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        if is_mcp(self.path):   # MCP clients in a browser send their own headers (Mcp-Protocol-Version, Mcp-Method...)
+            self.send_header("Access-Control-Allow-Headers", self.headers.get("Access-Control-Request-Headers") or "Content-Type")
+            self.send_header("Access-Control-Expose-Headers", "Mcp-Session-Id")
+        else:
+            self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.send_header("Access-Control-Max-Age", "600")
         # Chrome asks before a public page (sciencemadereadable.com) calls a private-network address,
         # which is what this machine's name resolves to on devices running Tailscale.
@@ -679,6 +763,8 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         u = urllib.parse.urlparse(self.path)
+        if is_mcp(u.path):
+            return self.mcp_proxy()
         if u.path == "/api/jobs":
             return self.new_job()
         if u.path == "/api/event":
@@ -811,6 +897,33 @@ DATA_ROUTES = re.compile(r"^/api/data/(search|search/[^\s?#]{2,6000}|walk|map/pl
                          r"|map/tiles/[\w-]{1,40}/(?:index\.json|\d{1,2}/\d{1,6}/\d{1,6}\.(?:pts|ids)"
                          r"|v2/(?:map|labels|names)\.json|v2/[dpi]/\d{1,2}/\d{1,6}/\d{1,6}\.bin|v2/t/\d{1,2}/\d{1,6}/\d{1,6}\.json))$")
 ROBOTS_OPEN = "User-agent: *\nAllow: /\n"
+MCP_PATHS = ("/mcp", "/mcp/", "/api/data/mcp")
+MCP_MAX_BODY = 1_000_000
+# MCP revisions with the initialize handshake; the later ones (2026-07-28 on) stand each request alone
+HANDSHAKE_VERSIONS = ("2024-11-05", "2025-03-26", "2025-06-18", "2025-11-25")
+
+
+def is_mcp(path: str) -> bool:
+    return urllib.parse.urlparse(path).path in MCP_PATHS
+
+
+MCP_HELP = """# Science search: MCP server
+
+This address is an MCP server: AI apps connect to it and get tools to search about 200 million scientific
+papers by meaning or exact words, read their records, find similar papers and walk their citations.
+Free, no key, no sign-up. Add this address to your AI app:
+
+    https://api.sciencemadereadable.com/mcp
+
+Claude Code:   claude mcp add --transport http science https://api.sciencemadereadable.com/mcp
+Codex:         codex mcp add science --url https://api.sciencemadereadable.com/mcp
+Claude (app or claude.ai), ChatGPT, Cursor, VS Code and others: add a custom connector or remote MCP server
+with the address above (Streamable HTTP, no authentication).
+
+Tools: search_papers, get_papers, find_similar_papers, citation_walk. Prompts: literature_review, check_claim.
+30 tool calls a minute per address. Step-by-step setup for each app: https://sciencemadereadable.com/?api
+The same search without MCP: https://api.sciencemadereadable.com/api/data/llms.txt
+"""
 ASK_HELP = """# Ask science
 
 Put a question at the end of this address and get the scientific studies about it, as plain text:
@@ -905,6 +1018,8 @@ class PublicHandler(Handler):
         path = urllib.parse.urlparse(self.path).path
         if path == "/robots.txt":
             return self.send_text(200, ROBOTS_OPEN)
+        if is_mcp(path):
+            return self.mcp_get()
         if path in ("/", "/api", "/api/", "/api/data", "/api/data/"):
             # an agent given just the address gets the guide, not a 404
             return self.data_proxy(urllib.parse.urlparse("/api/data/llms.txt"))
@@ -916,14 +1031,20 @@ class PublicHandler(Handler):
         super().do_GET()
 
     def do_POST(self):
-        if not self.allowed("POST"):
+        if not (self.allowed("POST") or is_mcp(self.path)):
             return self.send_json(404, {"error": "not found"})
         super().do_POST()
+
+    def do_DELETE(self):
+        # an MCP client ending its session: this server keeps none (stateless), which the spec answers with 405
+        if is_mcp(self.path):
+            return self.mcp_send(405, b"", "text/plain", {"Allow": "POST"})
+        self.send_json(404, {"error": "not found"})
 
     def do_HEAD(self):
         # some link checkers and fetch tools ask for the headers first: the addresses meant for them say "here"
         path = urllib.parse.urlparse(self.path).path
-        if path in ("/", "/robots.txt", "/api", "/api/", "/api/data", "/api/data/", "/api/data/llms.txt") or path.startswith("/api/ask"):
+        if path in ("/", "/robots.txt", "/api", "/api/", "/api/data", "/api/data/", "/api/data/llms.txt") or path.startswith("/api/ask") or is_mcp(path):
             self.send_response(200)
             self.send_header("Content-Type", "text/plain; charset=utf-8")
             self.send_header("Cache-Control", "no-store")
