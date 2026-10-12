@@ -201,6 +201,9 @@ def score(checkpoints: list[str]) -> None:
                        "judge vs teacher": dict(Counter(s["judge"]["winner"] for _, s in judged)),
                        "form": dict(form),
                        "readability (mean per part)": rd("readability"), "teacher readability": rd("readability_teacher")}
+    old = json.loads((OUT / "summary.json").read_text()) if (OUT / "summary.json").exists() else {}
+    summary = {**old, **summary}                                     # keep every checkpoint's row
+    summary = dict(sorted(summary.items(), key=lambda kv: (kv[0] == "final", kv[0])))
     (OUT / "summary.json").write_text(json.dumps(summary, indent=1))
     print(json.dumps(summary, indent=1))
 

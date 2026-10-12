@@ -75,8 +75,21 @@ def data_progress() -> dict:
 def evaluation() -> dict:
     folder = HERE / "out" / f"eval-{RUN}"
     first = HERE / "out" / "eval"
-    return {"progress": read(folder / "progress.json", {}), "summary": read(folder / "summary.json", {}),
-            "first_run": read(first / "summary.json", {})}
+    progress = read(folder / "progress.json", {})
+    cfg = read(RUNS / RUN / "config.json", {})
+    every, total = cfg.get("eval_every") or 0, cfg.get("total_steps") or 0
+    planned = [f"step-{s:05d}" for s in range(every, total, every)] + ["final"] if every else []
+    saved = {p.name for p in (RUNS / RUN / "adapters").iterdir()} if (RUNS / RUN / "adapters").exists() else set()
+    rows = []
+    for ck in planned:
+        files = list((folder / ck).glob("*.json")) if (folder / ck).exists() else []
+        scores = [read(f, {}).get("scores") for f in files]
+        full = sum(1 for sc in scores if sc and any("judge" in v for v in sc.values()))
+        rows.append({"checkpoint": ck, "saved": ck in saved, "written": len(files),
+                     "scored": sum(1 for sc in scores if sc), "full": full,
+                     "current": progress.get("current") == ck})
+    return {"progress": progress, "summary": read(folder / "summary.json", {}),
+            "first_run": read(first / "summary.json", {}), "checkpoints": rows, "papers": 20}
 
 
 def sample(checkpoint: str, paper: str, part: str) -> dict:

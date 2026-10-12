@@ -76,6 +76,7 @@ good writing does not need the science to be stored in the model.</p>
 <div class="card">
   <h2>Does it write faithfully? (each saved checkpoint, tested when training ends)</h2>
   <div id="evalstate" class="note"></div>
+  <div id="evalbars" style="margin:12px 0 18px"></div>
   <table id="evaltab"><thead><tr><th>Checkpoint</th><th class="num">Facts kept right</th><th class="num">Numbers of the facts in its text</th>
   <th class="num">Form errors per section</th><th class="num">Invented explanations</th><th class="num">Judge: wins / ties / losses vs teacher</th></tr></thead><tbody></tbody></table>
   <p class="explain"><b>Facts kept right</b>: an Opus checker compares every fact in the bundle with the model's text.
@@ -142,6 +143,13 @@ async function tick(){
  // evaluation
  const ev=d.evaluation;const pr=ev.progress||{};
  document.getElementById('evalstate').textContent=pr.state?('Testing: '+pr.state+(pr.current?` (now ${pr.current})`:'')+(pr.best?` · best so far: ${pr.best}`:'')):'Waiting for training to finish.';
+ const N=ev.papers||20;
+ document.getElementById('evalbars').innerHTML=(ev.checkpoints||[]).map(c=>{
+  const w=c.written/N,sc=c.scored/N;
+  const label=!c.saved?'not saved yet':c.full?`full test: ${c.full}/${N} papers judged`:c.scored==N?'tested ✓':c.written<N?`writing ${c.written}/${N} papers`:`checking ${c.scored}/${N} papers`;
+  return `<div class="gpu"><b style="width:110px;${c.current?'color:var(--accent)':''}">${c.checkpoint}</b>
+   <div class="meter" style="position:relative;opacity:${c.saved?1:.35}"><div style="width:${w*100}%;background:#f0a35e;position:absolute;height:100%"></div><div style="width:${sc*100}%;background:var(--good);position:absolute;height:100%"></div></div>
+   <span style="width:200px">${label}</span></div>`}).join('')+`<p class="legend"><span class="chip" style="background:#f0a35e"></span>papers written by the checkpoint &nbsp; <span class="chip" style="background:#2e8b57"></span>papers checked</p>`;
  const rows=Object.entries(ev.summary||{});const f=ev.first_run['step-00072'];
  const line=(name,s)=>`<tr><td>${name}</td><td class="num">${pct(s['facts kept share']??(s.facts&&s.facts.kept/Object.values(s.facts).reduce((a,b)=>a+b,0)))}</td><td class="num">${pct(s['numbers of the facts kept'])}</td><td class="num">${s['form errors per part']??'–'}</td><td class="num">${(s.additions||{})['wrong explanation']??'–'}</td><td class="num">${s['judge vs teacher']&&Object.keys(s['judge vs teacher']).length?[(s['judge vs teacher'].student||0),(s['judge vs teacher']['no clear winner']||0),(s['judge vs teacher'].teacher||0)].join(' / '):'–'}</td></tr>`;
  document.querySelector('#evaltab tbody').innerHTML=(f?line('<i>first run, step 72 (300 papers)</i>',f):'')+rows.map(([k,s])=>line(k,s)).join('');
