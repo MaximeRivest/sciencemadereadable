@@ -6,6 +6,7 @@
 ## Search API (for programs and AI agents)
 
 - Base URL: https://api.sciencemadereadable.com/api/data (read-only, no key, 30 requests a minute per address)
+- MCP server: https://api.sciencemadereadable.com/mcp (Streamable HTTP, no authentication). Tools: search_papers, get_papers, find_similar_papers, citation_walk. Claude Code: `claude mcp add --transport http --scope user science https://api.sciencemadereadable.com/mcp`; Codex: `codex mcp add science --url https://api.sciencemadereadable.com/mcp`; setup for other apps: https://sciencemadereadable.com/?api
 - Only able to open a web address? https://ask.sciencemadereadable.com/why%20do%20cats%20purr answers as plain text (the question is the whole address; options after ?, e.g. ?k=30&year_from=2020). Same as <base>/search/<question>.
 - [Full guide](https://api.sciencemadereadable.com/api/data/llms.txt): every call, today's coverage, result fields, limits. Read this before using the API.
 - [Interactive reference](https://api.sciencemadereadable.com/api/data/docs) and [OpenAPI spec](https://api.sciencemadereadable.com/api/data/openapi.json)

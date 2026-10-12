@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ScienceMadeReadable</title>
 <meta name="description" content="Search all of science, see where it sits on the map of research, and read open papers rewritten in plain words.">
-<link rel="stylesheet" href="style.css?v=a67c47a2a0">
+<link rel="stylesheet" href="style.css?v=26bc4cec4a">
 <!-- the sharp map image first: the page shows it while the live map loads (atlas.ts); the theme's own only -->
 <link rel="preload" as="image" href="map/science-map-dark.webp" media="(prefers-color-scheme: dark)" fetchpriority="high">
 <link rel="preload" as="image" href="map/science-map-light.webp" media="(prefers-color-scheme: light)" fetchpriority="high">
@@ -99,8 +99,58 @@
   </p>
 
   <h2>Give it to your AI agent</h2>
+  <div class="api-card" id="mcp">
+    <h3>Connect it as an MCP server</h3>
+    <p>If your AI app supports MCP (Claude, ChatGPT, Cursor, VS Code, Codex and many more), add the search as a set of
+      tools. The app then finds studies, reads their records, looks for similar ones and follows their citations by
+      itself, whenever research would help. Add this address. There is no key and no sign-in:</p>
+    <pre data-copy="mcp-url">https://api.sciencemadereadable.com/mcp</pre>
+    <div class="api-apps">
+      <details open><summary>Claude Code</summary>
+        <p>In a terminal:</p>
+        <pre data-copy="mcp-claude-code">claude mcp add --transport http --scope user science https://api.sciencemadereadable.com/mcp</pre>
+      </details>
+      <details><summary>Codex</summary>
+        <p>In a terminal:</p>
+        <pre data-copy="mcp-codex">codex mcp add science --url https://api.sciencemadereadable.com/mcp</pre>
+      </details>
+      <details><summary>Claude app and claude.ai</summary>
+        <p>Settings → Connectors → <b>Add custom connector</b>. Name it <i>Science search</i>, paste the address above,
+          and leave the advanced settings empty.</p>
+      </details>
+      <details><summary>ChatGPT</summary>
+        <p>With developer mode on (in Settings, under Apps), create a new connector: paste the address above and
+          choose <b>no authentication</b>.</p>
+      </details>
+      <details><summary>Cursor</summary>
+        <p>Add this to <code>~/.cursor/mcp.json</code> (or <code>.cursor/mcp.json</code> in a project):</p>
+        <pre data-copy="mcp-cursor">{
+  "mcpServers": {
+    "science": { "url": "https://api.sciencemadereadable.com/mcp" }
+  }
+}</pre>
+      </details>
+      <details><summary>VS Code</summary>
+        <p>Add this to <code>.vscode/mcp.json</code> in your project, or run <b>MCP: Add Server</b> from the command
+          palette and choose HTTP:</p>
+        <pre data-copy="mcp-vscode">{
+  "servers": {
+    "science": { "type": "http", "url": "https://api.sciencemadereadable.com/mcp" }
+  }
+}</pre>
+      </details>
+      <details><summary>Any other app</summary>
+        <p>Add a remote MCP server with the address above. Transport: Streamable HTTP. Authentication: none.</p>
+      </details>
+    </div>
+    <p>Then just ask, for example: <i>"What does the research say about creatine and memory? Cite the papers."</i></p>
+    <p class="quiet small">What your app gets: four tools (<code>search_papers</code>, <code>get_papers</code>,
+      <code>find_similar_papers</code>, <code>citation_walk</code>), two ready-made prompts (a literature review, and
+      checking a claim), and tips on searching well. Every answer has the DOI link to cite. 30 tool calls a minute per
+      address.</p>
+  </div>
   <div class="api-card">
-    <h3>The quickest way: tell it</h3>
+    <h3>No MCP? Tell it</h3>
     <p>Paste this into Claude Code, Codex, Cursor, or any agent that can make web requests:</p>
     <pre data-copy="prompt">When you need scientific papers, use the free search API at https://api.sciencemadereadable.com/api/data (no key needed). First read https://api.sciencemadereadable.com/api/data/llms.txt: it explains every call and how to search well.</pre>
   </div>
@@ -123,7 +173,6 @@
     <p class="quiet small">Try it yourself: <a href="https://ask.sciencemadereadable.com/why%20do%20cats%20purr" target="_blank" rel="noopener">ask.sciencemadereadable.com/why do cats purr</a>.
       Some chats only open addresses that appear in the conversation: then paste the full link with your question in it.</p>
   </div>
-  <p class="quiet small">No MCP server yet. The ways above work with any agent that can fetch a web address.</p>
 
   <h2>Call it from code</h2>
   <p>Plain HTTPS and JSON. Click a link to see a real answer in your browser.</p>
@@ -155,7 +204,7 @@ for p in r.json()["results"]:
 
   <h2>Good to know</h2>
   <ul class="api-notes">
-    <li><b>Be gentle:</b> 30 requests a minute per address (reading the guide doesn't count). Ask for up to 100 results
+    <li><b>Be gentle:</b> 30 requests (or MCP tool calls) a minute per address (reading the guide doesn't count). Ask for up to 100 results
       in one search rather than many small ones. Go over and the answer says how many seconds to wait.</li>
     <li><b>What it covers:</b> English titles and abstracts from OpenAlex, not full texts. New papers arrive with each
       data update, so the very latest may be missing. The <a href="https://api.sciencemadereadable.com/api/data/llms.txt" target="_blank" rel="noopener">guide</a>

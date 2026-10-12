@@ -237,6 +237,11 @@ body.solo .thanks { margin-left: auto; margin-right: auto; }
 .api-links .chip:hover { border-color: var(--accent); color: var(--accent); }
 .api-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; margin: 12px 0; }
 .api-for { font-size: 13.5px; font-weight: 600; margin: 14px 0 4px !important; }
+.api-apps { margin: 14px 0 6px; border-top: 1px solid var(--line); }
+.api-apps details { border-bottom: 1px solid var(--line); padding: 9px 0; }
+.api-apps summary { cursor: pointer; font-weight: 600; font-size: 15px; }
+.api-apps summary:hover { color: var(--accent); }
+.api-apps details > p:first-of-type { margin-top: 8px; }
 #api-view code, #api-view pre { font: 13.5px/1.55 ui-monospace, "SF Mono", Menlo, monospace; }
 #api-view :not(pre) > code { background: var(--accent-soft); border-radius: 5px; padding: 1px 5px; font-size: 13px; }
 .codebox { position: relative; margin: 8px 0; }

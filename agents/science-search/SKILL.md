@@ -29,6 +29,13 @@ Results: `id` (OpenAlex W-number), `doi`, `title`, `year`, `type`, `authors` (fi
 `citations`, `abstract`, `score`, `junk` (0-1, likelihood of spam or not scholarship), `openalex`, `pmcid`.
 Filters: `year_from`, `year_to`, `type=review|article|preprint|...`, `open_access=true`, `license=cc-by`.
 
+## As MCP tools instead
+
+Apps that speak MCP can add `https://api.sciencemadereadable.com/mcp` (no key) and get the same search as tools:
+`search_papers`, `get_papers`, `find_similar_papers`, `citation_walk`. Claude Code:
+`claude mcp add --transport http --scope user science https://api.sciencemadereadable.com/mcp`. If those tools are
+already connected, use them rather than curl: same data, answers ready to cite.
+
 ## Doing it well
 
 - Questions and descriptions: search by meaning (the default). Exact names, genes, drugs, phrases, "everything
