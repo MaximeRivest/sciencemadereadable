@@ -19,8 +19,9 @@
  */
 import { MapGL, type Cam } from "./mapgl.ts";
 
-export type Kind = "result" | "ref" | "similar" | "next";
-export interface Spot { id: string; x: number; y: number; readable?: boolean; title?: string; meta?: string; kind?: Kind; strong?: boolean }
+export type Kind = "result" | "ref" | "similar" | "next" | "topic";
+export interface Spot { id: string; x: number; y: number; readable?: boolean; title?: string; meta?: string; kind?: Kind; strong?: boolean;
+  group?: number }   // topic maps: the study's research group (0 = none), drawn in that group's colour
 export interface Line { x1: number; y1: number; x2: number; y2: number; kind: string }
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -422,11 +423,12 @@ export function useContext(c: "results" | "walk") {
 /** Where the explorer opens: the study being looked at, else the question. */
 export const focusPoint = () => context === "walk" ? (here ?? question) : (question ?? here);
 
-/** Open the explorer centred on a place (the question or a study), zoomed in a little. */
-export function focus(p: { x: number; y: number } | null) {
+/** Open the explorer centred on a place (the question or a study), zoomed in a little (or as asked: a topic map
+ *  asks for the zoom at which its studies fill the screen). */
+export function focus(p: { x: number; y: number } | null, z = 3) {
   resetView();
   if (!p) return;
-  setTimeout(() => flyTo(p.x, p.y, 3), still() ? 0 : 820);
+  setTimeout(() => flyTo(p.x, p.y, z), still() ? 0 : 820);
 }
 
 export function setResults(list: Spot[], q: { x: number; y: number } | null) { results = list; question = q; context = "results"; draw(); }
@@ -436,6 +438,10 @@ export function setWalk(list: Spot[], lines: Line[]) {
   draw();
 }
 export function setHere(p: { x: number; y: number } | null) { here = p; draw(); }
+/** Topic maps: one group's studies stand out, the others fade (null: all as they are). */
+export function focusGroup(g: number | null) {
+  for (const d of document.querySelectorAll<HTMLElement>(".dot.k-topic")) d.classList.toggle("dim", g != null && d.dataset.g !== String(g));
+}
 export function hot(id: string, on: boolean) {
   for (const d of document.querySelectorAll(`.dot[data-id="${CSS.escape(id)}"]`)) d.classList.toggle("hot", on);
 }
@@ -472,8 +478,10 @@ function draw() {
   const list = v === "results" || (v === "explore" && context === "results") ? results : walk ? walkSpots : [];
   for (const s of list) {
     const el = put(document.createElement("span"), s.x, s.y);
-    el.className = `dot k-${s.kind ?? "result"}` + (s.readable ? " readable" : "") + (s.strong ? " strong" : "");
+    el.className = `dot k-${s.kind ?? "result"}` + (s.readable ? " readable" : "") + (s.strong ? " strong" : "") +
+      (s.group != null ? ` g${s.group ? ((s.group - 1) % 9) + 1 : 0}` : "");
     el.dataset.id = s.id;
+    if (s.group != null) el.dataset.g = String(s.group);
     // a mouse only: on touch screens a tap counts as hovering and the popup would stay over the map
     el.onpointerenter = (e) => { if (e.pointerType === "mouse") tip(e, s); };
     el.onpointerleave = () => { $("#map-tip").hidden = true; };

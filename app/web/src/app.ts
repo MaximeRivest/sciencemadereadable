@@ -1,7 +1,8 @@
 import { MODELS, type ModelInfo } from "./models.ts";
 import type { Keys } from "./pipeline.ts";   // the pipeline itself loads on first use (own-key rewrites)
 import { lastSearch, looksExact, open, place, prefetch, search, similar, work, PaperError, type Hit, type Paper } from "./paper.ts";
-import { focus, focusPoint, hot, initMap, mapView, setHere, setResults, setWalk, useContext, type Line, type Spot } from "./atlas.ts";
+import { focus, focusGroup, focusPoint, hot, initMap, mapView, setHere, setResults, setWalk, useContext, type Line, type Spot } from "./atlas.ts";
+import { fetchTopics, renderTopics, TopicError, type TopicMap, type TopicOptions } from "./topics.ts";
 import { API } from "./jobs.ts";
 import { Reader } from "./reader.ts";
 import { activeJob, examples, follow, library, now, openable, savedRewrites, status, supportState, type LibraryItem, type Status, type Support } from "./jobs.ts";
@@ -46,6 +47,7 @@ function saveKeyForm() {
 // ---------------------------------------------------------------- views
 function show(view: "home" | "results" | "reader" | "library" | "work" | "explore" | "api" | "support") {
   document.body.dataset.view = view;
+  document.body.classList.remove("topics-mode");
   if (view !== "home") {   // leaving home closes its search tips, so Back finds the page as it was first seen
     document.getElementById("home-tips")?.setAttribute("hidden", "");
     document.querySelector("#home .help")?.setAttribute("aria-expanded", "false");
@@ -112,6 +114,11 @@ function searchUrl(q: string) {
   return `?${p}`;
 }
 function rerun() {
+  if (document.body.classList.contains("topics-mode")) {
+    const t = typed().trim() || new URLSearchParams(location.search).get("topics") || "";
+    if (t) go(topicsUrl(t, { by: opts.by, since: opts.since }));
+    return;
+  }
   const q = typed().trim() || new URLSearchParams(location.search).get("q") || "";
   if (q && document.body.dataset.view === "results") runSearch(q);
 }
@@ -177,6 +184,14 @@ async function runSearch(q: string) {
   else if (lastSearch.by === "semantic")
     how.append("Closest in meaning first · ", switchTo("words", "Only studies with these exact words"));
   else how.textContent = "Our search is busy, so these come from Europe PMC's word search (papers we can make readable).";
+  if (lastSearch.by !== "europepmc" && !opts.readable) {
+    const map = document.createElement("a");
+    map.href = topicsUrl(q, { by: opts.by, since: opts.since });
+    map.textContent = "See the research groups in this topic";
+    map.className = "to-topics";
+    map.onclick = (e) => { e.preventDefault(); go(map.getAttribute("href")!); };
+    how.append(" · ", map);
+  }
   // the exception is news, the rule isn't: say how many can be read in plain words only when some can
   if (lastSearch.scope === "all" && lastSearch.by !== "europepmc" && readableN) {
     const only = document.createElement("a");
@@ -201,6 +216,86 @@ async function runSearch(q: string) {
     const a = list.querySelector<HTMLAnchorElement>(`a[data-key="${CSS.escape(key(h))}"]`);
     if (a) a.replaceWith(row(h, CANT[v]));
   });
+}
+
+// ---------------------------------------------------------------- the research groups of a topic
+function topicsUrl(q: string, o: TopicOptions) {
+  const p = new URLSearchParams({ topics: q });
+  if (o.by) p.set("by", o.by);
+  if (o.since) p.set("since", o.since);
+  if (o.group) p.set("group", String(o.group));
+  return `?${p}`;
+}
+
+let topicZoom: number | null = null;     // the zoom at which the shown topic map's studies fill the explorer
+let topicShown = "";                      // the topic map whose studies are on the map now
+
+async function openTopics(q: string, group: number | null, mapOnly = false) {
+  q = q.trim();
+  if (!q) return;
+  const o: TopicOptions = { by: opts.by, since: opts.since, group };
+  if (mapOnly) {
+    const d = await fetchTopics(q, o).catch(() => null);
+    if (d) { drawTopicSpots(d, q, o); focus(focusPoint(), topicZoom ?? 3); }
+    return;
+  }
+  ($("#search-results") as HTMLInputElement).value = q;
+  drawOpts(q);
+  show("results");
+  document.body.classList.add("topics-mode");
+  document.title = `Research groups: ${q} · ScienceMadeReadable`;
+  const run = ++searchRun;   // a newer search or map makes this one's late answer moot
+  const box = $("#results");
+  const live = $("#results-live");
+  box.setAttribute("aria-busy", "true");
+  live.textContent = "Mapping the research groups…";
+  box.innerHTML = `<p class="checking">Grouping about a thousand studies by what they cite and what they say. ` +
+    `The first time, this takes up to half a minute.</p>` +
+    `<div class="hit-skeleton" aria-hidden="true">${"<div><i></i><i></i><i></i></div>".repeat(4)}</div>`;
+  setResults([], null);
+  let d;
+  try {
+    d = await fetchTopics(q, o);
+  } catch (e) {
+    if (run !== searchRun) return;
+    box.removeAttribute("aria-busy");
+    const err = e instanceof TopicError ? e : null;
+    const say = err?.status === 429 ? `Too many maps from here in the last minute. Try again in ${err.retry ?? 60} seconds.`
+      : err?.status === 503 ? "Many maps are being made right now. Try again in a minute."
+      : err?.status === 404 && err.detail ? err.detail
+      : "The map didn't come back.";
+    box.innerHTML = `<p class="quiet">${esc(say)} <a href="#" id="retry">Try again</a> · <a href="${esc(searchUrl(q))}" id="as-list">See the studies as a list</a></p>`;
+    live.textContent = say;
+    ($("#retry") as HTMLAnchorElement).onclick = (ev) => { ev.preventDefault(); openTopics(q, group); };
+    ($("#as-list") as HTMLAnchorElement).onclick = (ev) => { ev.preventDefault(); go(searchUrl(q)); };
+    return;
+  }
+  if (run !== searchRun) return;
+  box.removeAttribute("aria-busy");
+  live.textContent = `${d.groups.length} research groups.`;
+  drawTopicSpots(d, q, o);
+  renderTopics(box, d, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q) });
+  track("topics", { groups: d.groups.length, cached: d.cached ? 1 : 0, sub: group ? 1 : 0 });
+  restoreScroll();
+}
+
+function drawTopicSpots(d: TopicMap, q: string, o: TopicOptions) {
+  const names = new Map(d.groups.map((g) => [g.id, g.name]));
+  const spots: Spot[] = [];
+  d.papers.id.forEach((id, i) => {
+    const x = d.papers.x[i], y = d.papers.y[i], g = d.papers.group[i];
+    if (x == null || y == null) return;
+    spots.push({ id, x, y, group: g, kind: "topic", title: g ? `Group ${g}: ${names.get(g)}` : "In no group" });
+  });
+  spots.sort((a, b) => (a.group ? 1 : 0) - (b.group ? 1 : 0));   // grey ones underneath
+  // "open the map" flies to the middle of these studies, close enough that the groups fill the screen
+  const pct = (v: number[], q: number) => v.sort((a, b) => a - b)[Math.floor(q * (v.length - 1))];
+  const xs = spots.map((s) => s.x), ys = spots.map((s) => s.y);
+  const middle = spots.length ? { x: pct([...xs], 0.5), y: pct([...ys], 0.5) } : null;
+  const spread = spots.length ? Math.max(pct([...xs], 0.9) - pct([...xs], 0.1), pct([...ys], 0.9) - pct([...ys], 0.1)) : 1;
+  topicZoom = Math.min(40, Math.max(2, 0.6 / Math.max(spread, 1e-3)));
+  topicShown = topicsUrl(q, o);
+  setResults(spots, middle);
 }
 
 /** The same study is often indexed several times (repository copies, preprint and article): keep one per title,
@@ -744,8 +839,25 @@ function route() {
   if (q.has("library")) return openLibrary();
   if (q.has("api")) { show("api"); document.title = "Search API for agents · ScienceMadeReadable"; focusTitle($("#api-view h1")); restoreScroll(); return; }
   if (q.has("map")) {
+    if (q.get("topics")) {
+      useContext("results");
+      const p = new URLSearchParams(q); p.delete("map");
+      if (topicShown !== `?${p}`) {        // a shared link: draw that topic's studies first
+        show("explore");
+        return openTopics(q.get("topics")!, Number(q.get("group")) || null, true);
+      }
+      show("explore");
+      return focus(focusPoint(), topicZoom ?? 3);
+    }
     if (q.get("work") || q.get("paper")) useContext("walk"); else if (q.get("q")) useContext("results");
     return openExplore(q.get("work"));
+  }
+  if (q.get("topics")) {
+    const by = q.get("by");
+    opts.by = by === "words" || by === "meaning" ? by : "";
+    opts.since = /^\d{4}$/.test(q.get("since") ?? "") ? q.get("since")! : "";
+    opts.readable = false;
+    return openTopics(q.get("topics")!, Number(q.get("group")) || null);
   }
   if (q.get("work")) return openWork(q.get("work")!);
   if (q.get("paper")) return openPaper(q.get("paper")!);

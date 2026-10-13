@@ -80,7 +80,7 @@ def make_handler(data: str, queue: str, names: tuple[str, str]):
                 if self.headers.get(h):
                     req.add_header(h, self.headers[h])
             try:
-                with urllib.request.urlopen(req, timeout=75) as r:
+                with urllib.request.urlopen(req, timeout=95) as r:   # a topic map takes up to ~30 s
                     code, out, ctype = r.status, r.read(), r.headers.get("Content-Type", "application/json")
             except urllib.error.HTTPError as e:
                 code, out, ctype = e.code, e.read(), e.headers.get("Content-Type", "application/json")

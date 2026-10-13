@@ -690,3 +690,35 @@ body:not([data-view="explore"]) #sdots, body:not([data-view="explore"]) #slinks 
 }
 .noscript { position: fixed; z-index: 50; left: 50%; top: 80px; transform: translateX(-50%); max-width: 520px; padding: 14px 18px;
              background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+
+/* topic maps: research groups (src/topics.ts). Colours: Okabe-Ito and Paul Tol's sets, told apart with
+   colour-blindness; they mark groups on the map and on the cards, never carry text. */
+.g0 { --g: #9a948a; } .g1 { --g: #e69f00; } .g2 { --g: #56b4e9; } .g3 { --g: #009e73; } .g4 { --g: #d55e00; }
+.g5 { --g: #0072b2; } .g6 { --g: #cc79a7; } .g7 { --g: #f0e442; } .g8 { --g: #882255; } .g9 { --g: #44aa99; }
+.dot.k-topic { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--g); z-index: 2;
+               box-shadow: 0 0 0 1px rgba(255, 255, 255, .8); transition: opacity .2s, transform .2s; }
+.dot.k-topic.g0 { width: 4px; height: 4px; margin: -2px 0 0 -2px; opacity: .55; z-index: 1; }
+.dot.k-topic.dim { opacity: .1; }
+body.topics-mode #readable-only { display: none; }
+.topics-intro { font-size: 15px; line-height: 1.55; color: var(--muted); max-width: 68ch; margin: 6px 0 4px; }
+.topics-title { font: 600 24px/1.3 var(--serif); margin: 6px 0 4px; display: flex; gap: 10px; align-items: center; }
+.topics-foot { margin-top: 24px; }
+.tgroup { border-top: 3px solid var(--g); padding: 14px 0 6px; margin-top: 26px; }
+.tgroup h3 { font: 600 21px/1.3 var(--serif); margin: 0; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.tg-chip { width: 12px; height: 12px; border-radius: 50%; background: var(--g); display: inline-block; flex: none; align-self: center; }
+.tg-num { font: 600 12px var(--sans); letter-spacing: .05em; text-transform: uppercase; color: var(--faint); }
+.tg-meta { font-size: 13.5px; color: var(--faint); margin: 4px 0 10px; }
+.tg-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tg-tabs button { font: 500 13.5px var(--sans); border: 1px solid var(--line); background: transparent; color: var(--muted);
+                  border-radius: 999px; padding: 5px 12px; min-height: 32px; cursor: pointer; }
+.tg-tabs button:hover { color: var(--ink); border-color: var(--muted); }
+.tg-tabs button[aria-selected="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+@media (pointer: coarse) { .tg-tabs button { min-height: 42px; padding: 8px 14px; } }
+.tg-help { font-size: 13.5px; color: var(--muted); margin: 12px 0 0; }
+.tg-panel .hit { padding: 12px 0; }
+.tg-panel .hit-title { font-size: 17px; }
+.tg-expert { display: block; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.tg-expert .hit-title a { color: var(--ink); text-decoration: none; }
+.tg-expert .hit-title a:hover { color: var(--accent); }
+.tg-split { display: inline-block; margin: 12px 0 4px; font-size: 14px; }
+.to-topics { font-weight: 600; }

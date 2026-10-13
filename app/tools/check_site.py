@@ -2,7 +2,8 @@
 
     tools/dev.sh check [URL]        (default: the dev site; publish.sh runs it on dev before and on live after)
 
-Desktop and phone (touch): home, search by meaning and by exact words with dots on the globe, a study's page with
+Desktop and phone (touch): home, search by meaning and by exact words with dots on the globe, the research groups
+of a search (topic map: tabs, colours on the globe, splitting a group, Back), a study's page with
 its citation walk, one step of the walk, the map opened by a tap, pinch zoom of the map (not the page), every
 study as dots once zoomed in, a readable paper opening in the reader, light/dark. Any page error fails.
 Then the experience itself: the first page loads no more script than it needs, Back returns to the same place in
@@ -59,6 +60,26 @@ def desktop(b, errs):
     check(pg.evaluate('document.querySelectorAll("#dots .dot").length') >= 3, "results glow on the globe")
     check("meaning" in (pg.evaluate('document.querySelector(".search-how")?.textContent') or ""), "says it searched by meaning")
     pg.screenshot(path=OUT / "results.png")
+    # the research groups of the same search (a topic map: up to ~30 s the first time, then cached)
+    check(pg.evaluate('!!document.querySelector(".to-topics")'), "results offer their research groups")
+    pg.click(".to-topics")
+    check(until(pg, 'document.querySelectorAll("#results .tgroup").length >= 3', 100), "the topic map shows research groups")
+    check(pg.evaluate('document.querySelectorAll("#dots .dot.k-topic").length') >= 200, "the groups' studies are coloured on the globe")
+    check(pg.evaluate('document.querySelectorAll(".tgroup")[0].querySelectorAll(".tg-panel .hit").length') >= 3,
+          "a group's first reading list has studies")
+    first = pg.evaluate('document.querySelector(".tgroup .tg-panel").innerText')
+    pg.click('.tgroup >> nth=0 >> [role="tab"] >> nth=1')
+    check(pg.evaluate('document.querySelector(".tgroup .tg-panel").innerText') != first, "a group's tabs switch its reading list")
+    pg.hover(".tgroup >> nth=1")
+    check(pg.evaluate('document.querySelectorAll("#dots .dot.k-topic.dim").length') > 50, "pointing at a group fades the others on the map")
+    pg.screenshot(path=OUT / "topics.png")
+    if pg.evaluate('!!document.querySelector(".tg-split")'):
+        pg.click(".tg-split >> nth=0")
+        check(until(pg, '/Inside group/.test(document.querySelector(".topics-title")?.textContent || "")', 100),
+              "a group splits into smaller groups")
+        pg.go_back()
+        check(until(pg, 'document.querySelectorAll("#results .tgroup").length >= 3 && !document.querySelector(".topics-title")', 30),
+              "Back returns to the whole map")
     pg.goto(BASE + '?q=%22gut%20microbiome%22%20autism')
     check(until(pg, 'document.querySelectorAll("#results .hit").length >= 5')
           and "contain these words" in pg.evaluate('document.querySelector(".search-how").textContent'), "exact-word search")
@@ -188,11 +209,14 @@ def experience(p, b, errs):
     # no serious accessibility problem, light and dark
     axe = Axe()
     for theme in ("light", "dark"):
-        for q in ["", "?q=coral%20bleaching", "?work=10.1126/science.aan8048", "?api", "?support", "?library"]:
+        for q in ["", "?q=coral%20bleaching", "?topics=coral%20reefs%20and%20marine%20heatwaves", "?work=10.1126/science.aan8048",
+                  "?api", "?support", "?library"]:
             pg.emulate_media(color_scheme=theme)
             pg.goto(BASE + q)
             pg.evaluate(f"document.documentElement.dataset.theme = '{theme}'")
-            pg.wait_for_timeout(3000 if q.startswith("?q") or q.startswith("?work") else 1200)
+            if q.startswith("?topics"):
+                until(pg, 'document.querySelectorAll("#results .tgroup").length > 0', 100)
+            pg.wait_for_timeout(3000 if q.startswith(("?q", "?work", "?topics")) else 1200)
             bad = [(v["id"], len(v["nodes"])) for v in axe.run(pg).response["violations"] if v["impact"] in ("serious", "critical")]
             check(not bad, f"accessibility, {theme}, {q or 'home'}: no serious problems" + (f" {bad}" if bad else ""))
     pg.close()

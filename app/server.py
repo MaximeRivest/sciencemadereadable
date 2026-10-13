@@ -21,7 +21,8 @@ GET /api/check?ids=PMC1,PMC2,...   which search results can be opened: "ok", or 
 GET /api/status          is the home GPU worker online, how long is the queue.
 GET /api/data/...        the data API (search/srl_search, release in DATA.md), read-only, as is: search,
                          search/WORDS (the question in the address, answered as plain text),
-                         similar/REF, works/REF, map/place, map/regions, map/counts, map/tiles/RELEASE/..., walk;
+                         similar/REF, works/REF, map/place, map/regions, map/counts, map/tiles/RELEASE/..., walk,
+                         topics and topics/WORDS (topic maps; each counts as TOPIC_COST requests);
                          its guide for programs and agents (llms.txt), reference (docs) and spec (openapi.json).
                          Per-address limits a minute (DATA_LIMITS): 30 for programs and agents, 60 for the
                          site's own pages, the guide apart; tiles are immutable (cached a year).
@@ -615,6 +616,11 @@ class Handler(SimpleHTTPRequestHandler):
             # open to all: AI tools fetching for a person obey robots.txt (Claude refused a "Disallow: /").
             # Search engines are kept out of their index by X-Robots-Tag: noindex on every answer instead.
             return self.send_text(200, ROBOTS_OPEN)
+        if words.lower().startswith("map/"):         # ask.sciencemadereadable.com/map/<question>: the topic map
+            rest_q = rest[4:]
+            if not urllib.parse.unquote(rest_q).strip():
+                return self.send_text(200, ASK_HELP)
+            return self.data_proxy(u._replace(path="/api/data/topics/" + rest_q))
         # what robots and scanners ask for (favicon.ico, wp-login.php, .env, a/b/c) is not a question
         if not re.search(r"\s", words) and (re.search(r"[./\\]", words) or words.lower().startswith(("wp-", "cgi-"))):
             return self.send_text(404, "Not a question. Ask one in the address: https://ask.sciencemadereadable.com/why do cats purr\n")
@@ -628,9 +634,11 @@ class Handler(SimpleHTTPRequestHandler):
         tiles = route.group(1).startswith("map/tiles/")
         kind = ("tile" if tiles else "doc" if route.group(1) in DOC_ROUTES
                 else "site" if self.headers.get("Origin") in SITE_ORIGINS else "api")
-        wait = rate_wait(kind + ":" + self.client(), DATA_LIMITS[kind])
+        topic = route.group(1).split("/")[0] == "topics"
+        wait = rate_wait(kind + ":" + self.client(), DATA_LIMITS[kind], TOPIC_COST if topic else 1)
         if wait:
-            body = json.dumps({"error": f"Too many requests: {DATA_LIMITS[kind]} a minute per address. "
+            body = json.dumps({"error": f"Too many requests: {DATA_LIMITS[kind]} a minute per address"
+                                        + (f" (a topic map counts as {TOPIC_COST})" if topic else "") + ". "
                                         f"Try again in {wait} seconds.", "retry_after": wait}).encode()
             self.send_response(429)
             self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -640,16 +648,17 @@ class Handler(SimpleHTTPRequestHandler):
             self.end_headers()
             return self.wfile.write(body)
         path = u.path[len("/api/data"):]
-        if path.startswith("/search/"):
-            # the question is in the address: pass it on in clean percent-encoding (a client may send
-            # quotes or UTF-8 unencoded, which http.server hands over as Latin-1 characters)
-            words = urllib.parse.unquote(path[len("/search/"):].encode("latin-1", "ignore").decode("utf-8", "replace"))
-            path = "/search/" + urllib.parse.quote(words, safe="+")
+        for prefix in ("/search/", "/topics/"):
+            if path.startswith(prefix):
+                # the question is in the address: pass it on in clean percent-encoding (a client may send
+                # quotes or UTF-8 unencoded, which http.server hands over as Latin-1 characters)
+                words = urllib.parse.unquote(path[len(prefix):].encode("latin-1", "ignore").decode("utf-8", "replace"))
+                path = prefix + urllib.parse.quote(words, safe="+")
         req = urllib.request.Request(SEARCH_API + path + (("?" + u.query) if u.query else ""))
         if tiles and self.headers.get("Range"):
             req.add_header("Range", self.headers["Range"])
         try:
-            with urllib.request.urlopen(req, timeout=60 if route.group(1) == "walk" else 15) as r:
+            with urllib.request.urlopen(req, timeout=90 if topic else 60 if route.group(1) == "walk" else 15) as r:
                 status, body, ctype = r.status, r.read(), r.headers.get("Content-Type", "application/json")
                 crange = r.headers.get("Content-Range")
                 cenc = r.headers.get("Content-Encoding")   # map tiles: stored gzipped, sent as is
@@ -665,7 +674,7 @@ class Handler(SimpleHTTPRequestHandler):
         if cenc == "gzip" and tiles:
             self.send_header("Content-Encoding", "gzip")
         self.send_header("Cache-Control", "public, max-age=31536000, immutable" if tiles and status < 300 else "no-store")
-        if route.group(1).startswith("search/"):
+        if route.group(1).startswith(("search/", "topics/")):
             self.send_header("X-Robots-Tag", "noindex")   # every question is an address: keep them out of search engines
         self.end_headers()
         self.wfile.write(body)
@@ -693,7 +702,8 @@ class Handler(SimpleHTTPRequestHandler):
                              f"{str(app.get('name', '') if isinstance(app, dict) else '')[:60]}\n")
             if m["method"] != "tools/call":
                 continue   # handshake, listing tools, reading the guide: free, like the guide itself
-            wait = rate_wait("api:" + self.client(), DATA_LIMITS["api"])
+            wait = rate_wait("api:" + self.client(), DATA_LIMITS["api"],
+                             TOPIC_COST if params.get("name") == "map_topic" else 1)
             if not wait:
                 continue
             if isinstance(msg, list):   # an old-style batch: no single call to answer for
@@ -702,7 +712,8 @@ class Handler(SimpleHTTPRequestHandler):
             version = self.headers.get("Mcp-Protocol-Version") or meta.get("io.modelcontextprotocol/protocolVersion")
             modern = bool(version) and version not in HANDSHAKE_VERSIONS
             result = {"content": [{"type": "text", "text": (
-                f"Rate limit: this search allows {DATA_LIMITS['api']} tool calls a minute per address. Wait {wait} "
+                f"Rate limit: this search allows {DATA_LIMITS['api']} tool calls a minute per address (map_topic counts "
+                f"as {TOPIC_COST}). Wait {wait} "
                 "seconds, then retry the same call. To need fewer calls: one search with a larger limit instead of "
                 "several small ones, and get_papers with several ids at once.")}], "isError": True}
             if modern:
@@ -893,7 +904,7 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 SEARCH_API = os.environ.get("SRL_SEARCH_API", "http://127.0.0.1:8810")
-DATA_ROUTES = re.compile(r"^/api/data/(search|search/[^\s?#]{2,6000}|walk|map/place|map/regions|map/counts|llms\.txt|docs|openapi\.json|similar/[\w./:%-]{2,300}|works/[\w./:%-]{2,300}"
+DATA_ROUTES = re.compile(r"^/api/data/(search|search/[^\s?#]{2,6000}|topics|topics/[^\s?#]{2,6000}|walk|map/place|map/regions|map/counts|llms\.txt|docs|openapi\.json|similar/[\w./:%-]{2,300}|works/[\w./:%-]{2,300}"
                          r"|map/tiles/[\w-]{1,40}/(?:index\.json|\d{1,2}/\d{1,6}/\d{1,6}\.(?:pts|ids)"
                          r"|v2/(?:map|labels|names)\.json|v2/[dpi]/\d{1,2}/\d{1,6}/\d{1,6}\.bin|v2/t/\d{1,2}/\d{1,6}/\d{1,6}\.json))$")
 ROBOTS_OPEN = "User-agent: *\nAllow: /\n"
@@ -938,7 +949,12 @@ searched by meaning. Quotes or AND / OR / NOT search for those exact words inste
 Options after a ?: k=30 (more results, up to 100), year_from=2020, year_to, type=review, open_access=true,
 abstracts=false. For example: https://ask.sciencemadereadable.com/does coffee affect sleep?k=20&year_from=2020
 
-Free, no key, 30 questions a minute per address. Each answer links to the paper and to its page on
+The research groups inside a topic, each with what to read first (its classics, rising papers, reviews to
+start with, its experts), as plain text: put map/ before the question.
+
+    https://ask.sciencemadereadable.com/map/intermittent fasting
+
+Free, no key, 30 questions a minute per address (a map counts as 5). Each answer links to the paper and to its page on
 https://sciencemadereadable.com (its place on the map of science, its citations, and a plain-language version
 when the paper is open). For programs: the JSON API and its guide, https://api.sciencemadereadable.com/api/data/llms.txt
 """
@@ -952,6 +968,9 @@ SEARCHES_LOCK = threading.Lock()
 SITE_ORIGINS = {"https://sciencemadereadable.com", "https://www.sciencemadereadable.com"}
 DOC_ROUTES = {"llms.txt", "docs", "openapi.json"}
 DATA_LIMITS = {"site": 60, "api": 30, "doc": 30, "tile": 1200}
+# A topic map costs the search service about what five searches do (1,000 papers, their references, the grouping;
+# 2-30 s the first time, cached after): it counts five times, here and as the MCP tool map_topic.
+TOPIC_COST = 5
 
 
 def who_is(address: str) -> str:
@@ -968,16 +987,17 @@ def who_is(address: str) -> str:
     return str(ip)
 
 
-def rate_wait(who: str, limit: int) -> int:
-    """0 if this request may go (and it is counted), else the seconds until it may. Refused requests are not
-    counted, so a program that waits as long as told always gets in."""
+def rate_wait(who: str, limit: int, cost: int = 1) -> int:
+    """0 if this request may go (and it is counted, `cost` times), else the seconds until it may. Refused requests
+    are not counted, so a program that waits as long as told always gets in."""
     now = time.time()
     with SEARCHES_LOCK:
         recent = [t for t in SEARCHES.get(who, []) if now - t < 60]
-        if len(recent) >= limit:
+        if len(recent) + cost > limit:
             SEARCHES[who] = recent
-            return max(1, int(60 - (now - recent[-limit])) + 1)
-        SEARCHES[who] = recent + [now]
+            first = recent[len(recent) + cost - limit - 1]   # the oldest that must expire to make room
+            return max(1, int(60 - (now - first)) + 1)
+        SEARCHES[who] = recent + [now] * cost
         if len(SEARCHES) > 20000:   # forget addresses with nothing in the last minute
             for k in [k for k, v in SEARCHES.items() if not v or now - v[-1] >= 60]:
                 del SEARCHES[k]
