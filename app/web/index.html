@@ -167,11 +167,12 @@
       </details>
     </div>
     <p>Then just ask, for example: <i>"What does the research say about creatine and memory? Cite the papers."</i></p>
-    <p class="quiet small">What your app gets: five tools (<code>search_papers</code>, <code>get_papers</code>,
-      <code>find_similar_papers</code>, <code>citation_walk</code>, and <code>map_topic</code>: the research groups
-      inside a topic, with what to read in each), two ready-made prompts (a literature review, and checking a claim),
-      and tips on searching well. Every answer has the DOI link to cite. 30 tool calls a minute per address (a topic
-      map counts as 5).</p>
+    <p class="quiet small">What your app gets: six tools (<code>search_papers</code>, <code>get_papers</code>,
+      <code>find_similar_papers</code>, <code>citation_walk</code>, <code>map_topic</code>: the research groups inside
+      a topic with every group's reading lists and experts, and <code>read_topic_group</code>: one group in depth,
+      every paper with its abstract), three ready-made prompts (a field overview, a literature review, and checking a
+      claim), and guidance that teaches it to map a field first and read it in full. Every answer has the DOI link to
+      cite. 30 tool calls a minute per address (a topic map counts as 5).</p>
   </div>
   <div class="api-card">
     <h3>No MCP? Tell it</h3>
@@ -193,7 +194,7 @@
     <h3>In a chat that can only open links</h3>
     <p>ChatGPT, Claude, Gemini and other chats that browse but can't run code can search with a plain address: the
       question goes in the address, the answer comes back as text. Paste this:</p>
-    <pre data-copy="link">To find scientific studies, open https://ask.sciencemadereadable.com/ followed by the question, for example https://ask.sciencemadereadable.com/why%20do%20cats%20purr (add ?k=30 for more results, ?year_from=2020 for recent ones). For an overview of a field, its research groups and what to read in each, open https://ask.sciencemadereadable.com/map/ followed by the topic. Cite the links it gives.</pre>
+    <pre data-copy="link">To find scientific studies, open https://ask.sciencemadereadable.com/ followed by the question, for example https://ask.sciencemadereadable.com/why%20do%20cats%20purr (add ?k=30 for more results, ?year_from=2020 for recent ones). For an overview of a field, open https://ask.sciencemadereadable.com/map/ followed by the topic: its research groups and what to read in each. Then read the groups that matter in full, every paper with its abstract: add ?read=N to that address, then ?read=N&amp;part=papers&amp;page=1, 2, and so on. Cite the links it gives.</pre>
     <p class="quiet small">Try it yourself: <a href="https://ask.sciencemadereadable.com/why%20do%20cats%20purr" target="_blank" rel="noopener">ask.sciencemadereadable.com/why do cats purr</a>.
       Some chats only open addresses that appear in the conversation: then paste the full link with your question in it.</p>
   </div>

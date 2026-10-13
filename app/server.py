@@ -634,7 +634,8 @@ class Handler(SimpleHTTPRequestHandler):
         tiles = route.group(1).startswith("map/tiles/")
         kind = ("tile" if tiles else "doc" if route.group(1) in DOC_ROUTES
                 else "site" if self.headers.get("Origin") in SITE_ORIGINS else "api")
-        topic = route.group(1).split("/")[0] == "topics"
+        # a topic map counts TOPIC_COST; reading one of its groups (read=N, an existing map) counts once
+        topic = route.group(1).split("/")[0] == "topics" and "read=" not in u.query
         wait = rate_wait(kind + ":" + self.client(), DATA_LIMITS[kind], TOPIC_COST if topic else 1)
         if wait:
             body = json.dumps({"error": f"Too many requests: {DATA_LIMITS[kind]} a minute per address"
@@ -954,6 +955,9 @@ start with, its experts), as plain text: put map/ before the question.
 
     https://ask.sciencemadereadable.com/map/intermittent fasting
 
+Then read any group in depth, every paper with its abstract: ?read=2 (its reading lists), then
+?read=2&part=papers&page=1, 2, ... (all its papers, most central first).
+
 Free, no key, 30 questions a minute per address (a map counts as 5). Each answer links to the paper and to its page on
 https://sciencemadereadable.com (its place on the map of science, its citations, and a plain-language version
 when the paper is open). For programs: the JSON API and its guide, https://api.sciencemadereadable.com/api/data/llms.txt
@@ -969,7 +973,8 @@ SITE_ORIGINS = {"https://sciencemadereadable.com", "https://www.sciencemadereada
 DOC_ROUTES = {"llms.txt", "docs", "openapi.json"}
 DATA_LIMITS = {"site": 60, "api": 30, "doc": 30, "tile": 1200}
 # A topic map costs the search service about what five searches do (1,000 papers, their references, the grouping;
-# 2-30 s the first time, cached after): it counts five times, here and as the MCP tool map_topic.
+# 2-30 s the first time, cached after): it counts five times, here and as the MCP tool map_topic. Reading a group
+# of a map already made (read=N, read_topic_group) counts once: the search service refuses it when there is no map.
 TOPIC_COST = 5
 
 

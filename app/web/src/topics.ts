@@ -126,8 +126,8 @@ function card(g: Group, names: Map<number, string>, deps: Deps, canSplit: boolea
     panel.setAttribute("aria-labelledby", buttons[i].id);
     panel.replaceChildren();
     panel.insertAdjacentHTML("beforeend", `<p class="tg-help">${esc(help)}</p>`);
-    if (key === "experts") for (const e of g.lenses.experts.slice(0, 5)) panel.appendChild(expert(e, deps));
-    else for (const p of (g.lenses[key] ?? []).slice(0, 5)) panel.appendChild(deps.row(asHit(p), why(key, p, names)));
+    if (key === "experts") for (const e of g.lenses.experts) panel.appendChild(expert(e, deps));
+    else for (const p of g.lenses[key] ?? []) panel.appendChild(deps.row(asHit(p), why(key, p, names)));
   };
   present.forEach(([, label], i) => {
     const b = tabs.appendChild(document.createElement("button"));
