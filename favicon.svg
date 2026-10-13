@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="sky" cx="45%" cy="40%" r="60%"><stop offset="0" stop-color="#26332c"/><stop offset="1" stop-color="#121211"/></radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6"/></filter>
+  </defs>
+  <circle cx="32" cy="32" r="31" fill="url(#sky)"/>
+  <g filter="url(#glow)" opacity=".9">
+    <circle cx="22" cy="23" r="7" fill="#f2c063"/><circle cx="42" cy="21" r="6.5" fill="#6aa8e8"/>
+    <circle cx="40" cy="41" r="7.5" fill="#5fcf98"/><circle cx="23" cy="42" r="6" fill="#ef8a64"/>
+  </g>
+  <circle cx="22" cy="23" r="4.2" fill="#ffdc8a"/><circle cx="42" cy="21" r="3.9" fill="#a9d0ff"/>
+  <circle cx="40" cy="41" r="4.5" fill="#9ff0c4"/><circle cx="23" cy="42" r="3.6" fill="#ffb595"/>
+</svg>

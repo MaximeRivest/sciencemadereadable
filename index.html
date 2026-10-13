@@ -6,31 +6,53 @@
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ScienceMadeReadable</title>
-<meta name="description" content="Search all of science, see where it sits on the map of research, and read open papers rewritten in plain words.">
-<link rel="stylesheet" href="style.css?v=26bc4cec4a">
+<meta name="description" content="Search 200 million scientific studies (125 million of them by meaning), see where they sit on the map of science, and read open papers rewritten in plain words. Free, with a search API and MCP server for AI agents.">
+<link rel="canonical" href="https://sciencemadereadable.com/">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#fbf8f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- how a shared link looks (X, Bluesky, Slack, iMessage...): crawlers don't run scripts, so one card for the site -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ScienceMadeReadable">
+<meta property="og:title" content="ScienceMadeReadable: search all of science, read it in plain words">
+<meta property="og:description" content="125 million studies searchable by meaning, on one map of science. Open papers rewritten in plain words. Free search API and MCP server for AI agents.">
+<meta property="og:url" content="https://sciencemadereadable.com/">
+<meta property="og:image" content="https://sciencemadereadable.com/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The map of science: millions of studies as points of light, coloured by field.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="style.css?v=1e775e170c">
 <!-- the sharp map image first: the page shows it while the live map loads (atlas.ts); the theme's own only -->
 <link rel="preload" as="image" href="map/science-map-dark.webp" media="(prefers-color-scheme: dark)" fetchpriority="high">
 <link rel="preload" as="image" href="map/science-map-light.webp" media="(prefers-color-scheme: light)" fetchpriority="high">
 <script src="theme.js?v=daa32516ad"></script>
-<script src="config.js?v=6e53bdb24f"></script>
+<script src="config.js?v=0806793cba"></script>
 </head>
 <body data-view="home">
 
-<nav class="top">
+<nav class="top" aria-label="Main">
+  <a class="skip-link" id="skip" href="#">Skip to content</a>
   <a id="brand" href="./">ScienceMadeReadable</a>
   <form class="search mini" role="search"><input id="search-results" type="search" placeholder="Search all of science" aria-label="Search all of science"></form>
-  <span class="nav-right">
-    <span id="gpu" class="gpu">GPU</span>
+  <div class="nav-right">
+    <span id="gpu" class="gpu" title="New rewrites are made on our own graphics card. Papers already made readable always open.">Rewriting</span>
+    <!-- phones: Library, API, Settings, About and the theme fold into this menu -->
+    <button type="button" id="menu-btn" class="menu-btn" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <div id="nav-links" class="nav-links">
     <a href="?library" id="open-library">Library</a>
     <a href="?api" id="open-api" title="Use this search from your code or AI agent">API</a>
-    <a href="#" id="open-support" class="support-link">♥ Support</a>
     <a href="#" id="open-settings">Settings</a>
     <a href="#" id="open-about">About</a>
-    <button id="theme" type="button" aria-label="Switch between light and dark" title="Light or dark">
+    <button id="theme" type="button" aria-label="Switch between light and dark" title="Light or dark"><span class="theme-text" aria-hidden="true">Light or dark</span>
       <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
       <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
     </button>
-  </span>
+    </div>
+    <a href="?support" id="open-support" class="support-link">♥ Support</a>
+  </div>
 </nav>
 
 <main id="home" class="view">
@@ -69,14 +91,15 @@
   <div class="pick-body"></div>
   <div class="pick-actions"><button type="button" id="pick-open" class="primary">Open</button><button type="button" id="pick-close">Close</button></div>
 </div>
-<div id="explore-ui">
+<main id="explore-ui">
+  <h1 class="sr-only">The map of science</h1>
   <p>The map of science: studies about similar things sit close together; colours are fields. Zoom in and every
      dot is a study: tap one to see which. <span class="ex-how">Scroll or pinch to zoom, drag to move.</span></p>
   <p id="ex-legend" hidden><span class="lg k-ref"></span>builds on <span class="lg k-similar"></span>same conversation
      <span class="lg k-next"></span>read next <span class="lg here"></span>this study</p>
   <button type="button" id="ex-in" aria-label="Zoom in">+</button><button type="button" id="ex-out" aria-label="Zoom out">−</button>
   <button type="button" id="ex-reset">Whole map</button><button type="button" id="ex-back">Back</button>
-</div>
+</main>
 
 <main id="library-view" class="view">
   <h1 class="lib-title">The library</h1>
@@ -88,8 +111,8 @@
 <!-- The search API for programs and AI agents. Plain HTML on purpose: an agent that fetches this page reads it all. -->
 <main id="api-view" class="view">
   <h1 class="lib-title">Search science from your code and AI agents</h1>
-  <p class="api-lead">The search behind this site is open to your programs and AI agents: about 200 million studies, by
-    meaning or by exact words, with their citations and their place on the map of science. Free, with no key and no
+  <p class="api-lead">The search behind this site is open to your programs and AI agents: about 200 million studies by
+    exact words, 125 million of them by meaning, with their citations and their place on the map of science. Free, with no key and no
     sign-up.</p>
   <p class="api-links">
     <a class="chip" href="https://api.sciencemadereadable.com/api/data/llms.txt" target="_blank" rel="noopener">Full guide for agents</a>
@@ -219,7 +242,65 @@ for p in r.json()["results"]:
   </ul>
 </main>
 
+<!-- Support: what the money keeps running (both services), then the amounts. Voluntary support only. -->
+<main id="support-view" class="view">
+  <h1 class="lib-title">Support ScienceMadeReadable</h1>
+  <p class="sup-lead">Hi, I'm Maxime. I built this on my own so that anyone, people and their AI agents alike, can
+    find and understand real science. It's free: no ads, no accounts, no paywall, no API key. If it's useful to you,
+    you can help keep it running.</p>
+
+  <div class="sup-what">
+    <a class="sup-card" id="sup-read" href="./">
+      <h2>Science in plain words</h2>
+      <p>Search all of science, then read research papers rewritten for a curious 14-year-old by small models I
+        trained. The authors' voice, their results, numbers and caveats, and the original figures are kept.</p>
+      <span class="sup-more">Search a topic →</span>
+    </a>
+    <a class="sup-card" id="sup-api" href="?api">
+      <h2>Science search for AI agents</h2>
+      <p>Let Claude, ChatGPT, Cursor or your own code search about 200 million studies (125 million of them by
+        meaning) and follow their citations. Connect it as an MCP server, or call plain web addresses.</p>
+      <span class="sup-more">Connect your agent →</span>
+    </a>
+  </div>
+
+  <h2>Where your support goes</h2>
+  <p>Both run on one server in my home: graphics cards for the rewriting models, and enough memory and disk to keep
+    the whole index of studies ready to search. Your support helps pay for that hardware, the power, and the internet
+    connection that keeps it online.</p>
+
+  <div class="sup-give">
+    <div class="amounts" role="radiogroup" aria-label="Amount">
+      <button type="button" data-amount="5">$5</button>
+      <button type="button" data-amount="10" class="on">$10</button>
+      <button type="button" data-amount="25">$25</button>
+      <button type="button" data-amount="50">$50</button>
+      <button type="button" data-amount="0">Other</button>
+    </div>
+    <div class="give">
+      <a id="give-card" class="primary-btn" target="_blank" rel="noopener" hidden>Support with $10</a>
+      <a id="give-github" class="primary-btn" target="_blank" rel="noopener">Support with $10 on GitHub</a>
+    </div>
+    <p class="give-alt"><a id="give-monthly" class="ghost-link" target="_blank" rel="noopener">or $3 a month</a><span id="gh-alt"></span></p>
+    <p id="pay-note" class="quiet small"></p>
+  </div>
+
+  <h2>Other ways to help</h2>
+  <p>Tell a friend, a teacher or your favourite AI agent about it. Everything is open, so you can also build on it:</p>
+  <p class="api-links">
+    <a class="chip" href="https://huggingface.co/maximerivest/qwen3.5-9b-paper-rewriter" target="_blank" rel="noopener">The rewriting model</a>
+    <a class="chip" href="https://huggingface.co/datasets/maximerivest/paper-rewrites-for-young-readers" target="_blank" rel="noopener">Its training data</a>
+    <a class="chip" href="https://github.com/MaximeRivest/srl-search" target="_blank" rel="noopener">The search code</a>
+    <a class="chip" href="https://github.com/MaximeRivest/sciencemadereadable" target="_blank" rel="noopener">This site's code</a>
+  </p>
+
+  <p class="quiet small sup-fine">This is voluntary support for an independent project, not a donation to a charity:
+    there is no tax receipt. Both services stay free for everyone, whether you chip in or not.</p>
+</main>
+
 <main id="results-view" class="view">
+  <h1 class="sr-only" id="results-h1">Search results</h1>
+  <p class="sr-only" id="results-live" role="status"></p>
   <div class="search-opts">
     <span class="seg" role="radiogroup" aria-label="Search by">
       <button type="button" role="radio" data-by="meaning" title="Finds papers about what you mean, even with other words">By meaning</button>
@@ -234,9 +315,9 @@ for p in r.json()["results"]:
     <button type="button" class="tips-toggle" aria-expanded="false">How to search</button>
   </div>
   <div class="search-tips" hidden>
-    <p class="tips-intro">We search the titles and abstracts of about 200 million studies (not their full texts).
-      Ask a question and we find studies about the same idea, even when they use other words. Put words in quotes,
-      or use AND, OR, NOT, and we look for those exact words instead.</p>
+    <p class="tips-intro">We search the titles and abstracts of studies, not their full texts. Ask a question and we
+      find studies about the same idea, even when they use other words (125 million studies with an English abstract).
+      Put words in quotes, or use AND, OR, NOT, and we look for those exact words instead (about 200 million).</p>
     <p class="tips-head">Ask in your own words <span class="quiet">· finds papers by meaning</span></p>
     <p><button type="button" class="tip" data-by="meaning" data-q="Why do we need sleep?">Why do we need sleep?</button>
        <button type="button" class="tip" data-by="meaning" data-q="Can exercise help with depression?">Can exercise help with depression?</button></p>
@@ -271,12 +352,11 @@ for p in r.json()["results"]:
   <div id="progress" class="progress" hidden></div>
   <article id="paper"></article>
   <p id="thanks" class="thanks" hidden>✦ <span id="thanks-text">This rewrite was free for you, but it ran on a real graphics card.</span>
-    If it helped, <a href="#" id="open-support-3">you can chip in to keep it running</a>.</p>
+    If it helped, <a href="?support" id="open-support-3">you can chip in to keep it running</a>.</p>
   <p id="credit" class="credit"></p>
 </main>
 
-<p id="sotd-bar" class="sotd-bar" hidden></p>
-<footer>A free demo by Maxime Rivest · the small models we trained run on a single GPU · <a href="#" id="open-about-2">How it works</a> · <a href="?api" id="open-api-2">Search API for agents</a> · <a href="#" id="open-support-2">♥ Support it</a></footer>
+<footer>A free demo by Maxime Rivest · the small models we trained run on a single GPU · <a href="#" id="open-about-2">How it works</a> · <a href="?api" id="open-api-2">Search API for agents</a> · <a href="?support" id="open-support-2">♥ Support it</a></footer>
 
 <dialog id="settings">
   <form method="dialog" autocomplete="off">
@@ -290,50 +370,11 @@ for p in r.json()["results"]:
   </form>
 </dialog>
 
-<dialog id="support">
-  <form method="dialog">
-    <h2>Keep science readable, and free</h2>
-    <p class="from">Hi, I'm Maxime. I trained these models and built this site on my own, so that anyone, at any age,
-      can read real science in plain words. No ads, no accounts, no paywall. Day to day, the rewrites run on a graphics
-      card in my home. When many people read at once, I rent a fast one (an Nvidia H100, about $108 a day) so nobody
-      waits. Your support pays for those days.</p>
-    <div id="meter" class="meter" hidden>
-      <div class="meter-line"><span id="meter-text"></span><span id="meter-cost" class="quiet"></span></div>
-      <div class="meter-bar"><i id="meter-fill"></i></div>
-      <p id="meter-note" class="quiet small"></p>
-    </div>
-    <p id="sotd" class="sotd" hidden></p>
-    <div class="amounts" role="radiogroup" aria-label="Amount">
-      <button type="button" data-amount="5">$5</button>
-      <button type="button" data-amount="10" class="on">$10</button>
-      <button type="button" data-amount="25">$25</button>
-      <button type="button" data-amount="50">$50</button>
-      <button type="button" data-amount="0">Other</button>
-    </div>
-    <p id="impact" class="impact"></p>
-    <div class="give">
-      <a id="give-card" class="primary-btn" target="_blank" rel="noopener" hidden>Support with $10</a>
-      <a id="give-github" class="primary-btn" target="_blank" rel="noopener">Support with $10 on GitHub</a>
-    </div>
-    <p class="give-alt"><a id="give-monthly" class="ghost-link" target="_blank" rel="noopener">or $3 a month</a><span id="gh-alt"></span></p>
-    <p id="pay-note" class="quiet small"></p>
-    <div class="org">
-      <b>Sponsor a whole day</b> · $110 pays for a day of a rented H100, and your name or your organization's is shown on
-      this site that day: "Today's rewrites are sponsored by …".
-      <a id="give-day" target="_blank" rel="noopener">Sponsor a day</a><span id="day-note"></span>
-    </div>
-    <p class="quiet small">This is support for an independent project, not a donation to a charity: there is no tax
-      receipt.</p>
-    <menu><button value="ok">Close</button></menu>
-  </form>
-</dialog>
-
 <dialog id="thanked">
   <form method="dialog">
     <h2>Thank you!</h2>
     <p class="from">Your support keeps science readable, and free, for the next reader. Stripe has emailed you a
       receipt.</p>
-    <p class="quiet small">Sponsored a day? I'll put your name on the site and confirm the day by email.</p>
     <menu><button value="ok" class="primary">Back to reading</button></menu>
   </form>
 </dialog>
@@ -345,13 +386,13 @@ for p in r.json()["results"]:
       the authors' own voice, keeping every result, number and caveat, but in words anyone can follow.</p>
     <p><b>The rewriting is done by small open models we trained</b> (Qwen 3.5 with 9, 4 and 0.8 billion parameters). They
       learned from thousands of papers rewritten by frontier AI models. They are small enough to run on a gaming graphics card, and that is where they run: an RTX 3090 in my home. On busy
-      days a rented Nvidia H100 joins it. When many people are reading, a paper may wait in line, and the page says when
+      days I can rent a faster one (an Nvidia H100). When many people are reading, a paper may wait in line, and the page says when
       the GPU is offline.</p>
     <p><b>How good is it?</b> On our test papers, a judge model scored our 9B 7.8 out of 10, a little above GPT-6 Luna (7.5),
       below Claude Opus (8.5); it costs about half a cent per paper. It still makes mistakes more often than the big
       models, so check the original before relying on a detail. With your own API key you can compare with six commercial models.</p>
-    <p><b>What can I search?</b> About 200 million studies: every English title and abstract in OpenAlex, the open
-      catalogue of the world's research. Search by meaning (we read your question like the studies) or by exact words.
+    <p><b>What can I search?</b> About 200 million studies from OpenAlex, the open catalogue of the world's research,
+      by exact words; the 125 million with an English abstract also by meaning (we read your question like the studies).
       Each study sits on the map of science, near the studies most like it. Your own programs and AI agents can use the
       same search: <a href="?api" id="open-api-3">here's how</a>.</p>
     <p><b>Which can be made readable?</b> Open-access research articles in PubMed Central under the CC BY licence,
@@ -365,6 +406,9 @@ for p in r.json()["results"]:
   </form>
 </dialog>
 
-<script type="module" src="app.js?v=f1f316dd73"></script>
+<noscript><p class="noscript">ScienceMadeReadable needs JavaScript to search and to show the map. Without it, the
+  <a href="https://api.sciencemadereadable.com/api/data/llms.txt">search guide</a> and
+  <a href="https://ask.sciencemadereadable.com/why%20do%20we%20sleep">plain-text search</a> still work.</p></noscript>
+<script type="module" src="app.js?v=42c628365e"></script>
 </body>
 </html>
