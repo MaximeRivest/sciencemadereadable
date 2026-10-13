@@ -249,6 +249,9 @@ def main():
     ap.add_argument("--validation-limit", type=int, default=None)
     ap.add_argument("--longest-first", action="store_true", help="smoke test: start with the longest conversations")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--pause-after-checkpoints", action="store_true",
+                    help="after saving each checkpoint, save everything and stop (exit code 3) so the GPU can test it; "
+                         "starting again with the same arguments continues at the next step")
     args = ap.parse_args()
 
     run = RUNS / args.name
@@ -384,6 +387,11 @@ def main():
                       seconds=round(time.time() - t, 1), **v)
             say(f"step {state['step']}/{total_steps} validation loss {v['all']:.4f} ({time.time() - t:.0f}s)")
             save_adapter(model, run / "adapters" / f"step-{state['step']:05d}")
+            if args.pause_after_checkpoints and not done:
+                save_last(model, optimizer, state, run)
+                status(state="paused: testing a checkpoint", step=state["step"], total_steps=total_steps)
+                say(f"paused at step {state['step']} so the checkpoint can be tested")
+                raise SystemExit(3)
         if done or time.time() - last_checkpoint > args.checkpoint_minutes * 60:
             save_last(model, optimizer, state, run)
             last_checkpoint = time.time()

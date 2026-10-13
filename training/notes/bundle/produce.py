@@ -88,9 +88,21 @@ HELD_OUT = {"PMC12291832", "PMC12010427", "PMC7616100", "PMC12466960", "PMC11227
             "PMC13153078", "PMC10234942", "PMC11117235"}                               # v3's 3-paper pilot
 
 ASTRA = dict(lm="openai-codex:gpt-6-astra", reasoning=lm15.Reasoning(effort="low"))
+SOL = dict(lm="openai-codex:gpt-6.1-sol", reasoning=lm15.Reasoning(effort="low"))
+
+
+def _muse() -> dict:
+    """Muse Wonder Full through the Meta login saved by lm15 (Muse Code subscription; outside
+    Meta's terms for that key, accepted by the user on 2026-10-13)."""
+    from lm15.login import Auth
+    return dict(lm="meta:muse-wonder-full-1.0", client=lm15.LMRouter(lm15.RouterConfig(auth=Auth.local())))
+
+
 TEACHERS = {
     "opus": {"main": PR.OPUS, "check": PR.OPUS_CHECK},
     "astra": {"main": ASTRA, "check": ASTRA},       # "low" is Astra's lowest reasoning level
+    "sol": {"main": SOL, "check": SOL},             # same ChatGPT/Codex allowance as Astra
+    "muse": {"main": None, "check": None},          # filled in by functions_for (needs the Meta login)
 }
 STEPS = {   # step -> (AI function, settings key)
     "front": (PR.make_front_cached, "main"), "check glossary": (PR.check_glossary, "check"),
@@ -101,6 +113,8 @@ STEPS = {   # step -> (AI function, settings key)
 
 
 def functions_for(teacher: str) -> dict:
+    if teacher == "muse" and TEACHERS["muse"]["main"] is None:
+        TEACHERS["muse"] = {"main": _muse(), "check": _muse()}
     return {step: fn.using(**TEACHERS[teacher][key]) for step, (fn, key) in STEPS.items()}
 
 
@@ -130,7 +144,8 @@ class Guard:
     def __init__(self, teacher: str):
         self.teacher, self.stopped, self.reason, self.last, self.lock = teacher, False, "", 0.0, threading.Lock()
         self.credits_at_start = None
-        if teacher == "astra":
+        self.muse_until = 0.0                                           # quota exhausted until this time
+        if teacher in ("astra", "sol"):
             u = codex_usage_full()
             self.credits_at_start = u["credits"]
             self.status(f"started; weekly {u['weekly']}%, credits {u['credits']}")
@@ -143,6 +158,9 @@ class Guard:
         with self.lock:
             if self.stopped:
                 raise StopRun(self.reason)
+            while self.teacher == "muse" and time.time() < self.muse_until:
+                self.status(f"waiting for the Muse Code quota (resets {datetime.fromtimestamp(self.muse_until, timezone.utc).isoformat(timespec='seconds')})")
+                time.sleep(min(300, max(5, self.muse_until - time.time())))
             if not force and time.time() - self.last < 60:
                 return
             self.last = time.time()
@@ -155,6 +173,10 @@ class Guard:
                         self.status(f"waiting for the 5-hour window ({u['five_hour']}%, resets {u['five_hour_resets']})")
                         time.sleep(600)
                         u = claude_usage()
+                elif self.teacher == "muse":
+                    while time.time() < self.muse_until:                # Meta said when the quota comes back
+                        self.status(f"waiting for the Muse Code quota (resets {datetime.fromtimestamp(self.muse_until, timezone.utc).isoformat(timespec='seconds')})")
+                        time.sleep(min(300, max(5, self.muse_until - time.time())))
                 else:
                     u = codex_usage_full()
                     if u["credits"] is not None and self.credits_at_start is not None and u["credits"] < self.credits_at_start:
@@ -200,6 +222,8 @@ class Calls:
 
     def ask(self, step: str, part: str = "", **inputs):
         fn = self.fns[step]
+        if self.teacher == "muse":                                     # let our guard wait, not functai's retries
+            fn = fn.using(api_retries=0)
         errors = []
         for attempt in range(12):
             self.guard.check()
@@ -215,6 +239,12 @@ class Calls:
                 return result
             except lm15.RateLimitError as error:
                 errors.append(f"rate limit: {str(error)[:200]}")
+                wait = getattr(error, "retry_after", None)
+                if self.teacher == "muse" and isinstance(wait, (int, float)) and wait > 0:
+                    with self.guard.lock:
+                        self.guard.muse_until = max(self.guard.muse_until, time.time() + wait + 30)
+                    self.guard.check(force=True)                          # waits until the quota is back
+                    continue
                 self.guard.check(force=True)
                 time.sleep(300)
             except Exception as error:                                       # noqa: BLE001

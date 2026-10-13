@@ -25,6 +25,7 @@ import subprocess
 import sys
 import threading
 import time
+import urllib.error
 import urllib.request
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
@@ -111,6 +112,7 @@ def generate(ck: str) -> None:
                 if server.poll() is not None:
                     raise RuntimeError(f"vLLM stopped; see {OUT}/vllm-{ck}.log")
                 time.sleep(10)
+        (OUT / ck).mkdir(parents=True, exist_ok=True)
         target = OUT / ck / "answers.json"
         answers = json.loads(target.read_text()) if target.exists() else {}
 
@@ -122,8 +124,16 @@ def generate(ck: str) -> None:
             body = json.dumps({"model": "maker", "messages": json.loads(row.prompt), "temperature": 0, "max_tokens": 8000,
                                "chat_template_kwargs": {"enable_thinking": False}}).encode()
             r = urllib.request.Request(f"http://127.0.0.1:{PORT}/v1/chat/completions", body, {"Content-Type": "application/json"})
-            with urllib.request.urlopen(r, timeout=1800) as resp:
-                data = json.load(resp)
+            try:
+                with urllib.request.urlopen(r, timeout=1800) as resp:
+                    data = json.load(resp)
+            except urllib.error.HTTPError as error:                       # e.g. a section longer than the model's window
+                with _lock:
+                    answers[key] = ""
+                    target.write_text(json.dumps(answers, ensure_ascii=False, indent=1))
+                note(ck, {"phase": "written", "key": key, "tokens_in": 0, "tokens_out": 0, "seconds": 0,
+                          "error": f"HTTP {error.code}"})
+                return
             with _lock:
                 answers[key] = data["choices"][0]["message"]["content"]
                 target.write_text(json.dumps(answers, ensure_ascii=False, indent=1))
@@ -254,12 +264,15 @@ def watch():
             progress(state="waiting for the GPU (training uses it); checkpoints are tested when it ends", current=None, done=done)
             time.sleep(60)
             continue
-        if not end:                                                  # GPU 0 is busy with training
-            time.sleep(60)
-            continue
         ck = todo[0]
+        written = len(json.loads((OUT / ck / "answers.json").read_text())) if (OUT / ck / "answers.json").exists() else 0
+        if not end and written < len(held_back()):                   # the supervisor writes them while training pauses
+            progress(state="waiting: training pauses at each checkpoint so it can be written", current=None, done=done)
+            time.sleep(30)
+            continue
         progress(state="testing checkpoints", current=ck, done=done)
-        generate(ck)
+        if written < len(held_back()):
+            generate(ck)
         score(ck)
         done.append(ck)
         progress(done=done)
