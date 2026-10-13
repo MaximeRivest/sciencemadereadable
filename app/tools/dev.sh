@@ -54,7 +54,7 @@ case "${1:-status}" in
   check)
     TARGET="${2:-http://127.0.0.1:$PORT/}"
     cd "$REPO/../citewalk/science"   # its uv project has a Python that runs Playwright
-    CHROMIUM_BIN="$CHROMIUM_BIN" uv run -q --with playwright==1.55.0 python "$APP/tools/check_site.py" "$TARGET"
+    CHROMIUM_BIN="$CHROMIUM_BIN" uv run -q --with playwright==1.55.0 --with axe-playwright-python==0.1.8 python "$APP/tools/check_site.py" "$TARGET"
     ;;
   *) sed -n '2,13p' "$0"; exit 2 ;;
 esac

@@ -398,6 +398,8 @@ let revealed = false, exploreSince = 0;
 export function resetView() { motion = null; view.z = 1; view.x = 0; view.y = 0; apply(); }
 
 /** Called by the page on every view change. */
+const cited = (n: unknown) => Number(n) === 1 ? "cited once" : `cited ${Number(n).toLocaleString()} times`;
+
 export function mapView(v: string) {
   $("#map-tip").hidden = true;
   if (v === "results") context = "results";
@@ -709,7 +711,7 @@ async function showCard(w: string, x: number, y: number) {
     const d = await (await fetch(`${api}/api/data/works/${w}`, { priority: "high" } as RequestInit)).json();
     if (!picked || picked.x !== x) return;   // another tap since
     const title = (d.title ?? "").replace(/<[^>]+>/g, "") || "(no title)";
-    const meta = [d.venue, d.year, d.citations ? `cited ${Number(d.citations).toLocaleString()} times` : ""].filter(Boolean).join(" · ");
+    const meta = [d.venue, d.year, d.citations ? cited(d.citations) : ""].filter(Boolean).join(" · ");
     card.querySelector(".pick-body")!.innerHTML =
       `<b>${esc(title)}</b><span class="quiet">${esc(meta)}${d.smr ? ' · <span class="ok">Readable</span>' : ""}</span>`;
     ($("#pick-open") as HTMLButtonElement).onclick = () => { closePick(); openSpot({ id: w, x, y, readable: Boolean(d.smr) }); };

@@ -120,6 +120,9 @@ export class Reader {
     this.head!.appendChild(el("h1", "plain-title" + (plain ? (arrives ? " arrived" : "") : " pending"), esc(plain || p.title)));
     if (plain) this.head!.appendChild(el("p", "orig-title", `Original title: ${esc(p.title)}`));
     this.head!.appendChild(el("p", "byline", esc([p.authors, p.journal, p.year].filter(Boolean).join(" · "))));
+    // said where it is read, not only at the end: plain words make readers trust a text more than they should
+    if (plain) this.head!.appendChild(el("p", "ai-note", `Rewritten in plain words by an AI model and not checked by a person,
+      so it can contain mistakes. Check <a href="${esc(p.url)}" target="_blank" rel="noopener">the original</a> before relying on a detail.`));
   }
 
   /** A finished section: paragraph rows, figures and tables in place. */
@@ -156,7 +159,12 @@ export class Reader {
         const cap = groups.slice(i, i + m.captionCount).flat().filter((x) => !isTableText(x));
         sec.appendChild(el("div", "row caption",
           `<div class="o">${O.slice(i, i + m.captionCount).map(esc).join("<br>")}</div><div class="r">${md(cap.join("\n\n"))}</div>`));
-        if (m.html) sec.appendChild(el("div", "wide table", m.html));
+        if (m.html) {   // a wide table scrolls sideways: a stop for the keyboard, named for screen readers
+          const tb = sec.appendChild(el("div", "wide table", m.html));
+          Object.assign(tb, { tabIndex: 0 });
+          tb.setAttribute("role", "region");
+          tb.setAttribute("aria-label", "Table");
+        }
         else if (m.images.length) sec.appendChild(this.figure(m.images, m.label));
         i += m.count;   // the model's version of the table rows is not shown
         continue;

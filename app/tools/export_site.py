@@ -18,6 +18,9 @@ shutil.rmtree(SITE, ignore_errors=True)
 for f in ("index.html", "style.css", "app.js", "theme.js"):
     shutil.copy(DEMO / "web" / f, SITE / f)
 shutil.copytree(DEMO / "web" / "map", SITE / "map")   # the map of science (images, field labels)
+shutil.copytree(DEMO / "web" / "chunks", SITE / "chunks", ignore=shutil.ignore_patterns("*.map"))   # code loaded on demand (content-hashed names)
+for f in ("favicon.svg", "apple-touch-icon.png", "og.jpg"):   # tab icon, home-screen icon, link preview
+    shutil.copy(DEMO / "web" / f, SITE / f)
 shutil.copy(DEMO / "web" / "llms.txt", SITE / "llms.txt")          # the site, for AI agents (points to the API guide)
 shutil.copytree(DEMO / "web" / "agents", SITE / "agents")         # the search skill agents can install
 # /api (the address people share): a browser goes on to the ?api page at once; an agent that reads the
@@ -29,6 +32,16 @@ import html as _html
 <title>ScienceMadeReadable search API: for programs and AI agents</title>
 <meta name="description" content="Free search over about 200 million scientific studies, for programs and AI agents. No key.">
 <link rel="canonical" href="https://sciencemadereadable.com/?api">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ScienceMadeReadable">
+<meta property="og:title" content="Search all of science from your AI agent: free API and MCP server">
+<meta property="og:description" content="125 million studies by meaning, 200 million by exact words, with citations. No key, no sign-up: an MCP server for Claude, ChatGPT, Cursor and Codex, or plain HTTPS.">
+<meta property="og:url" content="https://sciencemadereadable.com/api/">
+<meta property="og:image" content="https://sciencemadereadable.com/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <meta http-equiv="refresh" content="0; url=/?api">
 <script>location.replace("/?api" + location.hash)</script>
 </head><body>

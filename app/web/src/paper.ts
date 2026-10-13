@@ -15,6 +15,8 @@ export interface Hit {
   readable?: boolean;    // we can rewrite and show it (PMC full text, CC BY research article)
   x?: number; y?: number; // on the map of science
   type?: string; citations?: number;
+  abstract?: string;     // the start of its abstract (a result's snippet)
+  retracted?: boolean;
 }
 
 export interface Paper {
@@ -44,11 +46,17 @@ const authorsLine = (s?: string, n = 0) => {
   return names.slice(0, 6).join(", ") + (n > 6 ? ", et al." : "");
 };
 const plainText = (s?: string) => (s ?? "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+/** The first ~300 characters of an abstract, cut at a word, without its "Background:"-style heading. */
+const snippet = (s?: string) => {
+  const t = plainText(s).replace(/^(abstract|background|introduction|summary|objectives?|purpose|aims?|context)\s*[:.-]\s*/i, "");
+  return t.length <= 300 ? t : t.slice(0, 300).replace(/\s+\S*$/, "") + "…";
+};
 
 /** All of science (our data API through the queue server): every embedded study, the readable ones marked,
  *  each placed on the map. Throws when the data API can't be reached. */
 async function searchAll(q: string, opts: SearchOptions, signal?: AbortSignal): Promise<Hit[]> {
-  const params = new URLSearchParams({ q, k: "20", map: "true", abstracts: "false",
+  // abstracts: a few lines of each under its title (about 25 kB more for 20 results, same speed on the server)
+  const params = new URLSearchParams({ q, k: "20", map: "true", abstracts: "true",
     mode: opts.by === "words" ? "keyword" : opts.by === "meaning" ? "semantic" : "auto" });
   if (opts.since) params.set("year_from", opts.since);
   if (opts.readable) params.set("collection", "smr");
@@ -64,6 +72,7 @@ async function searchAll(q: string, opts: SearchOptions, signal?: AbortSignal): 
     id: x.id, pmcid: x.pmcid ?? "", doi: x.doi ?? undefined, title: plainText(x.title).replace(/\.$/, "") || "(no title)",
     authors: authorsLine(x.authors, x.authors_count), journal: x.venue ?? undefined, year: x.year ? String(x.year) : undefined,
     readable: Boolean(x.smr), x: x.x, y: x.y, type: x.type, citations: x.citations,
+    abstract: snippet(x.abstract), retracted: x.is_retracted === true || x.is_retracted === 1 || x.is_retracted === "1",
   }));
 }
 
@@ -152,7 +161,22 @@ async function lookup(id: string): Promise<any> {
   return r;
 }
 
-export async function open(id: string): Promise<Paper> {
+/** Opening a paper (Europe PMC's record, then its full text) takes a second or more: it starts when the reader
+ *  points at a readable result, so the click often lands on a paper that is already here. */
+const opening = new Map<string, Promise<Paper>>();
+export function open(id: string): Promise<Paper> {
+  let p = opening.get(id);
+  if (!p) {
+    p = fetchPaper(id);
+    p.catch(() => opening.delete(id));
+    opening.set(id, p);
+    if (opening.size > 12) opening.delete(opening.keys().next().value!);   // a few, not every paper pointed at
+  }
+  return p;
+}
+export const prefetch = (id: string) => { open(id).catch(() => { /* shown when opened */ }); };
+
+async function fetchPaper(id: string): Promise<Paper> {
   const r = await lookup(id);
   if (r.isOpenAccess !== "Y") throw new PaperError("This paper's full text isn't openly available, so we can't rewrite it.");
   const res = await fetch(`${EPMC}/${r.pmcid}/fullTextXML`);

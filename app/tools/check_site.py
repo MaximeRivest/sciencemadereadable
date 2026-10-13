@@ -5,6 +5,9 @@
 Desktop and phone (touch): home, search by meaning and by exact words with dots on the globe, a study's page with
 its citation walk, one step of the walk, the map opened by a tap, pinch zoom of the map (not the page), every
 study as dots once zoomed in, a readable paper opening in the reader, light/dark. Any page error fails.
+Then the experience itself: the first page loads no more script than it needs, Back returns to the same place in
+the results, keyboard focus lands on each page's title, the phone menu opens and closes, every tap target on a
+phone is big enough, and no page has a serious accessibility problem (axe-core, both themes).
 Screenshots: /tmp/smr-check/.
 """
 from __future__ import annotations
@@ -14,6 +17,7 @@ import sys
 import time
 from pathlib import Path
 
+from axe_playwright_python.sync_playwright import Axe
 from playwright.sync_api import sync_playwright
 
 BASE = (sys.argv[1] if len(sys.argv) > 1 else "http://127.0.0.1:8940/").rstrip("/") + "/"
@@ -148,6 +152,71 @@ def phone(p, b, errs):
     c.close()
 
 
+def experience(p, b, errs):
+    print("experience", flush=True)
+    pg = b.new_page(viewport={"width": 1280, "height": 800}, color_scheme="light")
+    pg.on("pageerror", lambda e: errs.append(str(e)))
+    scripts: list[tuple[str, int]] = []
+    pg.on("requestfinished", lambda r: r.resource_type == "script" and scripts.append((r.url, r.sizes()["responseBodySize"])))
+    pg.goto(BASE)
+    until(pg, '!!document.querySelector("form.search.big input")', 15)
+    pg.wait_for_timeout(1500)
+    total = sum(s for _, s in scripts)
+    check(not any("pipeline" in u for u, _ in scripts) and total < 400_000,
+          f"the first page loads only the script it needs ({total // 1000} kB; own-key rewriting loads on demand)")
+    # Back returns to the same place in the results
+    pg.goto(BASE + "?q=why%20do%20we%20need%20sleep")
+    until(pg, 'document.querySelectorAll("#results .hit").length >= 12')
+    check(pg.evaluate('document.title').startswith("why do we need sleep"), "a search's page title is the question")
+    check(pg.evaluate('!!document.querySelector("#results .hit-snippet")'), "results show what each study is about")
+    pg.evaluate("document.querySelectorAll('#results .hit')[10].scrollIntoView({block: 'center'})")
+    pg.wait_for_timeout(300)
+    y0 = pg.evaluate("scrollY")
+    pg.evaluate("document.querySelectorAll('#results .hit')[10].click()")
+    until(pg, 'document.body.dataset.view !== "results"', 10)
+    pg.wait_for_timeout(800)
+    pg.go_back()
+    until(pg, 'document.body.dataset.view === "results"', 10)
+    pg.wait_for_timeout(600)
+    y1 = pg.evaluate("scrollY")
+    check(y0 > 300 and abs(y1 - y0) < 40, f"Back returns to the same place in the results (scrolled {y0:.0f}, back at {y1:.0f})")
+    # keyboard and screen readers: a new page starts at its title
+    pg.evaluate("document.querySelector('#open-api').click()")
+    pg.wait_for_timeout(500)
+    check(pg.evaluate("document.activeElement?.tagName") == "H1", "focus lands on the new page's title")
+    check(pg.evaluate("document.querySelector('#open-api').getAttribute('aria-current')") == "page", "the top bar says which page this is")
+    # no serious accessibility problem, light and dark
+    axe = Axe()
+    for theme in ("light", "dark"):
+        for q in ["", "?q=coral%20bleaching", "?work=10.1126/science.aan8048", "?api", "?support", "?library"]:
+            pg.emulate_media(color_scheme=theme)
+            pg.goto(BASE + q)
+            pg.evaluate(f"document.documentElement.dataset.theme = '{theme}'")
+            pg.wait_for_timeout(3000 if q.startswith("?q") or q.startswith("?work") else 1200)
+            bad = [(v["id"], len(v["nodes"])) for v in axe.run(pg).response["violations"] if v["impact"] in ("serious", "critical")]
+            check(not bad, f"accessibility, {theme}, {q or 'home'}: no serious problems" + (f" {bad}" if bad else ""))
+    pg.close()
+    # phone: the menu, and targets big enough for a thumb
+    c = b.new_context(**p.devices["iPhone 13"])
+    pg = c.new_page()
+    pg.on("pageerror", lambda e: errs.append(str(e)))
+    pg.goto(BASE + "?support")
+    until(pg, 'document.body.dataset.view === "support"', 15)
+    pg.wait_for_timeout(800)
+    check(pg.evaluate("getComputedStyle(document.querySelector('#nav-links')).display") == "none", "phone: the menu starts closed")
+    pg.tap("#menu-btn")
+    pg.wait_for_timeout(300)
+    check(pg.evaluate("getComputedStyle(document.querySelector('#nav-links')).display") != "none", "phone: Menu opens the links")
+    pg.tap("#open-library")
+    check(until(pg, 'document.body.dataset.view === "library" && !document.querySelector("nav.top").classList.contains("menu-open")', 10),
+          "phone: a link in the menu opens its page and closes the menu")
+    small = pg.evaluate("""() => [...document.querySelectorAll('nav.top a, nav.top button, .amounts button, #give-card')]
+        .filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && getComputedStyle(e).visibility !== 'hidden'
+                       && e.id !== 'brand' && r.height < 40 }).map(e => e.id || e.textContent.trim()).slice(0, 8)""")
+    check(not small, "phone: the top bar's targets are big enough for a thumb" + (f" (small: {small})" if small else ""))
+    c.close()
+
+
 def main():
     errs: list[str] = []
     chromium = os.environ.get("CHROMIUM_BIN")
@@ -156,6 +225,7 @@ def main():
         b = p.chromium.launch(executable_path=chromium, args=["--no-sandbox"]) if chromium else p.chromium.launch()
         desktop(b, errs)
         phone(p, b, errs)
+        experience(p, b, errs)
         b.close()
     check(not errs, "no page errors" + (f": {errs[:3]}" if errs else ""))
     bad = [w for ok, w in results if not ok]

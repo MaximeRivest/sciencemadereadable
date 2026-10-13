@@ -1,6 +1,6 @@
 import { MODELS, type ModelInfo } from "./models.ts";
-import { rewrite, type Keys } from "./pipeline.ts";
-import { lastSearch, looksExact, open, place, search, similar, work, PaperError, type Hit, type Paper } from "./paper.ts";
+import type { Keys } from "./pipeline.ts";   // the pipeline itself loads on first use (own-key rewrites)
+import { lastSearch, looksExact, open, place, prefetch, search, similar, work, PaperError, type Hit, type Paper } from "./paper.ts";
 import { focus, focusPoint, hot, initMap, mapView, setHere, setResults, setWalk, useContext, type Line, type Spot } from "./atlas.ts";
 import { API } from "./jobs.ts";
 import { Reader } from "./reader.ts";
@@ -53,6 +53,28 @@ function show(view: "home" | "results" | "reader" | "library" | "work" | "explor
   track("view", { view });
   window.scrollTo(0, 0);
   mapView(view);
+  menu(false);
+  const here: Record<string, string> = { library: "#open-library", api: "#open-api", support: "#open-support" };
+  for (const id of ["#open-library", "#open-api", "#open-support"])
+    if (id === here[view]) $(id).setAttribute("aria-current", "page"); else $(id).removeAttribute("aria-current");
+}
+
+/** After moving to another page, keyboard and screen-reader users start at its title (not at the top bar). Not on
+ *  home (the search box takes focus) nor for results (focus stays in the box being typed in). */
+function focusTitle(h: Element | null) {
+  if (!h || !navigated) return;
+  h.setAttribute("tabindex", "-1");
+  (h as HTMLElement).focus({ preventScroll: true });
+}
+let navigated = false;   // the first page shown keeps the browser's own focus
+
+/** Back and Forward return to where the page was scrolled (the results list, the library...). */
+let returnY: number | null = null;
+function restoreScroll() {
+  if (returnY === null) return;
+  const y = returnY;
+  returnY = null;
+  requestAnimationFrame(() => window.scrollTo(0, y));
 }
 
 /** Why a search result can't be opened, in the reader's words (the same refusals as opening it). */
@@ -75,8 +97,10 @@ const typed = () => ($("#search-results") as HTMLInputElement).value;
 
 function drawOpts(text = typed()) {
   const shown = opts.by || (looksExact(text) ? "words" : "meaning");
-  for (const b of document.querySelectorAll<HTMLButtonElement>(".seg button"))
+  for (const b of document.querySelectorAll<HTMLButtonElement>(".seg button")) {
     b.setAttribute("aria-checked", String(b.dataset.by === shown));
+    b.tabIndex = b.dataset.by === shown ? 0 : -1;   // one stop in the tab order; arrows move inside
+  }
   for (const s of document.querySelectorAll<HTMLSelectElement>(".search-opts .since")) s.value = opts.since;
   $("#readable-only").setAttribute("aria-pressed", String(opts.readable));
 }
@@ -102,30 +126,44 @@ async function runSearch(q: string) {
   ($("#search-results") as HTMLInputElement).value = q;
   drawOpts(q);
   show("results");
+  document.title = `${q} · ScienceMadeReadable`;
+  // phones: the keyboard goes away so the results can be seen
+  if (matchMedia("(pointer: coarse)").matches) (document.activeElement as HTMLElement | null)?.blur();
   const run = ++searchRun;   // a newer search makes this one's late answers moot
   const box = $("#results");
-  box.innerHTML = `<p class="quiet">Looking across science…</p>`;
+  const live = $("#results-live");
+  box.setAttribute("aria-busy", "true");
+  live.textContent = "Searching…";
+  box.innerHTML = `<div class="hit-skeleton" aria-hidden="true">${"<div><i></i><i></i><i></i></div>".repeat(5)}</div>`;
   let hits: Hit[];
   try {
     hits = await search(q, opts);
   } catch {
-    if (run === searchRun) box.innerHTML = `<p class="quiet">The search didn't answer. Try again in a moment.</p>`;
+    if (run === searchRun) {
+      box.removeAttribute("aria-busy");
+      box.innerHTML = `<p class="quiet">The search didn't answer. <a href="#" id="retry">Try again</a>.</p>`;
+      live.textContent = "The search didn't answer.";
+      ($("#retry") as HTMLAnchorElement).onclick = (e) => { e.preventDefault(); runSearch(q); };
+    }
     return;
   }
   if (run !== searchRun) return;
+  box.removeAttribute("aria-busy");
   hits = collapse(hits);
   lastHits = hits;
   setResults(hits.filter((h) => h.x != null && h.id).map(spot), lastSearch.map);
   const switchTo = (by: "meaning" | "words", label: string) => {
     const a = document.createElement("a");
+    a.href = "#";   // a link with an address: reachable with the keyboard
     a.textContent = label;
-    a.onclick = () => { opts.by = by; runSearch(q); };
+    a.onclick = (e) => { e.preventDefault(); opts.by = by; runSearch(q); };
     return a;
   };
   box.innerHTML = "";
   const how = box.appendChild(document.createElement("p"));
   how.className = "quiet search-how";
   const readableN = hits.filter((h) => h.readable).length;
+  live.textContent = hits.length ? `${hits.length} studies found${readableN ? `, ${readableN} readable in plain words` : ""}.` : "Nothing found.";
   if (!hits.length) {
     track("search", { n: 0, src: lastSearch.by });
     if (lastSearch.by === "keyword") how.append("No study contains all these words. Try fewer words, or ", switchTo("meaning", "search by meaning"), ".");
@@ -134,17 +172,24 @@ async function runSearch(q: string) {
   }
   const scope = lastSearch.scope === "readable" ? "readable" : "";
   if (lastSearch.by === "keyword")
-    how.append(`${(lastSearch.matches ?? hits.length).toLocaleString()} ${scope} studies contain these words; best matches first. `,
+    how.append(`${(lastSearch.matches ?? hits.length).toLocaleString()} ${scope} studies contain these words; best matches first · `,
       switchTo("meaning", "Search by meaning instead"));
   else if (lastSearch.by === "semantic")
-    how.append("Closest in meaning first. ", switchTo("words", "Only studies with these exact words"));
+    how.append("Closest in meaning first · ", switchTo("words", "Only studies with these exact words"));
   else how.textContent = "Our search is busy, so these come from Europe PMC's word search (papers we can make readable).";
-  if (lastSearch.scope === "all" && lastSearch.by !== "europepmc")
-    how.append(` · ${readableN} of ${hits.length} can be read in plain words`);
+  // the exception is news, the rule isn't: say how many can be read in plain words only when some can
+  if (lastSearch.scope === "all" && lastSearch.by !== "europepmc" && readableN) {
+    const only = document.createElement("a");
+    only.href = "#";
+    only.textContent = `${readableN} can be read in plain words`;
+    only.onclick = (e) => { e.preventDefault(); opts.readable = true; drawOpts(); runSearch(q); };
+    how.append(" · ", only);
+  }
 
   const list = box.appendChild(document.createElement("div"));
   for (const h of hits) list.appendChild(row(h));
   track("search", { n: hits.length, ok: readableN, src: lastSearch.by });
+  restoreScroll();
 
   // the readable ones: the same check as opening them (licence, layout), so a promise isn't broken later
   const pm = hits.filter((h) => h.readable && h.pmcid).map((h) => h.pmcid);
@@ -177,18 +222,39 @@ const spot = (h: Hit): Spot => ({ id: key(h), x: h.x!, y: h.y!, readable: h.read
 /** Where a study opens: the reader when we can rewrite it, else its page (details, abstract, links). */
 const href = (h: Hit) => h.readable ? `?paper=${encodeURIComponent(h.doi || h.pmcid)}` : `?work=${encodeURIComponent(h.id || h.doi || h.pmcid)}`;
 
+/** "cited once", "cited 2,281 times" */
+const cited = (n: unknown) => Number(n) === 1 ? "cited once" : `cited ${Number(n).toLocaleString()} times`;
+
+const firstAuthors = (s?: string) => {
+  const names = (s ?? "").split(", ").filter(Boolean);
+  return names.length > 2 ? `${names[0]}, ${names[1]} et al.` : names.join(", ");
+};
+
 function row(h: Hit, why?: string): HTMLAnchorElement {
   const a = document.createElement("a");
   a.className = "hit";
   a.dataset.key = key(h);
   a.href = href(h);
-  const badge = h.readable ? `<span class="badge-ok" title="We can rewrite this one in plain words">Readable</span>`
-    : `<span class="badge-orig"${why ? ` title="${esc(why)}"` : ""}>Original only</span>`;
+  const badges = (h.retracted ? `<span class="badge-retracted" title="The journal withdrew this study: its results should not be relied on">Retracted</span>` : "") +
+    (h.readable ? `<span class="badge-ok" title="Opens rewritten in plain words">Readable</span>` : "");
+  const meta = [firstAuthors(h.authors), h.journal, h.year,
+    h.citations ? cited(h.citations) : ""].filter(Boolean).join(" · ");
   a.innerHTML = `<span class="hit-title">${esc(h.title)}</span>` +
-    `<span class="hit-meta">${esc([h.journal, h.year].filter(Boolean).join(" · "))} ${badge}${h.x != null ? ' <span class="pin" title="on the map">●</span>' : ""}</span>`;
+    `<span class="hit-meta">${esc(meta)}${badges ? ` ${badges}` : ""}</span>` +
+    (h.abstract ? `<span class="hit-snippet">${esc(h.abstract)}</span>` : "") +
+    (why ? `<span class="hit-why">${esc(why)}</span>` : "");
   a.onclick = (e) => { e.preventDefault(); go(a.getAttribute("href")!); };
   a.onmouseenter = () => hot(key(h), true);
   a.onmouseleave = () => hot(key(h), false);
+  // a readable paper starts opening when pointed at (a short pause: not for every row the mouse crosses)
+  if (h.readable && (h.doi || h.pmcid)) {
+    let t = 0;
+    const start = () => prefetch(h.doi || h.pmcid);
+    a.addEventListener("pointerenter", () => { t = window.setTimeout(start, 120); });
+    a.addEventListener("pointerleave", () => clearTimeout(t));
+    a.addEventListener("touchstart", start, { passive: true });
+    a.addEventListener("focus", start);
+  }
   return a;
 }
 
@@ -198,7 +264,8 @@ async function openWork(ref: string) {
   show("work");
   const run = ++workRun;
   const box = $("#work");
-  box.innerHTML = `<p class="quiet center">Opening the study…</p>`;
+  box.innerHTML = `<div class="page-skeleton" aria-hidden="true"><i class="h"></i><i class="h short"></i><i></i><i></i><i class="short"></i></div>
+    <p class="sr-only" role="status">Opening the study…</p>`;
   setHere(null);
   let d: any;
   try {
@@ -235,13 +302,16 @@ async function openWork(ref: string) {
        Here is what we know about it.<br>
        <a class="btn" href="${esc(original)}" target="_blank" rel="noopener">Read the original ↗</a>
        ${d.pdf_url ? `<a class="btn ghost" href="${esc(d.pdf_url)}" target="_blank" rel="noopener">PDF ↗</a>` : ""}`;
+  const retracted = d.is_retracted === true || d.is_retracted === 1 || d.is_retracted === "1";
   const where = [d.venue, d.year, d.type && d.type !== "article" ? d.type.replace("-", " ") : "",
-                 d.citations ? `cited ${Number(d.citations).toLocaleString()} times` : ""].filter(Boolean).join(" · ");
+                 d.citations ? cited(d.citations) : ""].filter(Boolean).join(" · ");
   box.innerHTML = `
     <button class="back" type="button" id="w-back">← Back</button>
     <h1>${esc(d.title)}</h1>
     <div class="w-by">${esc(d.authorsLine)}</div>
     <div class="w-where">${esc(where)}</div>
+    ${retracted ? `<p class="w-retracted" role="note"><b>This study was retracted.</b> The journal withdrew it, so its
+      results should not be relied on.</p>` : ""}
     <div class="w-cta">${cta}</div>
     ${d.abstract ? `<p class="w-abs-head">Abstract</p><div class="w-abs">${esc(d.abstract)}</div>` : ""}
     <div class="w-links">
@@ -254,6 +324,7 @@ async function openWork(ref: string) {
     <div class="w-related" id="w-related"></div>
     <p class="you-are-here">You are here, on the map of science.<br>Click the map to look around.</p>`;
   $("#w-back").onclick = () => history.length > 1 ? history.back() : go("");
+  focusTitle(box.querySelector("h1"));
   for (const a of box.querySelectorAll<HTMLAnchorElement>("a[data-go]")) a.onclick = (e) => { e.preventDefault(); go(a.getAttribute("href")!); };
   setWalk([], []);
   const pos = await place([d.id]);
@@ -303,7 +374,7 @@ async function showWalk(ref: string, current: () => boolean): Promise<boolean> {
   // on the map
   const spots: Spot[] = [];
   const add = (n: any, kind: Spot["kind"]) => { if (n.x != null) spots.push({ id: n.id, x: n.x, y: n.y, kind, readable: n.readable,
-    strong: Boolean(n.answer), title: plain(n.title), meta: [n.year, n.cited_by ? `cited ${Number(n.cited_by).toLocaleString()} times` : ""].filter(Boolean).join(" · ") }); };
+    strong: Boolean(n.answer), title: plain(n.title), meta: [n.year, n.cited_by ? cited(n.cited_by) : ""].filter(Boolean).join(" · ") }); };
   refs.forEach((n: any) => add(n, "ref")); conv.forEach((n: any) => add(n, "similar")); next.forEach((n: any) => add(n, "next"));
   const f = N[d.focus], lines: Line[] = [];
   for (const l of d.links ?? []) {
@@ -404,7 +475,8 @@ async function openPaper(id: string) {
   show("reader");
   if (running) { leaving = true; running.abort(); }
   progress.hide();
-  $("#paper").innerHTML = `<p class="quiet center">Opening the paper…</p>`;
+  $("#paper").innerHTML = `<div class="page-skeleton reader-skeleton" aria-hidden="true"><i class="h"></i><i class="h"></i><i class="h short"></i><i></i><i></i><i></i><i class="short"></i></div>
+    <p class="sr-only" role="status">Opening the paper…</p>`;
   setStatus("");
   try {
     paper = await open(id);
@@ -439,6 +511,7 @@ async function openPaper(id: string) {
   renderModels();
   showChosen();
   attach();
+  focusTitle($("#paper h1"));
 }
 
 /** Someone already asked our model for this paper: follow that rewrite instead of starting another. */
@@ -467,8 +540,8 @@ function showChosen() {
 
 function hint(m: ModelInfo): string {
   if (m.provider === "ours") {
-    if (!home?.worker_online) return "Our GPU is offline right now, so it can't take new papers. Papers in the Library and the examples still work.";
-    if (!home.models.includes(m.lm)) return `${m.name} isn't running on our GPU right now.`;
+    if (!home?.worker_online) return "New rewrites are paused: our graphics card is offline. Papers already made readable (the Library) still open.";
+    if (!home.models.includes(m.lm)) return `New rewrites by ${m.name} are paused: it isn't running on our graphics card right now. Papers already made readable (the Library) still open.`;
     return "Usually under a minute.";
   }
   const k = keys()[m.provider as "anthropic" | "openai"];
@@ -491,7 +564,10 @@ function renderModels() {
     }
     sel.appendChild(g);
   }
-  $("#model-score").textContent = `score ${chosen.score.toFixed(1)}/10 · wins ${chosen.winRate}%`;
+  const s = $("#model-score");
+  s.textContent = `rated ${chosen.score.toFixed(1)} out of 10`;
+  s.title = `On our test papers, a judge model rated ${chosen.name}'s rewrites ${chosen.score.toFixed(1)}/10 for being faithful, ` +
+    `clear and pleasant to read, and preferred them over another model's ${chosen.winRate}% of the time.`;
 }
 
 function setStatus(t: string, error = false) {
@@ -532,6 +608,8 @@ async function makeReadable(existing?: string) {
       if ("saved" in res) { saved = await savedRewrites(p.doi); showChosen(); return; }
       saved[m.id] = { parts: res.parts, source: "demo" };
     } else {
+      setStatus("Loading…");
+      const { rewrite } = await import("./pipeline.ts");
       await rewrite(m, p, keys(), {
         part: (k, t, isDone) => { parts[k] = t; if (isDone) done.push(k); later(); },
         status: (t) => setStatus(t),
@@ -644,21 +722,27 @@ async function openLibrary() {
   libraryItems = await library();
   $("#lib-sub-count")?.remove();
   $(".lib-sub").textContent = `${libraryItems.length} papers already made readable. They open instantly.`;
+  document.title = "Library · ScienceMadeReadable";
   drawLibrary();
+  focusTitle($("#library-view h1"));
+  restoreScroll();
 }
 
 // ---------------------------------------------------------------- routing (?q=… or ?paper=…)
 function go(url: string, load = true) {
+  history.replaceState({ ...(history.state ?? {}), y: window.scrollY }, "");   // where Back should return to
   history.pushState(null, "", url || location.pathname);
+  navigated = true;
   if (load) route();
 }
+history.scrollRestoration = "manual";   // the page is rebuilt on Back: the browser's own guess lands too early
 function route() {
   const q = new URLSearchParams(location.search);
   clearInterval(nowTimer);
   document.title = "ScienceMadeReadable";   // a paper or study page puts its own title in front
   if (q.has("support")) return openSupport();
   if (q.has("library")) return openLibrary();
-  if (q.has("api")) return show("api");
+  if (q.has("api")) { show("api"); document.title = "Search API for agents · ScienceMadeReadable"; focusTitle($("#api-view h1")); restoreScroll(); return; }
   if (q.has("map")) {
     if (q.get("work") || q.get("paper")) useContext("walk"); else if (q.get("q")) useContext("results");
     return openExplore(q.get("work"));
@@ -674,7 +758,10 @@ function route() {
     if (document.body.dataset.view !== "results" && lastHits.length && ($("#search-results") as HTMLInputElement).value === q.get("q")) {
       drawOpts(q.get("q")!);
       setHere(null);
-      return show("results");
+      show("results");
+      document.title = `${q.get("q")} · ScienceMadeReadable`;
+      restoreScroll();
+      return;
     }
     return runSearch(q.get("q")!);
   }
@@ -769,8 +856,46 @@ for (const pre of document.querySelectorAll<HTMLElement>("#api-view pre")) {
     setTimeout(() => { copy.textContent = "Copy"; copy.classList.remove("done"); }, 1600);
     track("copy", { src: pre.dataset.copy });
   };
+  pre.tabIndex = 0;   // a long line scrolls sideways: reachable with the keyboard too
   box.append(pre, copy);
 }
+
+// ---------------------------------------------------------------- the top bar on phones: a menu
+function menu(open: boolean) {
+  $("nav.top").classList.toggle("menu-open", open);
+  $("#menu-btn").setAttribute("aria-expanded", String(open));
+}
+$("#menu-btn").onclick = () => {
+  const open = !$("nav.top").classList.contains("menu-open");
+  menu(open);
+  if (open) $("#nav-links a")?.focus();
+};
+document.addEventListener("click", (e) => {
+  if ($("nav.top").classList.contains("menu-open") && !$("nav.top").contains(e.target as Node)) menu(false);
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && $("nav.top").classList.contains("menu-open")) { menu(false); $("#menu-btn").focus(); }
+});
+// "Skip to content": to the page's title, past the top bar
+$("#skip").onclick = (e) => {
+  e.preventDefault();
+  const main = [...document.querySelectorAll<HTMLElement>("main")].find((m) => getComputedStyle(m).display !== "none");
+  const target = main?.querySelector<HTMLElement>("h1, input") ?? main;
+  if (!target) return;
+  if (target.tagName !== "INPUT") target.setAttribute("tabindex", "-1");
+  target.focus();
+};
+// "By meaning / Exact words": a radio group, so the arrow keys move between the two
+for (const seg of document.querySelectorAll<HTMLElement>(".seg"))
+  seg.addEventListener("keydown", (e) => {
+    if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) return;
+    e.preventDefault();
+    const bs = [...seg.querySelectorAll<HTMLButtonElement>("button")];
+    const i = bs.indexOf(document.activeElement as HTMLButtonElement);
+    const next = bs[(i + (e.key === "ArrowLeft" || e.key === "ArrowUp" ? bs.length - 1 : 1)) % bs.length];
+    next.focus();
+    next.click();
+  });
 $("#lib-filter").oninput = drawLibrary;
 ($("#model") as HTMLSelectElement).onchange = (e) => {
   chosen = MODELS.find((m) => m.id === (e.target as HTMLSelectElement).value)!;
@@ -784,6 +909,7 @@ $("#go").onclick = () => makeReadable();
 for (const [btn, dlg] of [["#open-settings", "#settings"], ["#open-about", "#about"], ["#open-about-2", "#about"]]) {
   $(btn).onclick = (e) => {
     e.preventDefault();
+    menu(false);
     if (dlg === "#settings") loadKeyForm();
     ($(dlg) as HTMLDialogElement).showModal();
   };
@@ -840,6 +966,8 @@ async function openSupport() {
   show("support");
   document.title = "Support · ScienceMadeReadable";
   drawSupport();
+  focusTitle($("#support-view h1"));
+  restoreScroll();
   sup = (await supportState()) ?? sup;
   drawSupport();
 }
@@ -865,8 +993,15 @@ new IntersectionObserver((entries) => {
   track("thanks_shown", {});
 }, { rootMargin: "0px 0px -20% 0px" }).observe($("#credit"));
 $("#settings form").onsubmit = () => { saveKeyForm(); if (paper) showChosen(); };
-window.onpopstate = route;
-const checkHome = () => status().then((s) => { home = s; $("#gpu").textContent = s?.worker_online ? "GPU online" : "GPU offline"; $("#gpu").classList.toggle("on", !!s?.worker_online); if (paper && !running) showChosen(); });
+window.onpopstate = (e) => { returnY = e.state?.y ?? null; navigated = true; route(); };
+// "Rewriting on" only when our main model is really there to take a paper (the worker can be up with no model)
+const checkHome = () => status().then((s) => {
+  home = s;
+  const on = !!s?.worker_online && (s.models ?? []).includes("our-9b");
+  $("#gpu").textContent = on ? "Rewriting on" : "Rewriting paused";
+  $("#gpu").classList.toggle("on", on);
+  if (paper && !running) showChosen();
+});
 checkHome();
 setInterval(checkHome, 30000);
 route();

@@ -34,8 +34,8 @@ RELOAD_JS = """// dev only (app/tools/dev.py): a badge, and a reload when the fi
 (function () {
   var b = document.createElement("div");
   b.textContent = "DEV · data: %(data)s · queue: %(queue)s";
-  b.style.cssText = "position:fixed;z-index:99;left:8px;top:8px;background:#b3402a;color:#fff;font:600 11px/1.6 system-ui;" +
-    "padding:1px 8px;border-radius:999px;opacity:.85;pointer-events:none";
+  b.style.cssText = "position:fixed;z-index:99;left:8px;top:8px;background:#9b3220;color:#fff;font:600 11px/1.6 system-ui;" +
+    "padding:1px 8px;border-radius:999px;pointer-events:none";
   document.addEventListener("DOMContentLoaded", function () { document.body.appendChild(b); });
   var seen = null;
   setInterval(function () {
