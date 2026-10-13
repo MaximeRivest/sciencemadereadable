@@ -938,27 +938,30 @@ The same search without MCP: https://api.sciencemadereadable.com/api/data/llms.t
 """
 ASK_HELP = """# Ask science
 
-Put a question at the end of this address and get the scientific studies about it, as plain text:
+Scientific studies as plain text, from about 200 million papers (titles and abstracts from OpenAlex). Two ways in:
+
+1. To learn about a field or a topic ("teach me about...", "what does research say about...", a review, a reading
+   list): open its MAP. Put map/ before the topic:
+
+    https://ask.sciencemadereadable.com/map/habitat fragmentation
+
+   You get the research groups inside the topic (found from what ~1,000 papers cite and say), each with its key
+   papers, rising work, reviews to start with and experts. Then read the groups that matter in full, every paper
+   with its abstract: ?read=2 (group 2's reading lists), then ?read=2&part=papers&page=1, 2, ... (all its papers,
+   most central first). Long answers come in pages; each says what to open next. Read them all: that is how to
+   explain a field rather than repeat a list.
+
+2. To look for something specific (one fact, one study, a name): put the question after the address.
 
     https://ask.sciencemadereadable.com/why do cats purr
 
-(Spaces may be typed as they are, or as %20 or +.) About 200 million studies: titles and abstracts from OpenAlex,
-searched by meaning. Quotes or AND / OR / NOT search for those exact words instead:
+   Searched by meaning. Quotes or AND / OR / NOT search for those exact words instead:
+   https://ask.sciencemadereadable.com/"gut microbiome" AND autism
+   Options after a ?: k=30 (more results, up to 100), year_from=2020, year_to, type=review, open_access=true,
+   abstracts=false. For example: https://ask.sciencemadereadable.com/does coffee affect sleep?k=20&year_from=2020
 
-    https://ask.sciencemadereadable.com/"gut microbiome" AND autism
-
-Options after a ?: k=30 (more results, up to 100), year_from=2020, year_to, type=review, open_access=true,
-abstracts=false. For example: https://ask.sciencemadereadable.com/does coffee affect sleep?k=20&year_from=2020
-
-The research groups inside a topic, each with what to read first (its classics, rising papers, reviews to
-start with, its experts), as plain text: put map/ before the question.
-
-    https://ask.sciencemadereadable.com/map/intermittent fasting
-
-Then read any group in depth, every paper with its abstract: ?read=2 (its reading lists), then
-?read=2&part=papers&page=1, 2, ... (all its papers, most central first).
-
-Free, no key, 30 questions a minute per address (a map counts as 5). Each answer links to the paper and to its page on
+(Spaces may be typed as they are, or as %20 or +.) Free, no key, 30 requests a minute per address (a new map counts
+as 5; maps are kept, so reading them again is cheap). Each answer links to the paper and to its page on
 https://sciencemadereadable.com (its place on the map of science, its citations, and a plain-language version
 when the paper is open). For programs: the JSON API and its guide, https://api.sciencemadereadable.com/api/data/llms.txt
 """
