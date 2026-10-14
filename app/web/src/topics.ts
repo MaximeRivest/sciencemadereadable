@@ -19,20 +19,26 @@ export interface Group {
 export interface TopicMap {
   question: string; mode: string; groups: Group[]; cached?: boolean; parent?: { group: number; name: string; size: number };
   papers: { id: string[]; group: number[]; between: boolean[]; x: (number | null)[]; y: (number | null)[] };
-  coverage: { papers: number; with_references: number; in_groups: number; other: number; references_thin: boolean };
+  coverage: { papers: number; with_references: number; in_groups: number; other: number; references_thin: boolean;
+              without_text_vector?: number };
+  field?: { papers: number; made: string };
 }
-export interface TopicOptions { by?: "" | "meaning" | "words"; since?: string; group?: number | null }
+export interface TopicOptions { by?: "" | "meaning" | "words"; since?: string; group?: number | null; field?: boolean }
+/** A whole-field map being made: the job's progress (data API /topics?scope=field answers 202). */
+export interface FieldPending { status: string; stage?: string; stage_index?: number; eta_s?: number; position?: number; detail?: string }
 
 export const GROUP_COLOURS = 9;   // style.css .g1 ... .g9 (a colour-blind-safe set: Okabe-Ito, Tol)
 
-export async function fetchTopics(q: string, o: TopicOptions, signal?: AbortSignal): Promise<TopicMap> {
+export async function fetchTopics(q: string, o: TopicOptions, signal?: AbortSignal): Promise<TopicMap | { pending: FieldPending }> {
   const p = new URLSearchParams({ q });
+  if (o.field) p.set("scope", "field");
   if (o.by === "words") p.set("mode", "keyword"); else if (o.by === "meaning") p.set("mode", "semantic");
   if (o.since) p.set("year_from", o.since);
   if (o.group) p.set("group", String(o.group));
   const r = await fetch(`${API}/api/data/topics?${p}`, { signal: signal ?? AbortSignal.timeout(95000) });
   const d = await r.json().catch(() => ({}));
   if (!r.ok) throw new TopicError(r.status, d.detail ?? d.error ?? "", Number(r.headers.get("Retry-After")) || d.retry_after);
+  if (r.status === 202) return { pending: d.progress as FieldPending };
   return d as TopicMap;
 }
 
@@ -63,7 +69,7 @@ export interface Deps {
   row: (h: Hit, why?: string) => HTMLElement;
   go: (url: string) => void;
   focusGroup: (g: number | null) => void;
-  url: (o: TopicOptions) => string;          // the address of this map with other options (a group, the whole map)
+  url: (o: TopicOptions) => string;          // the address of this map with other options (a group, the whole map, the field)
   listUrl: string;                           // the plain list of studies for the same search
 }
 
@@ -78,11 +84,21 @@ export function renderTopics(box: HTMLElement, d: TopicMap, deps: Deps) {
     head.innerHTML = `<p class="quiet search-how"><a href="${esc(deps.url({ group: null }))}" data-go>← The whole map</a> · ${back}</p>` +
       `<h2 class="topics-title"><span class="tg-chip g${d.parent.group}"></span>Inside group ${d.parent.group}: ${esc(d.parent.name)}</h2>` +
       `<p class="quiet">Its ${d.parent.size.toLocaleString()} studies, grouped again: ${d.groups.length} smaller groups.</p>`;
+  } else if (d.mode === "field") {
+    head.innerHTML = `<p class="quiet search-how">The whole field: ${d.coverage.papers.toLocaleString()} studies in ${d.groups.length} research groups · ` +
+      `<a href="${esc(deps.url({ field: false }))}" data-go>The 1,000 closest instead</a> · ${back}</p>` +
+      `<p class="topics-intro">Every study we could find on this topic: close in meaning and judged one by one by an AI, ` +
+      `or cited by many of the field's own studies (which brings in classics without an abstract). Checked once against ` +
+      `19 published reviews of habitat fragmentation, this way found about 9 in 10 of the studies they cite. Big groups ` +
+      `are split into smaller ones.</p>`;
   } else {
     head.innerHTML = `<p class="quiet search-how">${d.coverage.papers.toLocaleString()} ${how}, in ${d.groups.length} research groups · ${back}</p>` +
       `<p class="topics-intro">Studies land in the same group when they cite the same works and talk about the same things. ` +
       `Each group's name is made of the words that set it apart (chosen automatically), and its reading lists come from ` +
-      `what its own studies cite: what matters to <em>that</em> group.</p>`;
+      `what its own studies cite: what matters to <em>that</em> group.</p>` +
+      `<p class="quiet small"><a href="${esc(deps.url({ field: true, group: null }))}" data-go>Map the whole field instead</a>: every ` +
+      `study on this topic, often tens of thousands, not just the closest 1,000. The first time takes about half an hour; then ` +
+      `it opens at once for everyone.</p>`;
   }
   if (d.coverage.references_thin)
     head.insertAdjacentHTML("beforeend", `<p class="quiet small">Only ${d.coverage.with_references.toLocaleString()} of these studies list their references in our data, so here the groups rely more on wording.</p>`);
@@ -90,14 +106,14 @@ export function renderTopics(box: HTMLElement, d: TopicMap, deps: Deps) {
     head.insertAdjacentHTML("beforeend", `<p>These studies don't split into clear groups. <a href="${esc(deps.listUrl)}" data-go>See them as a list</a>.</p>`);
   }
   const names = new Map(d.groups.map((g) => [g.id, g.name]));
-  for (const g of d.groups) box.appendChild(card(g, names, deps, !d.parent));
+  for (const g of d.groups) box.appendChild(card(g, names, deps, !d.parent, d.mode === "field" ? 300 : 60));
   if (d.coverage.other)
     box.insertAdjacentHTML("beforeend", `<p class="quiet small topics-foot">${d.coverage.other.toLocaleString()} studies fit no group well (grey on the map).</p>`);
   for (const a of box.querySelectorAll<HTMLAnchorElement>("a[data-go]"))
     a.onclick = (e) => { e.preventDefault(); deps.go(a.getAttribute("href")!); };
 }
 
-function card(g: Group, names: Map<number, string>, deps: Deps, canSplit: boolean): HTMLElement {
+function card(g: Group, names: Map<number, string>, deps: Deps, canSplit: boolean, splitFrom: number): HTMLElement {
   const sec = document.createElement("section");
   sec.className = `tgroup g${((g.id - 1) % GROUP_COLOURS) + 1}`;
   sec.setAttribute("aria-labelledby", `tg-${g.id}`);
@@ -146,7 +162,7 @@ function card(g: Group, names: Map<number, string>, deps: Deps, canSplit: boolea
     buttons.push(b);
   });
   if (present.length) pick(0);
-  if (canSplit && g.size >= 60) {
+  if (canSplit && g.size >= splitFrom) {
     const a = sec.appendChild(document.createElement("a"));
     a.className = "tg-split";
     a.href = deps.url({ group: g.id });
@@ -178,4 +194,27 @@ function expert(e: Expert, deps: Deps): HTMLElement {
   for (const a of div.querySelectorAll<HTMLAnchorElement>("a[data-go]"))
     a.onclick = (ev) => { ev.preventDefault(); deps.go(a.getAttribute("href")!); };
   return div;
+}
+
+const STAGE_NAMES: Record<string, string> = {
+  archetypes: "judging the studies closest to the topic", pool: "gathering hundreds of thousands of nearby studies",
+  labels: "judging a sample, near and far", classifier: "training a classifier on those judgments",
+  phrases: "adding studies with the topic's exact words", citations: "following what the field cites",
+  map: "grouping the whole field", subgroups: "splitting the big groups",
+};
+
+/** While a whole-field map is being made. */
+export function renderPending(box: HTMLElement, st: FieldPending, deps: Deps) {
+  const min = Math.max(1, Math.round((st.eta_s ?? 1800) / 60));
+  const now = st.status === "queued"
+    ? `Waiting its turn${st.position ? ` (${st.position} in line)` : ""}.`
+    : `Step ${(st.stage_index ?? 0) + 1} of 8: ${STAGE_NAMES[st.stage ?? ""] ?? "working"}.`;
+  box.innerHTML = `<h2 class="topics-title">Mapping the whole field</h2>` +
+    `<p class="checking">${esc(now)} About ${min} more minute${min === 1 ? "" : "s"}.</p>` +
+    `<p class="topics-intro">This finds every study on the topic, not just the closest 1,000: studies close in meaning, ` +
+    `each judged by an AI, plus the studies the field keeps citing, then groups them all. You can leave: it keeps going, ` +
+    `and the map will open at once next time, for anyone. This page checks every 20 seconds.</p>` +
+    `<p class="quiet"><a href="${esc(deps.url({ field: false }))}" data-go>See the map of the 1,000 closest meanwhile</a></p>`;
+  for (const a of box.querySelectorAll<HTMLAnchorElement>("a[data-go]"))
+    a.onclick = (e) => { e.preventDefault(); deps.go(a.getAttribute("href")!); };
 }

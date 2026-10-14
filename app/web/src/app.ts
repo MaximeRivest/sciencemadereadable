@@ -2,7 +2,7 @@ import { MODELS, type ModelInfo } from "./models.ts";
 import type { Keys } from "./pipeline.ts";   // the pipeline itself loads on first use (own-key rewrites)
 import { lastSearch, looksExact, open, place, prefetch, search, similar, work, PaperError, type Hit, type Paper } from "./paper.ts";
 import { focus, focusGroup, focusPoint, hot, initMap, mapView, setHere, setResults, setWalk, useContext, type Line, type Spot } from "./atlas.ts";
-import { fetchTopics, renderTopics, TopicError, type TopicMap, type TopicOptions } from "./topics.ts";
+import { fetchTopics, renderPending, renderTopics, TopicError, type TopicMap, type TopicOptions } from "./topics.ts";
 import { API } from "./jobs.ts";
 import { Reader } from "./reader.ts";
 import { activeJob, examples, follow, library, now, openable, savedRewrites, status, supportState, type LibraryItem, type Status, type Support } from "./jobs.ts";
@@ -224,19 +224,20 @@ function topicsUrl(q: string, o: TopicOptions) {
   if (o.by) p.set("by", o.by);
   if (o.since) p.set("since", o.since);
   if (o.group) p.set("group", String(o.group));
+  if (o.field) p.set("scope", "field");
   return `?${p}`;
 }
 
 let topicZoom: number | null = null;     // the zoom at which the shown topic map's studies fill the explorer
 let topicShown = "";                      // the topic map whose studies are on the map now
 
-async function openTopics(q: string, group: number | null, mapOnly = false) {
+async function openTopics(q: string, group: number | null, mapOnly = false, field = false) {
   q = q.trim();
   if (!q) return;
-  const o: TopicOptions = { by: opts.by, since: opts.since, group };
+  const o: TopicOptions = { by: opts.by, since: opts.since, group, field };
   if (mapOnly) {
     const d = await fetchTopics(q, o).catch(() => null);
-    if (d) { drawTopicSpots(d, q, o); focus(focusPoint(), topicZoom ?? 3); }
+    if (d && !("pending" in d)) { drawTopicSpots(d, q, o); focus(focusPoint(), topicZoom ?? 3); }
     return;
   }
   ($("#search-results") as HTMLInputElement).value = q;
@@ -272,6 +273,13 @@ async function openTopics(q: string, group: number | null, mapOnly = false) {
   }
   if (run !== searchRun) return;
   box.removeAttribute("aria-busy");
+  if ("pending" in d) {        // a whole-field map being made: show its progress, ask again in 20 s
+    renderPending(box, d.pending, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q) });
+    live.textContent = "Mapping the whole field.";
+    const here = location.search;
+    setTimeout(() => { if (run === searchRun && location.search === here) openTopics(q, group, false, field); }, 20000);
+    return;
+  }
   live.textContent = `${d.groups.length} research groups.`;
   drawTopicSpots(d, q, o);
   renderTopics(box, d, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q) });
@@ -287,6 +295,13 @@ function drawTopicSpots(d: TopicMap, q: string, o: TopicOptions) {
     if (x == null || y == null) return;
     spots.push({ id, x, y, group: g, kind: "topic", title: g ? `Group ${g}: ${names.get(g)}` : "In no group" });
   });
+  if (spots.length > 4000) {   // tens of thousands of dots would stall the page: an even sample keeps every group's shape
+    const step = spots.length / 4000;
+    const kept: Spot[] = [];
+    for (let i = 0; i < 4000; i++) kept.push(spots[Math.floor(i * step)]);
+    spots.length = 0;
+    spots.push(...kept);
+  }
   spots.sort((a, b) => (a.group ? 1 : 0) - (b.group ? 1 : 0));   // grey ones underneath
   // "open the map" flies to the middle of these studies, close enough that the groups fill the screen
   const pct = (v: number[], q: number) => v.sort((a, b) => a - b)[Math.floor(q * (v.length - 1))];
@@ -844,7 +859,7 @@ function route() {
       const p = new URLSearchParams(q); p.delete("map");
       if (topicShown !== `?${p}`) {        // a shared link: draw that topic's studies first
         show("explore");
-        return openTopics(q.get("topics")!, Number(q.get("group")) || null, true);
+        return openTopics(q.get("topics")!, Number(q.get("group")) || null, true, q.get("scope") === "field");
       }
       show("explore");
       return focus(focusPoint(), topicZoom ?? 3);
@@ -857,7 +872,7 @@ function route() {
     opts.by = by === "words" || by === "meaning" ? by : "";
     opts.since = /^\d{4}$/.test(q.get("since") ?? "") ? q.get("since")! : "";
     opts.readable = false;
-    return openTopics(q.get("topics")!, Number(q.get("group")) || null);
+    return openTopics(q.get("topics")!, Number(q.get("group")) || null, false, q.get("scope") === "field");
   }
   if (q.get("work")) return openWork(q.get("work")!);
   if (q.get("paper")) return openPaper(q.get("paper")!);

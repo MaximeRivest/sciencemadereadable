@@ -80,6 +80,13 @@ def desktop(b, errs):
         pg.go_back()
         check(until(pg, 'document.querySelectorAll("#results .tgroup").length >= 3 && !document.querySelector(".topics-title")', 30),
               "Back returns to the whole map")
+    # a whole-field map (made beforehand by the srl-fields worker; kept across releases)
+    pg.goto(BASE + "?topics=habitat%20fragmentation&scope=field")
+    check(until(pg, 'document.querySelectorAll("#results .tgroup").length >= 5', 60)
+          and "whole field" in pg.evaluate('document.querySelector(".search-how").textContent'),
+          "the whole-field map of habitat fragmentation opens")
+    check(0 < pg.evaluate('document.querySelectorAll("#dots .dot.k-topic").length') <= 4000,
+          "the whole field's studies are drawn as a sample on the globe")
     pg.goto(BASE + '?q=%22gut%20microbiome%22%20autism')
     check(until(pg, 'document.querySelectorAll("#results .hit").length >= 5')
           and "contain these words" in pg.evaluate('document.querySelector(".search-how").textContent'), "exact-word search")
