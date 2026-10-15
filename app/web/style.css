@@ -39,7 +39,7 @@ a { color: var(--accent); }
 .view { display: none; width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 24px; flex: 1; }
 body[data-view="home"] #home, body[data-view="results"] #results-view, body[data-view="reader"] #reader-view,
 body[data-view="library"] #library-view, body[data-view="work"] #work-view, body[data-view="api"] #api-view,
-body[data-view="support"] #support-view { display: block; }
+body[data-view="support"] #support-view, body[data-view="fields"] #fields-view { display: block; }
 body[data-view="home"] nav.top .search, body[data-view="home"] nav.top #brand { visibility: hidden; }
 
 /* top bar */
@@ -722,3 +722,23 @@ body.topics-mode #readable-only { display: none; }
 .tg-expert .hit-title a:hover { color: var(--accent); }
 .tg-split { display: inline-block; margin: 12px 0 4px; font-size: 14px; }
 .to-topics { font-weight: 600; }
+
+/* whole-field maps: the line, the maps made, the offer to make one now (src/fields.ts) */
+#fields-view { max-width: 820px; padding-top: 24px; }
+.fm-h { font: 500 22px/1.2 var(--serif); margin: 30px 0 10px; }
+.fm-find input, .fm-ask input { width: 100%; box-sizing: border-box; padding: 11px 14px; border: 1px solid var(--line);
+  border-radius: 10px; background: var(--card); color: var(--ink); font: inherit; margin: 4px 0; }
+.fm-ask button { margin-top: 8px; }
+.fm-line, .fm-made { list-style: none; padding: 0; margin: 0; }
+.fm-line li, .fm-made li { padding: 9px 0; border-bottom: 1px solid var(--line); }
+.fm-topic { font-weight: 600; }
+.fm-badge { display: inline-block; min-width: 4.2em; text-align: center; font-size: 12px; font-weight: 600; padding: 2px 8px;
+  border-radius: 999px; margin-right: 10px; background: var(--accent-soft); color: var(--muted); }
+.fm-badge.now { background: var(--accent); color: var(--on-accent); }
+.fm-badge.paid { color: var(--accent); }
+.field-offer { border: 1px solid var(--accent); border-radius: 14px; padding: 16px 20px; margin: 14px 0 18px; background: var(--card);
+  max-width: 62ch; }
+.field-offer h3 { margin: 0 0 8px; font: 500 20px/1.2 var(--serif); }
+.field-offer ul { margin: 8px 0 14px; padding-left: 20px; color: var(--muted); line-height: 1.5; }
+.fo-times { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0; }
+.field-paid-note { background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; }

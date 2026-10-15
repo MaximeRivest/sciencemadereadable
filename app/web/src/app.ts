@@ -3,6 +3,7 @@ import type { Keys } from "./pipeline.ts";   // the pipeline itself loads on fir
 import { lastSearch, looksExact, open, place, prefetch, search, similar, work, PaperError, type Hit, type Paper } from "./paper.ts";
 import { focus, focusGroup, focusPoint, hot, initMap, mapView, setHere, setResults, setWalk, useContext, type Line, type Spot } from "./atlas.ts";
 import { fetchTopics, renderPending, renderTopics, TopicError, type TopicMap, type TopicOptions } from "./topics.ts";
+import { fieldUrl, renderFields, verifyPaid } from "./fields.ts";
 import { API } from "./jobs.ts";
 import { Reader } from "./reader.ts";
 import { activeJob, examples, follow, library, now, openable, savedRewrites, status, supportState, type LibraryItem, type Status, type Support } from "./jobs.ts";
@@ -45,7 +46,7 @@ function saveKeyForm() {
 }
 
 // ---------------------------------------------------------------- views
-function show(view: "home" | "results" | "reader" | "library" | "work" | "explore" | "api" | "support") {
+function show(view: "home" | "results" | "reader" | "library" | "work" | "explore" | "api" | "support" | "fields") {
   document.body.dataset.view = view;
   document.body.classList.remove("topics-mode");
   if (view !== "home") {   // leaving home closes its search tips, so Back finds the page as it was first seen
@@ -56,8 +57,8 @@ function show(view: "home" | "results" | "reader" | "library" | "work" | "explor
   window.scrollTo(0, 0);
   mapView(view);
   menu(false);
-  const here: Record<string, string> = { library: "#open-library", api: "#open-api", support: "#open-support" };
-  for (const id of ["#open-library", "#open-api", "#open-support"])
+  const here: Record<string, string> = { library: "#open-library", api: "#open-api", support: "#open-support", fields: "#open-fields" };
+  for (const id of ["#open-library", "#open-fields", "#open-api", "#open-support"])
     if (id === here[view]) $(id).setAttribute("aria-current", "page"); else $(id).removeAttribute("aria-current");
 }
 
@@ -225,16 +226,19 @@ function topicsUrl(q: string, o: TopicOptions) {
   if (o.since) p.set("since", o.since);
   if (o.group) p.set("group", String(o.group));
   if (o.field) p.set("scope", "field");
+  if (o.field && o.definition) p.set("definition", o.definition);
   return `?${p}`;
 }
 
 let topicZoom: number | null = null;     // the zoom at which the shown topic map's studies fill the explorer
 let topicShown = "";                      // the topic map whose studies are on the map now
 
-async function openTopics(q: string, group: number | null, mapOnly = false, field = false) {
+let paidNote = "";   // said once on the map's page, after coming back from paying for it
+
+async function openTopics(q: string, group: number | null, mapOnly = false, field = false, definition = "") {
   q = q.trim();
   if (!q) return;
-  const o: TopicOptions = { by: opts.by, since: opts.since, group, field };
+  const o: TopicOptions = { by: opts.by, since: opts.since, group, field, definition: field ? definition.trim() : "" };
   if (mapOnly) {
     const d = await fetchTopics(q, o).catch(() => null);
     if (d && !("pending" in d)) { drawTopicSpots(d, q, o); focus(focusPoint(), topicZoom ?? 3); }
@@ -274,14 +278,19 @@ async function openTopics(q: string, group: number | null, mapOnly = false, fiel
   if (run !== searchRun) return;
   box.removeAttribute("aria-busy");
   if ("pending" in d) {        // a whole-field map being made: show its progress, ask again in 20 s
-    renderPending(box, d.pending, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q) });
+    if (!sup) sup = await supportState();   // the price of making it now
+    if (run !== searchRun) return;
+    renderPending(box, d.pending, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q),
+                                    offer: sup?.field_payment ?? null, paidNote });
+    box.querySelector("#field-pay")?.addEventListener("click", () => track("field_pay", { eta_h: Math.round((d.pending.eta_s ?? 0) / 3600) }));
     live.textContent = "Mapping the whole field.";
     const here = location.search;
-    setTimeout(() => { if (run === searchRun && location.search === here) openTopics(q, group, false, field); }, 20000);
+    setTimeout(() => { if (run === searchRun && location.search === here) openTopics(q, group, false, field, o.definition); }, 20000);
     return;
   }
   live.textContent = `${d.groups.length} research groups.`;
   drawTopicSpots(d, q, o);
+  paidNote = "";
   renderTopics(box, d, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q) });
   track("topics", { groups: d.groups.length, cached: d.cached ? 1 : 0, sub: group ? 1 : 0 });
   restoreScroll();
@@ -838,6 +847,37 @@ async function openLibrary() {
   restoreScroll();
 }
 
+// ---------------------------------------------------------------- whole-field maps (?fields, fields.ts)
+async function openFields(q: string) {
+  show("fields");
+  document.title = "Whole-field maps · ScienceMadeReadable";
+  const box = $("#fields-view");
+  if (!box.innerHTML) box.innerHTML = `<p class="quiet">Loading…</p>`;
+  await renderFields(box, go, q.trim());
+  focusTitle($("#fields-view h1"));
+  restoreScroll();
+}
+$("#open-fields").onclick = (e) => { e.preventDefault(); go("?fields"); };
+
+/** Back from Stripe (?paid=<checkout session>): the door checks the payment and moves the map to the paid line. */
+async function backFromPaying(session: string) {
+  history.replaceState(null, "", location.pathname);
+  const r = await verifyPaid(session);
+  track("field_paid", { ok: r.ok && r.d.accepted ? 1 : 0 });
+  if (r.ok && r.d.accepted && r.d.topic) {
+    paidNote = `Thank you${r.d.name ? `, ${r.d.name}` : ""}! Your map moved to the paid line.` +
+      (r.d.name ? " Your name will show on it after a quick check." : "");
+    return go(fieldUrl(r.d.topic, r.d.definition));
+  }
+  const why = r.ok ? `Your payment arrived, but ${r.d.why ?? "the map wasn't waiting any more"}: you'll get your money back, ` +
+      `within a day.` : r.status === 402 ? "Stripe says this payment hasn't gone through yet. If it does, your map moves " +
+      "to the paid line within a minute." : "We couldn't check your payment right now. If it went through, your map " +
+      "moves to the paid line within a minute anyway.";
+  $("#field-paid-text").textContent = why;
+  ($("#field-paid") as HTMLDialogElement).showModal();
+  if (r.ok && r.d.topic) go(fieldUrl(r.d.topic, r.d.definition));
+}
+
 // ---------------------------------------------------------------- routing (?q=… or ?paper=…)
 function go(url: string, load = true) {
   history.replaceState({ ...(history.state ?? {}), y: window.scrollY }, "");   // where Back should return to
@@ -852,6 +892,7 @@ function route() {
   document.title = "ScienceMadeReadable";   // a paper or study page puts its own title in front
   if (q.has("support")) return openSupport();
   if (q.has("library")) return openLibrary();
+  if (q.has("fields")) return openFields(q.get("fields") ?? "");
   if (q.has("api")) { show("api"); document.title = "Search API for agents · ScienceMadeReadable"; focusTitle($("#api-view h1")); restoreScroll(); return; }
   if (q.has("map")) {
     if (q.get("topics")) {
@@ -859,7 +900,7 @@ function route() {
       const p = new URLSearchParams(q); p.delete("map");
       if (topicShown !== `?${p}`) {        // a shared link: draw that topic's studies first
         show("explore");
-        return openTopics(q.get("topics")!, Number(q.get("group")) || null, true, q.get("scope") === "field");
+        return openTopics(q.get("topics")!, Number(q.get("group")) || null, true, q.get("scope") === "field", q.get("definition") ?? "");
       }
       show("explore");
       return focus(focusPoint(), topicZoom ?? 3);
@@ -872,7 +913,7 @@ function route() {
     opts.by = by === "words" || by === "meaning" ? by : "";
     opts.since = /^\d{4}$/.test(q.get("since") ?? "") ? q.get("since")! : "";
     opts.readable = false;
-    return openTopics(q.get("topics")!, Number(q.get("group")) || null, false, q.get("scope") === "field");
+    return openTopics(q.get("topics")!, Number(q.get("group")) || null, false, q.get("scope") === "field", q.get("definition") ?? "");
   }
   if (q.get("work")) return openWork(q.get("work")!);
   if (q.get("paper")) return openPaper(q.get("paper")!);
@@ -1105,6 +1146,8 @@ const clicked: Record<string, () => number> = { "#give-card": () => amount, "#gi
 for (const [a, n] of Object.entries(clicked))
   $(a).addEventListener("click", () => track("give", { src: a.slice(6), amount: n() }));
 supportState().then((s) => { sup = s; });
+if (new URLSearchParams(location.search).get("paid")?.startsWith("cs_"))   // back from paying for a whole-field map
+  backFromPaying(new URLSearchParams(location.search).get("paid")!);
 if (new URLSearchParams(location.search).has("thanks")) {   // back from Stripe
   track("supported", {});
   history.replaceState(null, "", location.pathname);

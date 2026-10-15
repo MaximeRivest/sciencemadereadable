@@ -43,6 +43,7 @@
     <button type="button" id="menu-btn" class="menu-btn" aria-expanded="false" aria-controls="nav-links">Menu</button>
     <div id="nav-links" class="nav-links">
     <a href="?library" id="open-library">Library</a>
+    <a href="?fields" id="open-fields" title="Maps of whole research fields: made, being made, and asking for one">Field maps</a>
     <a href="?api" id="open-api" title="Use this search from your code or AI agent">API</a>
     <a href="#" id="open-settings">Settings</a>
     <a href="#" id="open-about">About</a>
@@ -107,6 +108,8 @@
   <input id="lib-filter" type="search" placeholder="Filter by words in the title or journal" aria-label="Filter">
   <div id="library"></div>
 </main>
+
+<main id="fields-view" class="view"></main>
 
 <!-- The search API for programs and AI agents. Plain HTML on purpose: an agent that fetches this page reads it all. -->
 <main id="api-view" class="view">
@@ -369,6 +372,14 @@ for p in r.json()["results"]:
     <label>OpenAI (GPT-6 Astra, Sol, Luna; GPT-5.6 Terra)<input id="key-openai" type="password" placeholder="sk-…"></label>
     <label class="check"><input id="remember" type="checkbox"> Remember on this device</label>
     <menu><button value="cancel" formnovalidate>Cancel</button><button value="ok" class="primary">Save</button></menu>
+  </form>
+</dialog>
+
+<dialog id="field-paid">
+  <form method="dialog">
+    <h2>About your payment</h2>
+    <p class="from" id="field-paid-text"></p>
+    <menu><button value="ok" class="primary">OK</button></menu>
   </form>
 </dialog>
 

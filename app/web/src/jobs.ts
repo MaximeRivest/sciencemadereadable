@@ -107,6 +107,7 @@ export interface Support {
   daily_cost?: number | null; gpu?: string | null; stripe?: Record<string, string>;
   sponsor_of_the_day?: { name: string; url?: string } | null;
   day_count?: number; day_dollars?: number; monthly_supporters?: number; recent?: string[];
+  field_payment?: { url: string; amount: number; currency: string; mode?: string } | null;
 }
 export async function supportState(): Promise<Support | null> {
   try { const r = await fetch(`${API}/api/support`); return r.ok ? await r.json() : null; } catch { return null; }

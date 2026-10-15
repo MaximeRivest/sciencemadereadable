@@ -132,6 +132,7 @@ if JOBS_FILE.exists():
     except (ValueError, KeyError):
         pass   # address → times it asked for a rewrite (last minute)
 import stats   # noqa: E402  (app/stats.py)
+import fieldpay   # noqa: E402  (app/fieldpay.py: paying to make a whole-field map now)
 ENC = tiktoken.get_encoding("o200k_base")
 OPENING = ["title", "abstract", "introduction_first", "conclusion"]
 OTHER = ["introduction_rest", "methods", "results", "discussion"]
@@ -406,7 +407,7 @@ def support_state(private: bool = False) -> dict:
     if cfg.get("stripe_mode") != "live" and not private:
         stripe = {}   # test links: only on the private port (lambda and the tailnet), never through the public door
     out = {"daily_cost": cfg.get("daily_cost"), "gpu": cfg.get("gpu"), "stripe": stripe,
-           "sponsor_of_the_day": sponsor}
+           "sponsor_of_the_day": sponsor, "field_payment": fieldpay.offer(private)}
     seen = [v for v in SUPPORTERS.values() if v]
     if seen:
         out.update(day_count=sum(v["day_count"] for v in seen) + len(by_hand),
@@ -569,6 +570,12 @@ class Handler(SimpleHTTPRequestHandler):
             if not ids or not all(PMCID.match(p) for p in ids):
                 return self.send_json(400, {"error": "send ids=PMC…,PMC… (at most 25)"})
             return self.send_json(200, check_many(ids, self.client()))
+        if u.path == "/api/fields/paid":
+            # Stripe sent a reader back after paying for a whole-field map (fieldpay.py)
+            if rate_wait("pay:" + self.client(), 20):
+                return self.send_json(429, {"error": "too many checks; try again in a minute"})
+            status, out = fieldpay.verify((urllib.parse.parse_qs(u.query).get("session") or [""])[0])
+            return self.send_json(status, out)
         if u.path == "/api/support":
             return self.send_json(200, support_state(private=not isinstance(self, PublicHandler)))
         if u.path == "/api/status":
@@ -656,6 +663,7 @@ class Handler(SimpleHTTPRequestHandler):
                 words = urllib.parse.unquote(path[len(prefix):].encode("latin-1", "ignore").decode("utf-8", "replace"))
                 path = prefix + urllib.parse.quote(words, safe="+")
         req = urllib.request.Request(SEARCH_API + path + (("?" + u.query) if u.query else ""))
+        req.add_header("X-SRL-Asker", fieldpay.asker(self.client()))   # whole-field maps: a reader's waiting maps
         if tiles and self.headers.get("Range"):
             req.add_header("Range", self.headers["Range"])
         try:
@@ -905,7 +913,7 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 SEARCH_API = os.environ.get("SRL_SEARCH_API", "http://127.0.0.1:8810")
-DATA_ROUTES = re.compile(r"^/api/data/(search|search/[^\s?#]{2,6000}|topics|topics/[^\s?#]{2,6000}|walk|map/place|map/regions|map/counts|llms\.txt|docs|openapi\.json|similar/[\w./:%-]{2,300}|works/[\w./:%-]{2,300}"
+DATA_ROUTES = re.compile(r"^/api/data/(search|search/[^\s?#]{2,6000}|topics|topics/[^\s?#]{2,6000}|fields|fields/queue|walk|map/place|map/regions|map/counts|llms\.txt|docs|openapi\.json|similar/[\w./:%-]{2,300}|works/[\w./:%-]{2,300}"
                          r"|map/tiles/[\w-]{1,40}/(?:index\.json|\d{1,2}/\d{1,6}/\d{1,6}\.(?:pts|ids)"
                          r"|v2/(?:map|labels|names)\.json|v2/[dpi]/\d{1,2}/\d{1,6}/\d{1,6}\.bin|v2/t/\d{1,2}/\d{1,6}/\d{1,6}\.json))$")
 ROBOTS_OPEN = "User-agent: *\nAllow: /\n"
@@ -1029,7 +1037,7 @@ def our_search(q: str, mode: str = "auto", year_from: int | None = None) -> dict
     return {"hits": [h for h in hits if h["pmcid"]], "mode": d.get("mode", "semantic"), "matches": d.get("matches")}
 
 
-PUBLIC = {("GET", "/api/search"), ("GET", "/api/check"), ("GET", "/api/support"), ("GET", "/api/now"), ("GET", "/api/library"), ("GET", "/api/status"), ("GET", "/api/rewrites"), ("GET", "/api/examples"), ("GET", "/api/jobs"),
+PUBLIC = {("GET", "/api/fields/paid"), ("GET", "/api/search"), ("GET", "/api/check"), ("GET", "/api/support"), ("GET", "/api/now"), ("GET", "/api/library"), ("GET", "/api/status"), ("GET", "/api/rewrites"), ("GET", "/api/examples"), ("GET", "/api/jobs"),
           ("POST", "/api/jobs"), ("POST", "/api/event"), ("POST", "/api/worker/next")}
 
 
@@ -1088,6 +1096,7 @@ if __name__ == "__main__":
     a = ap.parse_args()
     threading.Thread(target=save_jobs_forever, daemon=True).start()
     threading.Thread(target=read_supporters_forever, daemon=True).start()
+    threading.Thread(target=fieldpay.poll_forever, daemon=True).start()
     if a.public_port:
         public = ThreadingHTTPServer(("127.0.0.1", a.public_port), PublicHandler)
         threading.Thread(target=public.serve_forever, daemon=True).start()

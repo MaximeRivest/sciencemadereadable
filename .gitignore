@@ -94,3 +94,5 @@ app/tools/py_requests.pkl
 app/support.json
 app/sponsors.json
 app/stripe_read_key
+app/stripe_refund_key
+app/asker_secret

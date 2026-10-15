@@ -4,6 +4,7 @@
  * its studies on the map, with reading lists as tabs. The page (app.ts) owns navigation and the map.
  */
 import { API } from "./jobs.ts";
+import { fieldsMade, fieldUrl, inTime, offerHtml, type FieldOffer } from "./fields.ts";
 import type { Hit } from "./paper.ts";
 
 export interface TopicPaper {
@@ -21,17 +22,21 @@ export interface TopicMap {
   papers: { id: string[]; group: number[]; between: boolean[]; x: (number | null)[]; y: (number | null)[] };
   coverage: { papers: number; with_references: number; in_groups: number; other: number; references_thin: boolean;
               without_text_vector?: number };
-  field?: { papers: number; made: string };
+  field?: { papers: number; made: string; credit?: string };
 }
-export interface TopicOptions { by?: "" | "meaning" | "words"; since?: string; group?: number | null; field?: boolean }
-/** A whole-field map being made: the job's progress (data API /topics?scope=field answers 202). */
-export interface FieldPending { status: string; stage?: string; stage_index?: number; eta_s?: number; position?: number; detail?: string }
+export interface TopicOptions { by?: "" | "meaning" | "words"; since?: string; group?: number | null; field?: boolean; definition?: string }
+/** A whole-field map waiting or being made: the job's progress (data API /topics?scope=field answers 202). */
+export interface FieldPending {
+  status: string; key?: string; stage?: string; stage_index?: number; eta_s?: number; start_s?: number; position?: number;
+  detail?: string; lane?: "paid" | "free" | "rebuild"; paid_eta_s?: number; gpu_reserved?: boolean; credit?: string;
+}
 
 export const GROUP_COLOURS = 9;   // style.css .g1 ... .g9 (a colour-blind-safe set: Okabe-Ito, Tol)
 
 export async function fetchTopics(q: string, o: TopicOptions, signal?: AbortSignal): Promise<TopicMap | { pending: FieldPending }> {
   const p = new URLSearchParams({ q });
   if (o.field) p.set("scope", "field");
+  if (o.field && o.definition) p.set("definition", o.definition);
   if (o.by === "words") p.set("mode", "keyword"); else if (o.by === "meaning") p.set("mode", "semantic");
   if (o.since) p.set("year_from", o.since);
   if (o.group) p.set("group", String(o.group));
@@ -71,6 +76,8 @@ export interface Deps {
   focusGroup: (g: number | null) => void;
   url: (o: TopicOptions) => string;          // the address of this map with other options (a group, the whole map, the field)
   listUrl: string;                           // the plain list of studies for the same search
+  offer?: FieldOffer | null;                 // paying to make a whole-field map now (fields.ts)
+  paidNote?: string;                         // said once, after coming back from paying
 }
 
 /** The whole map: a sentence on what was done, then one card per group. */
@@ -90,7 +97,9 @@ export function renderTopics(box: HTMLElement, d: TopicMap, deps: Deps) {
       `<p class="topics-intro">Every study we could find on this topic: close in meaning and judged one by one by an AI, ` +
       `or cited by many of the field's own studies (which brings in classics without an abstract). Checked once against ` +
       `19 published reviews of habitat fragmentation, this way found about 9 in 10 of the studies they cite. Big groups ` +
-      `are split into smaller ones.</p>`;
+      `are split into smaller ones.</p>` +
+      (d.field?.credit ? `<p class="quiet small">Made sooner thanks to ${esc(d.field.credit)}.</p>` : "") +
+      `<p class="quiet small"><a href="?fields" data-go>All whole-field maps</a></p>`;
   } else {
     head.innerHTML = `<p class="quiet search-how">${d.coverage.papers.toLocaleString()} ${how}, in ${d.groups.length} research groups · ${back}</p>` +
       `<p class="topics-intro">Studies land in the same group when they cite the same works and talk about the same things. ` +
@@ -98,7 +107,15 @@ export function renderTopics(box: HTMLElement, d: TopicMap, deps: Deps) {
       `what its own studies cite: what matters to <em>that</em> group.</p>` +
       `<p class="quiet small"><a href="${esc(deps.url({ field: true, group: null }))}" data-go>Map the whole field instead</a>: every ` +
       `study on this topic, often tens of thousands, not just the closest 1,000. The first time takes about half an hour; then ` +
-      `it opens at once for everyone.</p>`;
+      `it opens at once for everyone.</p><p class="quiet small" id="field-near"></p>`;
+    fieldsMade(d.question, 1).then(([m]) => {
+      const el = head.querySelector("#field-near");
+      if (!el || !m || (m.score ?? 0) < NEAR_FIELD) return;
+      el.innerHTML = `Most of these studies are in a whole-field map already made: <a href="${esc(fieldUrl(m.topic, m.definition))}" ` +
+        `data-go>${esc(m.topic)}</a> (${(m.papers ?? 0).toLocaleString()} studies).`;
+      const a = el.querySelector("a")!;
+      a.onclick = (ev) => { ev.preventDefault(); deps.go(a.getAttribute("href")!); };
+    });
   }
   if (d.coverage.references_thin)
     head.insertAdjacentHTML("beforeend", `<p class="quiet small">Only ${d.coverage.with_references.toLocaleString()} of these studies list their references in our data, so here the groups rely more on wording.</p>`);
@@ -203,18 +220,31 @@ const STAGE_NAMES: Record<string, string> = {
   map: "grouping the whole field", subgroups: "splitting the big groups",
 };
 
-/** While a whole-field map is being made. */
+/** A whole-field map holding at least this share of a question's 50 closest studies (the data API's /fields score)
+ *  is offered next to its 1,000-paper map (related questions score 0.8-1, unrelated ones under 0.1). */
+const NEAR_FIELD = 0.5;
+const nth = (n: number) => n === 1 ? "first" : n === 2 ? "second" : n === 3 ? "third" : `${n}th`;
+
+/** While a whole-field map waits in line or is being made. */
 export function renderPending(box: HTMLElement, st: FieldPending, deps: Deps) {
-  const min = Math.max(1, Math.round((st.eta_s ?? 1800) / 60));
+  const eta = st.eta_s ?? 1800;
+  const line = st.lane === "paid" ? "paid line" : "free line";
   const now = st.status === "queued"
-    ? `Waiting its turn${st.position ? ` (${st.position} in line)` : ""}.`
-    : `Step ${(st.stage_index ?? 0) + 1} of 8: ${STAGE_NAMES[st.stage ?? ""] ?? "working"}.`;
+    ? `${st.position ? `${nth(st.position)[0].toUpperCase()}${nth(st.position).slice(1)} in the ${line}` : `Waiting in the ${line}`}. ` +
+      `Ready in ${inTime(eta)}.`
+    : `Step ${(st.stage_index ?? 0) + 1} of 8: ${STAGE_NAMES[st.stage ?? ""] ?? "working"}. Ready in ${inTime(eta)}.`;
+  const offer = st.status === "queued" && st.lane !== "paid" && st.key
+    ? offerHtml(st.key, eta, st.paid_eta_s, !!st.gpu_reserved, deps.offer ?? null) : "";
   box.innerHTML = `<h2 class="topics-title">Mapping the whole field</h2>` +
-    `<p class="checking">${esc(now)} About ${min} more minute${min === 1 ? "" : "s"}.</p>` +
+    (deps.paidNote ? `<p class="field-paid-note">${esc(deps.paidNote)}</p>` : "") +
+    `<p class="checking">${esc(now)}</p>` + offer +
     `<p class="topics-intro">This finds every study on the topic, not just the closest 1,000: studies close in meaning, ` +
     `each judged by an AI, plus the studies the field keeps citing, then groups them all. You can leave: it keeps going, ` +
     `and the map will open at once next time, for anyone. This page checks every 20 seconds.</p>` +
-    `<p class="quiet"><a href="${esc(deps.url({ field: false }))}" data-go>See the map of the 1,000 closest meanwhile</a></p>`;
+    (st.gpu_reserved ? `<p class="quiet small">Our graphics card is busy training a model right now, so maps wait a ` +
+      `little longer than shown.</p>` : "") +
+    `<p class="quiet"><a href="${esc(deps.url({ field: false }))}" data-go>See the map of the 1,000 closest meanwhile</a> · ` +
+    `<a href="?fields" data-go>The whole line</a></p>`;
   for (const a of box.querySelectorAll<HTMLAnchorElement>("a[data-go]"))
     a.onclick = (e) => { e.preventDefault(); deps.go(a.getAttribute("href")!); };
 }

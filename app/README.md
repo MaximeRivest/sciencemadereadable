@@ -142,6 +142,36 @@ support of the last 24 hours. Settings in `support.json` (not published; `suppor
   Approved names go into `support.json`'s `sponsors_by_day` and show that day only.
 - `daily_cost` in `support.json`: what a rented H100 day costs (108), the unit the window speaks in.
 
+## Whole-field maps: the line, and paying to go first
+
+A whole-field map (every study of a topic, made by the search service's worker: `search/srl_search/field.py`)
+waits in a public line, shown at `?fields` with every map made so far (searchable: the maps holding most of a
+question's 50 closest studies). Two lines: **paid** maps go first; the **free** line follows in the order asked,
+while the day's free budget of AI lasts (`SRL_FIELD_FREE_USD`, $10: ~10 maps; a map costs ~$1 of AI, Kimi K3 and
+TypeSafe's Jev), at most 2 waiting per reader (the door's anonymous per-address code, `asker_secret`).
+
+Paying ($10, ~10x a map's AI and GPU cost) is offered under a waiting map only when it saves at least an hour and the
+GPU isn't taken by training. `fieldpay.py` holds the whole flow; no key that can write to Stripe stays here:
+
+```
+STRIPE_SETUP_KEY=rk_test_... .venv/bin/python app/tools/stripe_field_setup.py   # the payment link, test mode
+STRIPE_SETUP_KEY=rk_live_... .venv/bin/python app/tools/stripe_field_setup.py   # then live (support.json field_payment)
+app/tools/publish.sh queue                                                      # the door reads it
+.venv/bin/python app/tools/field_payments.py           # payments, names waiting to be shown, money owed back
+.venv/bin/python app/tools/field_payments.py approve KEY   # show the payer's name on the map ("made sooner thanks to")
+.venv/bin/python app/tools/field_payments.py remove KEY "why"   # take a topic out of the line (its text is public)
+```
+
+- The page sends the payer to the link with `client_reference_id=<map key>`; Stripe sends them back to
+  `/?paid={CHECKOUT_SESSION_ID}`; the door reads that session with `stripe_read_key` and writes
+  `fields/paid/<key>.json`, which moves the map to the paid line. It also lists the link's payments every minute,
+  for payers who closed the page.
+- Money owed back: the map wasn't waiting any more when the payment arrived (being made, made), paid twice, or it
+  can't be made (the topic is too broad or unclear; or our failure, twice: the worker tries a paid map once more).
+  With `stripe_refund_key` (a restricted key: Refunds write, Checkout Sessions read) refunds go out by themselves;
+  without it `field_payments.py` lists them for the Stripe dashboard.
+- Stripe's receipts: Dashboard → Settings → Customer emails → Successful payments (the offer says one is emailed).
+
 ## Usage counts
 
 `stats.py`, on our own server: no cookies, no third party. A visitor is an anonymous code made
