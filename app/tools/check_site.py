@@ -64,14 +64,16 @@ def desktop(b, errs):
     check(pg.evaluate('!!document.querySelector(".to-topics")'), "results offer their research groups")
     pg.click(".to-topics")
     check(until(pg, 'document.querySelectorAll("#results .tgroup").length >= 3', 100), "the topic map shows research groups")
-    check(pg.evaluate('document.querySelectorAll("#dots .dot.k-topic").length') >= 200, "the groups' studies are coloured on the globe")
-    check(pg.evaluate('document.querySelectorAll(".tgroup")[0].querySelectorAll(".tg-panel .hit").length') >= 3,
+    check(pg.evaluate('window.__topicDots().n >= 200 && window.__topicDots().painted'), "the groups' studies are coloured on the globe")
+    check(pg.evaluate('!!document.querySelector(".tg-whole .tg-tabs") && document.querySelectorAll(".tgroup .tg-cloud li").length >= 30'),
+          "the whole topic has its reading lists, and the groups their word clouds")
+    check(pg.evaluate('document.querySelectorAll(".tgroup:not(.tg-whole)")[0].querySelectorAll(".tg-panel .hit").length') >= 3,
           "a group's first reading list has studies")
-    first = pg.evaluate('document.querySelector(".tgroup .tg-panel").innerText')
-    pg.click('.tgroup >> nth=0 >> [role="tab"] >> nth=1')
-    check(pg.evaluate('document.querySelector(".tgroup .tg-panel").innerText') != first, "a group's tabs switch its reading list")
-    pg.hover(".tgroup >> nth=1")
-    check(pg.evaluate('document.querySelectorAll("#dots .dot.k-topic.dim").length') > 50, "pointing at a group fades the others on the map")
+    first = pg.evaluate('document.querySelector(".tgroup:not(.tg-whole) .tg-panel").innerText')
+    pg.click('.tgroup:not(.tg-whole) >> nth=0 >> [role="tab"] >> nth=1')
+    check(pg.evaluate('document.querySelector(".tgroup:not(.tg-whole) .tg-panel").innerText') != first, "a group's tabs switch its reading list")
+    pg.hover(".tgroup:not(.tg-whole) >> nth=1")
+    check(pg.evaluate('window.__topicDots().faded') > 50, "pointing at a group fades the others on the map")
     pg.screenshot(path=OUT / "topics.png")
     if pg.evaluate('!!document.querySelector(".tg-split")'):
         pg.click(".tg-split >> nth=0")
@@ -85,7 +87,7 @@ def desktop(b, errs):
     check(until(pg, 'document.querySelectorAll("#results .tgroup").length >= 5', 60)
           and "whole field" in pg.evaluate('document.querySelector(".search-how").textContent'),
           "the whole-field map of habitat fragmentation opens")
-    check(0 < pg.evaluate('document.querySelectorAll("#dots .dot.k-topic").length') <= 4000,
+    check(0 < pg.evaluate('window.__topicDots().n') <= 4000,
           "the whole field's studies are drawn as a sample on the globe")
     pg.goto(BASE + '?q=%22gut%20microbiome%22%20autism')
     check(until(pg, 'document.querySelectorAll("#results .hit").length >= 5')

@@ -12,13 +12,19 @@ export interface TopicPaper {
   citations?: number; doi?: string; pmcid?: string; readable?: boolean; in_map?: boolean; why?: string;
 }
 export interface Expert { author: string; name: string; h: number; papers_in_group: number; top: TopicPaper; latest?: TopicPaper; why: string }
+/** A word of a cloud: share = of the studies that use it; lift = how many times more often than elsewhere (the
+ *  other groups, or all of science for the whole topic); score = its relevance, what the size follows. */
+export interface CloudWord { t: string; share: number; lift: number; score: number }
+type Lenses = Record<string, TopicPaper[]> & { experts: Expert[] };
 export interface Group {
   id: number; name: string; size: number; years?: number[]; typical: TopicPaper; centre?: { x: number; y: number } | null;
-  cites_groups: Record<string, number>; between: number; with_references: number;
-  lenses: Record<string, TopicPaper[]> & { experts: Expert[] };
+  cites_groups: Record<string, number>; between: number; with_references: number; cloud?: CloudWord[];
+  lenses: Lenses;
 }
+/** The whole map read as one group (maps made before 2026-10-15 have none). */
+export interface Overall { size: number; years?: number[] | null; cloud?: CloudWord[]; lenses: Lenses }
 export interface TopicMap {
-  question: string; mode: string; groups: Group[]; cached?: boolean; parent?: { group: number; name: string; size: number };
+  question: string; mode: string; groups: Group[]; overall?: Overall; cached?: boolean; parent?: { group: number; name: string; size: number };
   papers: { id: string[]; group: number[]; between: boolean[]; x: (number | null)[]; y: (number | null)[] };
   coverage: { papers: number; with_references: number; in_groups: number; other: number; references_thin: boolean;
               without_text_vector?: number };
@@ -60,14 +66,15 @@ export const asHit = (p: TopicPaper): Hit => ({
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 const span = (y?: number[]) => y ? (y[0] === y[2] ? `${y[1]}` : `mostly ${y[0]}–${y[2]}`) : "";
 
-const LENSES: [key: string, label: string, help: string][] = [
-  ["start_here", "Start here", "Recent studies of this group that cite most of its key works: often reviews, a good first read."],
-  ["core", "Core", "The works this group's studies cite most: its foundations."],
-  ["rising", "Rising", "Works from the last five years already cited by many of this group's studies."],
-  ["distinctive", "Only here", "Works cited mostly by this group, not by the others: what sets it apart."],
-  ["experts", "Experts", "The authors whose works this group cites most (an h-index counted inside the group: first authors get full credit, last authors half, others less)."],
-  ["bridges", "Bridges", "Studies of this group with many links to another group."],
-  ["newest", "Newest", "The latest studies in this group."],
+// "this {u}": the group, or the whole topic (the same lists, from every study's citations)
+const LENSES: [key: string, label: string, help: (u: string) => string][] = [
+  ["start_here", "Start here", (u) => `Recent studies of this ${u} that cite most of its key works: often reviews, a good first read.`],
+  ["core", "Core", (u) => `The works this ${u}'s studies cite most: its foundations.`],
+  ["rising", "Rising", (u) => `Works from the last five years already cited by many of this ${u}'s studies.`],
+  ["distinctive", "Only here", () => "Works cited mostly by this group, not by the others: what sets it apart."],
+  ["experts", "Experts", (u) => `The authors whose works this ${u} cites most (an h-index counted inside the ${u}: first authors get full credit, last authors half, others less).`],
+  ["bridges", "Bridges", () => "Studies of this group with many links to another group."],
+  ["newest", "Newest", (u) => `The latest studies in this ${u}.`],
 ];
 
 export interface Deps {
@@ -123,11 +130,29 @@ export function renderTopics(box: HTMLElement, d: TopicMap, deps: Deps) {
     head.insertAdjacentHTML("beforeend", `<p>These studies don't split into clear groups. <a href="${esc(deps.listUrl)}" data-go>See them as a list</a>.</p>`);
   }
   const names = new Map(d.groups.map((g) => [g.id, g.name]));
+  if (d.overall && Object.values(d.overall.lenses).some((l) => l.length)) box.appendChild(whole(d, names, deps));
   for (const g of d.groups) box.appendChild(card(g, names, deps, !d.parent, d.mode === "field" ? 300 : 60));
   if (d.coverage.other)
     box.insertAdjacentHTML("beforeend", `<p class="quiet small topics-foot">${d.coverage.other.toLocaleString()} studies fit no group well (grey on the map).</p>`);
   for (const a of box.querySelectorAll<HTMLAnchorElement>("a[data-go]"))
     a.onclick = (e) => { e.preventDefault(); deps.go(a.getAttribute("href")!); };
+}
+
+/** The whole topic as one card, above its groups: the words that set it apart from the rest of science, and
+ *  its own reading lists (from every study's citations). */
+function whole(d: TopicMap, names: Map<number, string>, deps: Deps): HTMLElement {
+  const o = d.overall!;
+  const sec = document.createElement("section");
+  sec.className = "tgroup tg-whole";
+  sec.setAttribute("aria-labelledby", "tg-0");
+  const what = d.parent ? `All of group ${d.parent.group}` : d.mode === "field" ? "The whole field" : "The whole topic";
+  const meta = [`${o.size.toLocaleString()} studies`, span(o.years ?? undefined)].filter(Boolean).join(" · ");
+  sec.innerHTML = `<h3 id="tg-0">${esc(what)}</h3><p class="tg-meta">${meta}</p>`;
+  if (o.cloud?.length)
+    sec.append(cloud(o.cloud, 30, "all of science",
+      `Its words, sized by how much more its studies use them than all of science does (point at one for the numbers).`));
+  lists(sec, 0, o.lenses, "topic", names, deps);
+  return sec;
 }
 
 function card(g: Group, names: Map<number, string>, deps: Deps, canSplit: boolean, splitFrom: number): HTMLElement {
@@ -142,11 +167,54 @@ function card(g: Group, names: Map<number, string>, deps: Deps, canSplit: boolea
   sec.onpointerenter = () => deps.focusGroup(g.id);
   sec.onpointerleave = () => deps.focusGroup(null);
   sec.addEventListener("focusin", () => deps.focusGroup(g.id));
+  if (g.cloud?.length) sec.append(cloud(g.cloud, 24, "the other groups"));
+  lists(sec, g.id, g.lenses, "group", names, deps);
+  if (canSplit && g.size >= splitFrom) {
+    const a = sec.appendChild(document.createElement("a"));
+    a.className = "tg-split";
+    a.href = deps.url({ group: g.id });
+    a.textContent = `Split this group into smaller ones →`;
+    a.onclick = (e) => { e.preventDefault(); deps.go(a.getAttribute("href")!); };
+  }
+  return sec;
+}
+
+const times = (x: number) => x >= 100 ? `${Number(x.toPrecision(2)).toLocaleString()}×` : `${x >= 10 ? Math.round(x) : x.toFixed(1)}×`;
+
+/** A word cloud in Scimeetr's spirit: the words a set of studies uses more than others, the bigger the more
+ *  telling (their relevance: how often, and how many times more often). A wrapped line of words, the biggest in
+ *  the middle, so it reads as text (and to screen readers in order of size, from the centre out). */
+function cloud(words: CloudWord[], k: number, vs: string, note?: string): HTMLElement {
+  const w = words.slice(0, k);
+  const lo = Math.min(...w.map((x) => x.score)), hi = Math.max(...w.map((x) => x.score));
+  const big = k >= 30 ? 27 : 22;
+  const order: CloudWord[] = [];                      // ranks 1, 2, 3, 4, 5 ... as 5 3 1 2 4: big in the middle
+  w.forEach((x, i) => (i % 2 ? order.push(x) : order.unshift(x)));
+  const div = document.createElement("div");
+  div.className = "tg-cloud-box";
+  if (note) div.insertAdjacentHTML("beforeend", `<p class="tg-help">${esc(note)}</p>`);
+  const ul = div.appendChild(document.createElement("ul"));
+  ul.className = "tg-cloud";
+  ul.setAttribute("aria-label", `Words used more here than in ${vs}`);
+  for (const x of order) {
+    const t = hi > lo ? (x.score - lo) / (hi - lo) : 1;
+    const li = ul.appendChild(document.createElement("li"));
+    li.textContent = x.t;
+    li.style.fontSize = `${(12.5 + (big - 12.5) * t).toFixed(1)}px`;
+    if (t < 0.3) li.className = "small";
+    li.title = `In ${Math.max(1, Math.round(100 * x.share))}% of these studies, ${times(x.lift)} as often as in ${vs}`;
+  }
+  return div;
+}
+
+/** Reading lists as tabs (a group's, or the whole topic's: id 0). */
+function lists(sec: HTMLElement, id: number, lenses: Lenses, unit: string, names: Map<number, string>, deps: Deps) {
+  const g = { id, lenses };
   const present = LENSES.filter(([k]) => (g.lenses[k] ?? []).length);
   const tabs = sec.appendChild(document.createElement("div"));
   tabs.className = "tg-tabs";
   tabs.setAttribute("role", "tablist");
-  tabs.setAttribute("aria-label", `Reading lists of group ${g.id}`);
+  tabs.setAttribute("aria-label", id ? `Reading lists of group ${id}` : `Reading lists of the whole ${unit}`);
   const panel = sec.appendChild(document.createElement("div"));
   panel.className = "tg-panel";
   panel.setAttribute("role", "tabpanel");
@@ -158,8 +226,8 @@ function card(g: Group, names: Map<number, string>, deps: Deps, canSplit: boolea
     const [key, , help] = present[i];
     panel.setAttribute("aria-labelledby", buttons[i].id);
     panel.replaceChildren();
-    panel.insertAdjacentHTML("beforeend", `<p class="tg-help">${esc(help)}</p>`);
-    if (key === "experts") for (const e of g.lenses.experts) panel.appendChild(expert(e, deps));
+    panel.insertAdjacentHTML("beforeend", `<p class="tg-help">${esc(help(unit))}</p>`);
+    if (key === "experts") for (const e of g.lenses.experts) panel.appendChild(expert(e, deps, unit));
     else for (const p of g.lenses[key] ?? []) panel.appendChild(deps.row(asHit(p), why(key, p, names)));
   };
   present.forEach(([, label], i) => {
@@ -179,14 +247,6 @@ function card(g: Group, names: Map<number, string>, deps: Deps, canSplit: boolea
     buttons.push(b);
   });
   if (present.length) pick(0);
-  if (canSplit && g.size >= splitFrom) {
-    const a = sec.appendChild(document.createElement("a"));
-    a.className = "tg-split";
-    a.href = deps.url({ group: g.id });
-    a.textContent = `Split this group into smaller ones →`;
-    a.onclick = (e) => { e.preventDefault(); deps.go(a.getAttribute("href")!); };
-  }
-  return sec;
 }
 
 function why(key: string, p: TopicPaper, names: Map<number, string>): string {
@@ -199,13 +259,13 @@ function why(key: string, p: TopicPaper, names: Map<number, string>): string {
   return p.in_map === false && key !== "start_here" ? `${out} · not among the mapped studies (no English abstract, or older)` : out;
 }
 
-function expert(e: Expert, deps: Deps): HTMLElement {
+function expert(e: Expert, deps: Deps, unit = "group"): HTMLElement {
   const div = document.createElement("div");
   div.className = "tg-expert";
   const paper = (p: TopicPaper | undefined) => p
     ? `<a href="?work=${encodeURIComponent(p.id)}" data-go>${esc(p.title)}</a> <span class="quiet">(${p.year ?? "n.d."})</span>` : "";
   div.innerHTML = `<span class="hit-title"><a href="https://openalex.org/${esc(e.author)}" target="_blank" rel="noopener">${esc(e.name || e.author)}</a></span>` +
-    `<span class="hit-meta">h = ${e.h} inside this group` + (e.papers_in_group ? ` · author of ${e.papers_in_group} of its studies` : "") + `</span>` +
+    `<span class="hit-meta">h = ${e.h} inside this ${unit}` + (e.papers_in_group ? ` · author of ${e.papers_in_group} of its studies` : "") + `</span>` +
     `<span class="hit-why">Most cited here: ${paper(e.top)}` +
     (e.latest && e.latest.id !== e.top.id ? `<br>Latest here: ${paper(e.latest)}` : "") + `</span>`;
   for (const a of div.querySelectorAll<HTMLAnchorElement>("a[data-go]"))

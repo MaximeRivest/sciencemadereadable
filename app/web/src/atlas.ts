@@ -121,7 +121,11 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
     g = gesture();
   });
   map.addEventListener("pointermove", (e) => {
-    if (!pts.has(e.pointerId)) { if (e.pointerType === "mouse" && !e.buttons) hover(e.clientX, e.clientY); return; }
+    if (document.body.dataset.view === "results") { topicHover(e); return; }
+    if (!pts.has(e.pointerId)) {
+      if (e.pointerType === "mouse" && !e.buttons && !topicHover(e)) hover(e.clientX, e.clientY);
+      return;
+    }
     pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
     const n = gesture();
     if (g) {
@@ -158,7 +162,7 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
   };
   map.addEventListener("pointerup", up);
   map.addEventListener("pointercancel", up);
-  map.addEventListener("pointerleave", () => hoverRing(null));
+  map.addEventListener("pointerleave", () => { hoverRing(null); if (topicTip) { $("#map-tip").hidden = true; topicTip = false; } });
   map.addEventListener("dblclick", (e) => {
     if (document.body.dataset.view !== "explore") return;
     clearTimeout(tapTimer);
@@ -187,6 +191,11 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
   });
   new MutationObserver(() => { palette(); frame(); }).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
   addEventListener("resize", () => frame());
+  // the small globe grows and shrinks between views (a CSS transition): the topic canvas follows its size
+  new ResizeObserver(() => { if (!explore()) paintTopics(); }).observe(map);
+  (window as any).__topicDots = () => ({ n: topicSpots.length, focus: topicFocus,
+    faded: topicFocus == null ? 0 : topicSpots.filter((s) => s.group !== topicFocus).length,
+    painted: Math.max(($("#tdots") as HTMLCanvasElement).width, ($("#tsdots") as HTMLCanvasElement).width) > 0 });
   startEngine();
   // for the browser check (tools/check_site.py) and screenshots
   (window as any).__fly = (x: number, y: number, z: number) => { motion = null; Object.assign(view, viewFor(x, y, z)); apply(); };
@@ -431,7 +440,13 @@ export function focus(p: { x: number; y: number } | null, z = 3) {
   setTimeout(() => flyTo(p.x, p.y, z), still() ? 0 : 820);
 }
 
-export function setResults(list: Spot[], q: { x: number; y: number } | null) { results = list; question = q; context = "results"; draw(); }
+export function setResults(list: Spot[], q: { x: number; y: number } | null) {
+  results = list.filter((s) => s.kind !== "topic");
+  topicSpots = list.filter((s) => s.kind === "topic");
+  topicFocus = null;
+  topicHot.clear();
+  question = q; context = "results"; draw();
+}
 export function setWalk(list: Spot[], lines: Line[]) {
   walkSpots = list; walkLines = lines;
   $("#ex-legend").hidden = !(context === "walk" && list.length);
@@ -440,10 +455,124 @@ export function setWalk(list: Spot[], lines: Line[]) {
 export function setHere(p: { x: number; y: number } | null) { here = p; draw(); }
 /** Topic maps: one group's studies stand out, the others fade (null: all as they are). */
 export function focusGroup(g: number | null) {
-  for (const d of document.querySelectorAll<HTMLElement>(".dot.k-topic")) d.classList.toggle("dim", g != null && d.dataset.g !== String(g));
+  if (g === topicFocus) return;
+  topicFocus = g;
+  paintTopics();
 }
 export function hot(id: string, on: boolean) {
   for (const d of document.querySelectorAll(`.dot[data-id="${CSS.escape(id)}"]`)) d.classList.toggle("hot", on);
+  if (topicSpots.some((s) => s.id === id)) { if (on) topicHot.add(id); else topicHot.delete(id); paintTopics(); }
+}
+
+// ----------------------------------------------------------------------- topic maps: thousands of studies
+// A topic map's studies (up to 4,000 for a whole field) are drawn on a canvas, not as one element each: as
+// elements, pointing at a group card restyled all of them (0.6-1 s on a laptop, the page frozen) and the explorer
+// moved each one every frame. One canvas in the small globe (#tdots, turned with it), one over the screen in the
+// explorer (#tsdots, drawn with the camera every frame). A repaint is ~2 ms.
+let topicSpots: Spot[] = [];
+let topicFocus: number | null = null;
+const topicHot = new Set<string>();
+const groupColour: string[] = [];          // style.css .g0 ... .g9
+
+function groupColours() {
+  if (groupColour.length) return;
+  const probe = document.body.appendChild(document.createElement("span"));
+  for (let i = 0; i <= 9; i++) {
+    probe.className = `g${i}`;
+    groupColour.push(getComputedStyle(probe).getPropertyValue("--g").trim() || "#9a948a");
+  }
+  probe.remove();
+}
+
+/** Where each topic study is, in px of the canvas being drawn (null: the topic canvases show nothing now). */
+function topicFrame(): { cv: HTMLCanvasElement; w: number; h: number; at: (s: Spot) => [number, number] } | null {
+  const v = document.body.dataset.view;
+  if (v === "explore" && context === "results") {
+    const cv = $("#tsdots") as HTMLCanvasElement, r = $("#map").getBoundingClientRect(), span = r.width * view.z;
+    const ox = r.left + view.x, oy = r.top + view.y;
+    return { cv, w: innerWidth, h: innerHeight, at: (s) => [ox + s.x * span, oy + s.y * span] };
+  }
+  if (v === "results") {
+    const cv = $("#tdots") as HTMLCanvasElement, W = $("#map").offsetWidth;
+    return { cv, w: W, h: W, at: (s) => [s.x * W, s.y * W] };
+  }
+  return null;
+}
+
+function paintTopics() {
+  const f = topicFrame();
+  for (const id of ["#tdots", "#tsdots"]) {      // the canvas not in use is emptied
+    const c = document.querySelector(id) as HTMLCanvasElement | null;
+    if (c && c !== f?.cv && c.width) { c.width = 0; c.height = 0; }
+  }
+  if (!f || !topicSpots.length) { if (f?.cv.width) { f.cv.width = 0; f.cv.height = 0; } return; }
+  groupColours();
+  const dpr = Math.min(2, devicePixelRatio || 1), cw = Math.round(f.w * dpr), ch = Math.round(f.h * dpr);
+  if (f.cv.width !== cw || f.cv.height !== ch) { f.cv.width = cw; f.cv.height = ch; }
+  const ctx = f.cv.getContext("2d")!;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, f.w, f.h);
+  // layers, bottom to top: faded studies, studies in no group (grey, smaller), the groups, the pointed-at ones
+  const layers: { alpha: number; r: number; by: Map<number, [number, number][]> }[] =
+    [{ alpha: 0.1, r: 3, by: new Map() }, { alpha: 0.55, r: 2, by: new Map() }, { alpha: 1, r: 3, by: new Map() }];
+  const hotXY: [number, number, number][] = [];
+  for (const s of topicSpots) {
+    const [x, y] = f.at(s);
+    if (x < -6 || y < -6 || x > f.w + 6 || y > f.h + 6) continue;
+    const g = s.group ?? 0, c = g ? ((g - 1) % 9) + 1 : 0;
+    if (topicHot.has(s.id)) { hotXY.push([x, y, c]); continue; }
+    const L = topicFocus != null && g !== topicFocus ? layers[0] : g ? layers[2] : layers[1];
+    let a = L.by.get(c);
+    if (!a) L.by.set(c, a = []);
+    a.push([x, y]);
+  }
+  for (const L of layers) {
+    ctx.globalAlpha = L.alpha;
+    for (const [c, pts] of L.by) {
+      const ring = new Path2D(), dot = new Path2D();
+      for (const [x, y] of pts) {
+        ring.moveTo(x + L.r + 1, y); ring.arc(x, y, L.r + 1, 0, 2 * Math.PI);
+        dot.moveTo(x + L.r, y); dot.arc(x, y, L.r, 0, 2 * Math.PI);
+      }
+      if (L.r > 2) { ctx.fillStyle = "rgba(255,255,255,.8)"; ctx.fill(ring); }
+      ctx.fillStyle = groupColour[c];
+      ctx.fill(dot);
+    }
+  }
+  ctx.globalAlpha = 1;
+  for (const [x, y, c] of hotXY) {
+    ctx.beginPath(); ctx.arc(x, y, 7, 0, 2 * Math.PI); ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.fill();
+    ctx.beginPath(); ctx.arc(x, y, 5.5, 0, 2 * Math.PI); ctx.fillStyle = groupColour[c]; ctx.fill();
+  }
+}
+
+/** The topic study under the pointer (client px), within `reach` px; for tips and taps. */
+function topicAt(cx: number, cy: number, reach: number): Spot | null {
+  const f = topicFrame();
+  if (!f || !topicSpots.length) return null;
+  let px = cx, py = cy;
+  if (f.cv.id === "tdots") {
+    // the small globe turns (light theme): back to its own frame through the inverse of #globe's transform
+    const r = $("#map").getBoundingClientRect(), W = r.width;
+    const t = getComputedStyle($("#globe")).transform;
+    const m = t && t !== "none" ? new DOMMatrixReadOnly(t).inverse() : new DOMMatrixReadOnly();
+    const p = m.transformPoint({ x: cx - r.left - W / 2, y: cy - r.top - W / 2 });
+    px = p.x + W / 2; py = p.y + W / 2;
+  }
+  let best: Spot | null = null, bd = reach * reach;
+  for (const s of topicSpots) {
+    const [x, y] = f.at(s), d = (x - px) ** 2 + (y - py) ** 2;
+    if (d <= bd && !(topicFocus != null && s.group !== topicFocus)) { bd = d; best = s; }
+  }
+  return best;
+}
+let topicTip = false;
+function topicHover(e: PointerEvent) {
+  if (e.pointerType !== "mouse" || e.buttons) return false;
+  const s = topicAt(e.clientX, e.clientY, 6);
+  if (s) { tip(e, s); topicTip = true; } else if (topicTip) { $("#map-tip").hidden = true; topicTip = false; }
+  $("#map").classList.toggle("on-star", !!s && explore());
+  return !!s;
 }
 
 /** Positions go through the CSSOM: the page's policy (style-src 'self') ignores inline style attributes. */
@@ -499,6 +628,7 @@ function draw() {
     box.appendChild(p);
   }
   placeMarks();
+  if (!explore()) paintTopics();
 }
 
 /** Line widths in map units, so lines stay ~1 px on screen at any zoom (the zoom is a CSS transform, which
@@ -531,6 +661,7 @@ function drawLines(v?: string) {
 /** Screen-space markers and lines follow the camera (same formula as the WebGL map). */
 function placeMarks() {
   if (!explore()) return;
+  paintTopics();
   const r = $("#map").getBoundingClientRect(), span = r.width * view.z, ox = r.left + view.x, oy = r.top + view.y;
   for (const m of marks) m.el.style.translate = `${ox + m.x * span}px ${oy + m.y * span}px`;
   for (const { el, l } of lineEls) {
@@ -684,6 +815,8 @@ function hoverRing(p: { x: number; y: number } | null) {
 }
 
 async function pick(cx: number, cy: number) {
+  const ts = explore() ? topicAt(cx, cy, 12) : null;   // a topic map's study: open it, as its dot used to
+  if (ts) { $("#map-tip").hidden = true; return openSpot(ts); }
   if (!glOn()) return;
   const r = $("#map").getBoundingClientRect();
   const s = engine!.nearest({ S: r.width, ox: r.left + view.x, oy: r.top + view.y, z: view.z }, cx, cy, 16);
