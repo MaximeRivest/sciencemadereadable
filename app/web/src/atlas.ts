@@ -21,7 +21,7 @@ import { MapGL, type Cam } from "./mapgl.ts";
 
 export type Kind = "result" | "ref" | "similar" | "next" | "topic";
 export interface Spot { id: string; x: number; y: number; readable?: boolean; title?: string; meta?: string; kind?: Kind; strong?: boolean;
-  group?: number }   // topic maps: the study's research group (0 = none), drawn in that group's colour
+  group?: number; sub?: number }   // topic maps: the study's research group (0 = none), drawn in that group's colour, and subgroup
 export interface Line { x1: number; y1: number; x2: number; y2: number; kind: string }
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -194,7 +194,7 @@ export function initMap(opts: { api: string; explore: () => void; open: (s: Spot
   // the small globe grows and shrinks between views (a CSS transition): the topic canvas follows its size
   new ResizeObserver(() => { if (!explore()) paintTopics(); }).observe(map);
   (window as any).__topicDots = () => ({ n: topicSpots.length, focus: topicFocus,
-    faded: topicFocus == null ? 0 : topicSpots.filter((s) => s.group !== topicFocus).length,
+    faded: topicSpots.filter((s) => !lit(s)).length,
     painted: Math.max(($("#tdots") as HTMLCanvasElement).width, ($("#tsdots") as HTMLCanvasElement).width) > 0 });
   startEngine();
   // for the browser check (tools/check_site.py) and screenshots
@@ -444,6 +444,7 @@ export function setResults(list: Spot[], q: { x: number; y: number } | null) {
   results = list.filter((s) => s.kind !== "topic");
   topicSpots = list.filter((s) => s.kind === "topic");
   topicFocus = null;
+  topicSub = null;
   topicHot.clear();
   question = q; context = "results"; draw();
 }
@@ -453,12 +454,14 @@ export function setWalk(list: Spot[], lines: Line[]) {
   draw();
 }
 export function setHere(p: { x: number; y: number } | null) { here = p; draw(); }
-/** Topic maps: one group's studies stand out, the others fade (null: all as they are). */
-export function focusGroup(g: number | null) {
-  if (g === topicFocus) return;
+/** Topic maps: one group's (or one subgroup's) studies stand out, the others fade (null: all as they are). */
+export function focusGroup(g: number | null, sub: number | null = null) {
+  if (g === topicFocus && sub === topicSub) return;
   topicFocus = g;
+  topicSub = g == null ? null : sub;
   paintTopics();
 }
+const lit = (s: Spot) => topicFocus == null || (s.group === topicFocus && (topicSub == null || s.sub === topicSub));
 export function hot(id: string, on: boolean) {
   for (const d of document.querySelectorAll(`.dot[data-id="${CSS.escape(id)}"]`)) d.classList.toggle("hot", on);
   if (topicSpots.some((s) => s.id === id)) { if (on) topicHot.add(id); else topicHot.delete(id); paintTopics(); }
@@ -471,6 +474,7 @@ export function hot(id: string, on: boolean) {
 // explorer (#tsdots, drawn with the camera every frame). A repaint is ~2 ms.
 let topicSpots: Spot[] = [];
 let topicFocus: number | null = null;
+let topicSub: number | null = null;
 const topicHot = new Set<string>();
 const groupColour: string[] = [];          // style.css .g0 ... .g9
 
@@ -521,7 +525,7 @@ function paintTopics() {
     if (x < -6 || y < -6 || x > f.w + 6 || y > f.h + 6) continue;
     const g = s.group ?? 0, c = g ? ((g - 1) % 9) + 1 : 0;
     if (topicHot.has(s.id)) { hotXY.push([x, y, c]); continue; }
-    const L = topicFocus != null && g !== topicFocus ? layers[0] : g ? layers[2] : layers[1];
+    const L = !lit(s) ? layers[0] : g ? layers[2] : layers[1];
     let a = L.by.get(c);
     if (!a) L.by.set(c, a = []);
     a.push([x, y]);
@@ -562,7 +566,7 @@ function topicAt(cx: number, cy: number, reach: number): Spot | null {
   let best: Spot | null = null, bd = reach * reach;
   for (const s of topicSpots) {
     const [x, y] = f.at(s), d = (x - px) ** 2 + (y - py) ** 2;
-    if (d <= bd && !(topicFocus != null && s.group !== topicFocus)) { bd = d; best = s; }
+    if (d <= bd && lit(s)) { bd = d; best = s; }
   }
   return best;
 }

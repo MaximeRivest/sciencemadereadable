@@ -291,18 +291,30 @@ async function openTopics(q: string, group: number | null, mapOnly = false, fiel
   live.textContent = `${d.groups.length} research groups.`;
   drawTopicSpots(d, q, o);
   paidNote = "";
-  renderTopics(box, d, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q) });
+  renderTopics(box, d, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q),
+                         at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt });
   track("topics", { groups: d.groups.length, cached: d.cached ? 1 : 0, sub: group ? 1 : 0 });
   restoreScroll();
 }
 
+/** The box picked in a topic map's overview stays in the address (replaced, not a new page: Back still leaves the
+ *  map), so a shared link or a return opens on it. */
+function rememberAt(at: string) {
+  const u = new URL(location.href);
+  if (at) u.searchParams.set("at", at); else u.searchParams.delete("at");
+  if (u.href !== location.href) history.replaceState(history.state, "", u);
+}
+
 function drawTopicSpots(d: TopicMap, q: string, o: TopicOptions) {
   const names = new Map(d.groups.map((g) => [g.id, g.name]));
+  const subNames = new Map(d.groups.flatMap((g) => (g.subgroups ?? []).map((s) => [`${g.id}.${s.id}`, s.name] as const)));
   const spots: Spot[] = [];
   d.papers.id.forEach((id, i) => {
-    const x = d.papers.x[i], y = d.papers.y[i], g = d.papers.group[i];
+    const x = d.papers.x[i], y = d.papers.y[i], g = d.papers.group[i], sub = d.papers.sub?.[i] ?? 0;
     if (x == null || y == null) return;
-    spots.push({ id, x, y, group: g, kind: "topic", title: g ? `Group ${g}: ${names.get(g)}` : "In no group" });
+    const sn = sub ? subNames.get(`${g}.${sub}`) : undefined;
+    spots.push({ id, x, y, group: g, sub, kind: "topic",
+                 title: g ? `Group ${g}: ${names.get(g)}` + (sn ? ` › ${g}.${sub}: ${sn}` : "") : "In no group" });
   });
   if (spots.length > 4000) {   // tens of thousands of dots would stall the page: an even sample keeps every group's shape
     const step = spots.length / 4000;

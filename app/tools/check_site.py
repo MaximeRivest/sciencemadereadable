@@ -65,8 +65,16 @@ def desktop(b, errs):
     pg.click(".to-topics")
     check(until(pg, 'document.querySelectorAll("#results .tgroup").length >= 3', 100), "the topic map shows research groups")
     check(pg.evaluate('window.__topicDots().n >= 200 && window.__topicDots().painted'), "the groups' studies are coloured on the globe")
-    check(pg.evaluate('!!document.querySelector(".tg-whole .tg-tabs") && document.querySelectorAll(".tgroup .tg-cloud li").length >= 30'),
-          "the whole topic has its reading lists, and the groups their word clouds")
+    check(pg.evaluate('!!document.querySelector(".tov-panel .tg-tabs") && document.querySelectorAll(".tgroup .tg-cloud li").length >= 30'),
+          "the overview opens on the whole topic's reading lists, and the groups have their word clouds")
+    check(pg.evaluate('document.querySelectorAll(".tov-map .tov-s").length') >= 4, "the overview shows the groups' subgroups as boxes")
+    pg.click(".tov-map .tov-s >> nth=0")
+    check(until(pg, '/[?&]at=\\d+\\.\\d+/.test(location.search) && /Subgroup/.test(document.querySelector(".tov-path").textContent)', 5)
+          and pg.evaluate('document.querySelectorAll(".tov-panel .hit").length') >= 1
+          and pg.evaluate('window.__topicDots().faded') > 0,
+          "picking a subgroup shows its reading lists, keeps it in the address and lights it on the map")
+    pg.click(".tov-path button >> nth=0")
+    check(until(pg, '!/[?&]at=/.test(location.search)', 5), "the path goes back to the whole topic")
     check(pg.evaluate('document.querySelectorAll(".tgroup:not(.tg-whole)")[0].querySelectorAll(".tg-panel .hit").length') >= 3,
           "a group's first reading list has studies")
     first = pg.evaluate('document.querySelector(".tgroup:not(.tg-whole) .tg-panel").innerText')

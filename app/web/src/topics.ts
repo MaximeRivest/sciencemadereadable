@@ -5,6 +5,7 @@
  */
 import { API } from "./jobs.ts";
 import { fieldsMade, fieldUrl, inTime, offerHtml, type FieldOffer } from "./fields.ts";
+import { renderOverview } from "./overview.ts";
 import type { Hit } from "./paper.ts";
 
 export interface TopicPaper {
@@ -12,20 +13,25 @@ export interface TopicPaper {
   citations?: number; doi?: string; pmcid?: string; readable?: boolean; in_map?: boolean; why?: string;
 }
 export interface Expert { author: string; name: string; h: number; papers_in_group: number; top: TopicPaper; latest?: TopicPaper; why: string }
-/** A word of a cloud: share = of the studies that use it; lift = how many times more often than elsewhere (the
- *  other groups, or all of science for the whole topic); score = its relevance, what the size follows. */
+/** A word of a cloud: share = of the studies that use it (the size); lift = how many times as often as elsewhere
+ *  (the other groups, or all of science for the whole topic: the colour); score = how telling it is. */
 export interface CloudWord { t: string; share: number; lift: number; score: number }
-type Lenses = Record<string, TopicPaper[]> & { experts: Expert[] };
+export type Lenses = Record<string, TopicPaper[]> & { experts: Expert[] };
+/** A group of a group, carried by the map (the data API makes the splits with the map). */
+export interface Sub {
+  id: number; name: string; size: number; years?: number[] | null; typical?: TopicPaper; cites_groups?: Record<string, number>;
+  cloud?: CloudWord[]; lenses: Lenses;
+}
 export interface Group {
   id: number; name: string; size: number; years?: number[]; typical: TopicPaper; centre?: { x: number; y: number } | null;
   cites_groups: Record<string, number>; between: number; with_references: number; cloud?: CloudWord[];
-  lenses: Lenses;
+  lenses: Lenses; subgroups?: Sub[]; subgroups_other?: number;
 }
 /** The whole map read as one group (maps made before 2026-10-15 have none). */
 export interface Overall { size: number; years?: number[] | null; cloud?: CloudWord[]; lenses: Lenses }
 export interface TopicMap {
   question: string; mode: string; groups: Group[]; overall?: Overall; cached?: boolean; parent?: { group: number; name: string; size: number };
-  papers: { id: string[]; group: number[]; between: boolean[]; x: (number | null)[]; y: (number | null)[] };
+  papers: { id: string[]; group: number[]; sub?: number[]; between: boolean[]; x: (number | null)[]; y: (number | null)[] };
   coverage: { papers: number; with_references: number; in_groups: number; other: number; references_thin: boolean;
               without_text_vector?: number };
   field?: { papers: number; made: string; credit?: string };
@@ -64,7 +70,7 @@ export const asHit = (p: TopicPaper): Hit => ({
 });
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
-const span = (y?: number[]) => y ? (y[0] === y[2] ? `${y[1]}` : `mostly ${y[0]}–${y[2]}`) : "";
+export const span = (y?: number[] | null) => y ? (y[0] === y[2] ? `${y[1]}` : `mostly ${y[0]}–${y[2]}`) : "";
 
 // "this {u}": the group, or the whole topic (the same lists, from every study's citations)
 const LENSES: [key: string, label: string, help: (u: string) => string][] = [
@@ -80,7 +86,9 @@ const LENSES: [key: string, label: string, help: (u: string) => string][] = [
 export interface Deps {
   row: (h: Hit, why?: string) => HTMLElement;
   go: (url: string) => void;
-  focusGroup: (g: number | null) => void;
+  focusGroup: (g: number | null, sub?: number | null) => void;
+  at?: string;                               // the box picked in the overview ("", "3", "3.2"), from the address
+  select?: (at: string) => void;             // remember it in the address
   url: (o: TopicOptions) => string;          // the address of this map with other options (a group, the whole map, the field)
   listUrl: string;                           // the plain list of studies for the same search
   offer?: FieldOffer | null;                 // paying to make a whole-field map now (fields.ts)
@@ -130,7 +138,11 @@ export function renderTopics(box: HTMLElement, d: TopicMap, deps: Deps) {
     head.insertAdjacentHTML("beforeend", `<p>These studies don't split into clear groups. <a href="${esc(deps.listUrl)}" data-go>See them as a list</a>.</p>`);
   }
   const names = new Map(d.groups.map((g) => [g.id, g.name]));
-  if (d.overall && Object.values(d.overall.lenses).some((l) => l.length)) box.appendChild(whole(d, names, deps));
+  hold = null;
+  if (d.groups.length) {
+    box.appendChild(renderOverview(d, deps, { cloud, lists, span, hover, keep }));
+    box.insertAdjacentHTML("beforeend", `<h2 class="tov-title">The groups, one by one</h2>`);
+  }
   for (const g of d.groups) box.appendChild(card(g, names, deps, !d.parent, d.mode === "field" ? 300 : 60));
   if (d.coverage.other)
     box.insertAdjacentHTML("beforeend", `<p class="quiet small topics-foot">${d.coverage.other.toLocaleString()} studies fit no group well (grey on the map).</p>`);
@@ -138,22 +150,12 @@ export function renderTopics(box: HTMLElement, d: TopicMap, deps: Deps) {
     a.onclick = (e) => { e.preventDefault(); deps.go(a.getAttribute("href")!); };
 }
 
-/** The whole topic as one card, above its groups: the words that set it apart from the rest of science, and
- *  its own reading lists (from every study's citations). */
-function whole(d: TopicMap, names: Map<number, string>, deps: Deps): HTMLElement {
-  const o = d.overall!;
-  const sec = document.createElement("section");
-  sec.className = "tgroup tg-whole";
-  sec.setAttribute("aria-labelledby", "tg-0");
-  const what = d.parent ? `All of group ${d.parent.group}` : d.mode === "field" ? "The whole field" : "The whole topic";
-  const meta = [`${o.size.toLocaleString()} studies`, span(o.years ?? undefined)].filter(Boolean).join(" · ");
-  sec.innerHTML = `<h3 id="tg-0">${esc(what)}</h3><p class="tg-meta">${meta}</p>`;
-  if (o.cloud?.length)
-    sec.append(cloud(o.cloud, 30, "all of science",
-      `Its words, sized by how much more its studies use them than all of science does (point at one for the numbers).`));
-  lists(sec, 0, o.lenses, "topic", names, deps);
-  return sec;
+/** The map lights one group (or subgroup) while it is pointed at, and goes back to the one picked in the overview. */
+let hold: [number, number | null] | null = null;
+function hover(deps: Deps, g: number | null, sub: number | null = null) {
+  if (g == null) deps.focusGroup(hold?.[0] ?? null, hold?.[1] ?? null); else deps.focusGroup(g, sub);
 }
+function keep(deps: Deps, f: [number, number | null] | null) { hold = f; hover(deps, null); }
 
 function card(g: Group, names: Map<number, string>, deps: Deps, canSplit: boolean, splitFrom: number): HTMLElement {
   const sec = document.createElement("section");
@@ -164,11 +166,11 @@ function card(g: Group, names: Map<number, string>, deps: Deps, canSplit: boolea
   const meta = [`${g.size.toLocaleString()} studies`, span(g.years), ...uses].filter(Boolean).join(" · ");
   sec.innerHTML = `<h3 id="tg-${g.id}"><span class="tg-chip" aria-hidden="true"></span><span class="tg-num">Group ${g.id}</span> ${esc(g.name)}</h3>` +
     `<p class="tg-meta">${meta}</p>`;
-  sec.onpointerenter = () => deps.focusGroup(g.id);
-  sec.onpointerleave = () => deps.focusGroup(null);
-  sec.addEventListener("focusin", () => deps.focusGroup(g.id));
+  sec.onpointerenter = () => hover(deps, g.id);
+  sec.onpointerleave = () => hover(deps, null);
+  sec.addEventListener("focusin", () => hover(deps, g.id));
   if (g.cloud?.length) sec.append(cloud(g.cloud, 24, "the other groups"));
-  lists(sec, g.id, g.lenses, "group", names, deps);
+  lists(sec, `${g.id}`, g.lenses, "group", names, deps);
   if (canSplit && g.size >= splitFrom) {
     const a = sec.appendChild(document.createElement("a"));
     a.className = "tg-split";
@@ -179,42 +181,55 @@ function card(g: Group, names: Map<number, string>, deps: Deps, canSplit: boolea
   return sec;
 }
 
-const times = (x: number) => x >= 100 ? `${Number(x.toPrecision(2)).toLocaleString()}×` : `${x >= 10 ? Math.round(x) : x.toFixed(1)}×`;
+const pct = (x: number) => x >= 0.095 ? `${Math.round(100 * x)}%` : x >= 0.0095 ? `${(100 * x).toFixed(1)}%`
+  : `${Number((100 * x).toPrecision(1))}%`;
 
-/** A word cloud in Scimeetr's spirit: the words a set of studies uses more than others, the bigger the more
- *  telling (their relevance: how often, and how many times more often). A wrapped line of words, the biggest in
+/** Scimeetr's word cloud (2017): a set of studies' most frequent words, sized by how many of them use the word,
+ *  coloured by how much more (blue) or less (red) than elsewhere they use it; grey: about as much. The colour is
+ *  on a log scale up to `cap` times (as often or as rarely): x8 against the other groups, x1000 against all of
+ *  science (a topic's own words are thousands of times commoner in it). A wrapped line of words, the biggest in
  *  the middle, so it reads as text (and to screen readers in order of size, from the centre out). */
-function cloud(words: CloudWord[], k: number, vs: string, note?: string): HTMLElement {
+export function cloud(words: CloudWord[], k: number, vs: string, note?: string, cap = vs === "all of science" ? 1000 : 8): HTMLElement {
   const w = words.slice(0, k);
-  const lo = Math.min(...w.map((x) => x.score)), hi = Math.max(...w.map((x) => x.score));
+  const lo = Math.min(...w.map((x) => x.share)), hi = Math.max(...w.map((x) => x.share));
   const big = k >= 30 ? 27 : 22;
   const order: CloudWord[] = [];                      // ranks 1, 2, 3, 4, 5 ... as 5 3 1 2 4: big in the middle
-  w.forEach((x, i) => (i % 2 ? order.push(x) : order.unshift(x)));
+  [...w].sort((a, b) => b.share - a.share).forEach((x, i) => (i % 2 ? order.push(x) : order.unshift(x)));
   const div = document.createElement("div");
   div.className = "tg-cloud-box";
-  if (note) div.insertAdjacentHTML("beforeend", `<p class="tg-help">${esc(note)}</p>`);
+  if (note) div.insertAdjacentHTML("beforeend", `<p class="tg-help">${note}</p>`);
   const ul = div.appendChild(document.createElement("ul"));
   ul.className = "tg-cloud";
-  ul.setAttribute("aria-label", `Words used more here than in ${vs}`);
+  ul.setAttribute("aria-label", `The words its studies use most, compared with ${vs}`);
   for (const x of order) {
-    const t = hi > lo ? (x.score - lo) / (hi - lo) : 1;
+    const t = hi > lo ? Math.sqrt((x.share - lo) / (hi - lo)) : 1;
     const li = ul.appendChild(document.createElement("li"));
     li.textContent = x.t;
     li.style.fontSize = `${(12.5 + (big - 12.5) * t).toFixed(1)}px`;
-    if (t < 0.3) li.className = "small";
-    li.title = `In ${Math.max(1, Math.round(100 * x.share))}% of these studies, ${times(x.lift)} as often as in ${vs}`;
+    const l = Math.log(Math.max(x.lift, 1e-6));
+    if (Math.abs(l) >= Math.log(1.25)) {             // grey (the text's own muted colour) within 1.25x either way
+      const mix = Math.round(100 * Math.min(1, 0.25 + 0.75 * Math.abs(l) / Math.log(cap)));
+      li.style.color = `color-mix(in oklab, var(${l > 0 ? "--cloud-up" : "--cloud-down"}) ${mix}%, var(--muted))`;
+    }
+    const elsewhere = x.share / x.lift;
+    li.title = `In ${pct(x.share)} of these studies; ${pct(elsewhere)} in ${vs}`;
   }
   return div;
 }
 
-/** Reading lists as tabs (a group's, or the whole topic's: id 0). */
-function lists(sec: HTMLElement, id: number, lenses: Lenses, unit: string, names: Map<number, string>, deps: Deps) {
-  const g = { id, lenses };
+/** What the colours say, once above the clouds. */
+export const legend = (vs: string) => `<span class="cl-up">blue</span>: used more than in ${vs} · ` +
+  `<span class="cl-even">grey</span>: about as much · <span class="cl-down">red</span>: less. Bigger: more of its studies use it.`;
+
+/** Reading lists as tabs: of a group (key "3"), a subgroup ("o3.2") or the whole topic ("o0"); the key keeps the
+ *  tabs' ids apart when one group's lists show twice (in the overview and in its card). */
+export function lists(sec: HTMLElement, key: string, lenses: Lenses, unit: string, names: Map<number, string>, deps: Deps) {
+  const g = { id: key, lenses };
   const present = LENSES.filter(([k]) => (g.lenses[k] ?? []).length);
   const tabs = sec.appendChild(document.createElement("div"));
   tabs.className = "tg-tabs";
   tabs.setAttribute("role", "tablist");
-  tabs.setAttribute("aria-label", id ? `Reading lists of group ${id}` : `Reading lists of the whole ${unit}`);
+  tabs.setAttribute("aria-label", `Reading lists of this ${unit}`);
   const panel = sec.appendChild(document.createElement("div"));
   panel.className = "tg-panel";
   panel.setAttribute("role", "tabpanel");
