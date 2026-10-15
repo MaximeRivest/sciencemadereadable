@@ -241,8 +241,8 @@ export function renderPending(box: HTMLElement, st: FieldPending, deps: Deps) {
     `<p class="topics-intro">This finds every study on the topic, not just the closest 1,000: studies close in meaning, ` +
     `each judged by an AI, plus the studies the field keeps citing, then groups them all. You can leave: it keeps going, ` +
     `and the map will open at once next time, for anyone. This page checks every 20 seconds.</p>` +
-    (st.gpu_reserved ? `<p class="quiet small">Our graphics card is busy training a model right now, so maps wait a ` +
-      `little longer than shown.</p>` : "") +
+    (st.gpu_reserved ? `<p class="quiet small">Our graphics card is busy with other work right now, so maps wait ` +
+      `longer than shown, until it frees up.</p>` : "") +
     `<p class="quiet"><a href="${esc(deps.url({ field: false }))}" data-go>See the map of the 1,000 closest meanwhile</a> · ` +
     `<a href="?fields" data-go>The whole line</a></p>`;
   for (const a of box.querySelectorAll<HTMLAnchorElement>("a[data-go]"))
