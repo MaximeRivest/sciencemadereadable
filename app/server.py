@@ -449,6 +449,9 @@ def library() -> list[dict]:
     return items
 
 
+import editions_proxy
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *a, **k):
         super().__init__(*a, directory=str(WEB), **k)
@@ -467,19 +470,21 @@ class Handler(SimpleHTTPRequestHandler):
 
     def end_headers(self):
         api = self.path.startswith("/api/") or is_mcp(self.path)
-        if api and not self.path.startswith("/api/worker/"):
+        if api and not self.path.startswith("/api/worker/") and not editions_proxy.applies(self.path):
             # the page may live elsewhere (GitHub Pages); nothing here uses cookies or logins
             self.send_header("Access-Control-Allow-Origin", "*")
         if not api:
             # the page holds API keys: run only this site's own code, send only to the providers,
             # this server, or a model server the reader typed in
-            self.send_header("Content-Security-Policy", "default-src \'self\'; script-src \'self\'; style-src \'self\'; img-src \'self\' data: https://pmc-oa-opendata.s3.amazonaws.com; connect-src \'self\' https:; base-uri \'none\'; form-action \'none\'; object-src \'none\'; frame-ancestors 'none'")
+            self.send_header("Content-Security-Policy", "default-src \'self\'; script-src \'self\'; style-src \'self\'; img-src \'self\' data: blob: https://pmc-oa-opendata.s3.amazonaws.com; connect-src \'self\' https:; base-uri \'none\'; form-action \'none\'; object-src \'none\'; frame-ancestors 'none'")
             self.send_header("Referrer-Policy", "no-referrer")
             self.send_header("X-Content-Type-Options", "nosniff")
             self.send_header("Cache-Control", "no-cache")   # re-check on each visit: page and script stay in step
         super().end_headers()
 
     def do_GET(self):
+        if editions_proxy.applies(self.path):
+            return editions_proxy.proxy(self)
         u = urllib.parse.urlparse(self.path)
         if u.path == "/api/paper":
             try:
@@ -767,6 +772,8 @@ class Handler(SimpleHTTPRequestHandler):
         return who_is((self.headers.get("X-Forwarded-For") or self.client_address[0]).split(",")[0].strip())
 
     def do_OPTIONS(self):
+        if editions_proxy.applies(self.path):
+            return editions_proxy.proxy(self)
         self.send_response(204)
         self.send_header("Access-Control-Allow-Methods", "GET, POST")
         if is_mcp(self.path):   # MCP clients in a browser send their own headers (Mcp-Protocol-Version, Mcp-Method...)
@@ -782,6 +789,8 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
+        if editions_proxy.applies(self.path):
+            return editions_proxy.proxy(self)
         u = urllib.parse.urlparse(self.path)
         if is_mcp(u.path):
             return self.mcp_proxy()
@@ -1047,7 +1056,7 @@ class PublicHandler(Handler):
 
     def allowed(self, method: str) -> bool:
         path = urllib.parse.urlparse(self.path).path
-        return ((method, path) in PUBLIC or (method == "GET" and path.startswith(("/api/jobs/", "/api/data/", "/api/ask")))
+        return (editions_proxy.applies(path) or (method, path) in PUBLIC or (method == "GET" and path.startswith(("/api/jobs/", "/api/data/", "/api/ask")))
                 or (method == "POST" and path.startswith("/api/worker/jobs/")))
 
     def do_GET(self):
@@ -1072,12 +1081,16 @@ class PublicHandler(Handler):
         super().do_POST()
 
     def do_DELETE(self):
+        if editions_proxy.applies(self.path):
+            return editions_proxy.proxy(self)
         # an MCP client ending its session: this server keeps none (stateless), which the spec answers with 405
         if is_mcp(self.path):
             return self.mcp_send(405, b"", "text/plain", {"Allow": "POST"})
         self.send_json(404, {"error": "not found"})
 
     def do_HEAD(self):
+        if editions_proxy.applies(self.path):
+            return editions_proxy.proxy(self)
         # some link checkers and fetch tools ask for the headers first: the addresses meant for them say "here"
         path = urllib.parse.urlparse(self.path).path
         if path in ("/", "/robots.txt", "/api", "/api/", "/api/data", "/api/data/", "/api/data/llms.txt") or path.startswith("/api/ask") or is_mcp(path):

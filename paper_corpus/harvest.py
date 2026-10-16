@@ -33,8 +33,8 @@ from pathlib import Path
 
 import dpyr
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "rewrite_benchmark"))
-from prepare import text  # the same XML-to-text rules as the benchmark
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from reading_engine.jats_source import text, KINDS, split_sections, license_ok
 
 HERE = Path(__file__).resolve().parent
 XML_DIR = HERE / "xml"
@@ -197,57 +197,6 @@ def download(pmcids):
 
 
 # ---------------------------------------------------------------- 4. sections
-
-KINDS = [("introduction", ("introduction", "background")), ("methods", ("method", "material")),
-         ("results", ("result",)), ("discussion", ("discussion",)), ("conclusion", ("conclusion",))]
-
-
-def split_sections(root):
-    """The translator's sections, from a JATS article. None if it is not a normal
-    research paper (no introduction, methods or results, or no body text)."""
-    meta = root.find("./front/article-meta")
-    found, order = {}, []
-    for sec in root.findall("./body/sec"):
-        heading = (sec.findtext("title") or "").lower()
-        for kind, words in KINDS:
-            if kind not in found and any(w in heading for w in words):
-                found[kind] = sec
-                order.append(kind)
-                break
-    if not all(k in found for k in ("introduction", "methods", "results")) or meta is None:
-        return None
-    intro = found["introduction"]
-    paragraphs = intro.findall("./p")
-    sections = {
-        "title": text(meta.find("./title-group/article-title")),
-        "abstract": text(meta.find("abstract")) if meta.find("abstract") is not None else "",
-        "introduction_first": text(paragraphs[0]) if paragraphs else "",
-        "introduction_rest": "\n\n".join([text(p) for p in paragraphs[1:]] + [text(s) for s in intro.findall("./sec")]),
-    }
-    for kind in ("methods", "results", "discussion", "conclusion"):
-        sections[kind] = text(found[kind]) if kind in found else ""
-    # "Results and discussion" together: the results section holds both.
-    sections["original_section_order"] = ",".join(order)
-    return sections
-
-
-def license_ok(root):
-    """CC BY (any version), stated in the licence element's link or its text.
-    Non-commercial or no-derivatives licences (by-nc, by-nd, by-sa...) are refused."""
-    for lic in root.iter():
-        if not lic.tag.endswith("license"):
-            continue
-        links = [v for e in lic.iter() for v in e.attrib.values()]
-        blob = (" ".join(links) + " " + " ".join(lic.itertext())).lower()
-        if any(x in blob for x in ("licenses/by-nc", "licenses/by-nd", "licenses/by-sa", "noncommercial", "no derivatives")):
-            return False
-        if "creativecommons.org/licenses/by/" in blob or "creative commons attribution" in blob \
-                or "cc by license" in blob or "(cc by)" in blob:
-            return True
-        if "broadest form of re-use" in blob and "commercial" in blob:   # ACS AuthorChoice CC-BY wording
-            return True
-    return False
-
 
 # ---------------------------------------------------------------- main
 

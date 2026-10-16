@@ -19,3 +19,4 @@ for (const t of truth) {
 }
 console.log(`sections identical: ${same}/${truth.length}; licence verdict identical: ${lic}/${truth.length}`);
 bad.forEach((b) => console.log("  ", b));
+if (same !== truth.length || lic !== truth.length) process.exitCode = 1;

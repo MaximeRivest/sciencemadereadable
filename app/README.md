@@ -74,6 +74,19 @@ app/rent/h100_down.sh    # delete the machine and its disk: billing stops. The h
 Each worker offers only the models that answer (checked every 15 s), and the queue gives a paper only to
 a worker that has its model: a restarting model makes papers wait in line, not fail.
 
+## PDF, audio and reading editions
+
+The website's **PDF & audio** desk provides private PDF uploads, extraction review,
+e-ink reading, EPUB/PDF downloads, and optional Kokoro chapter audio. Saved public
+rewrites offer **Read, listen & download** without another rewrite call.
+
+This uses a separate API and resource-limited worker, not the public rewrite
+queue or library. Production routing is `/api/editions/*` through the existing
+public door to loopback :8825. Code, deployment, privacy limits, launch gate and
+rollback: [editions/README.md](editions/README.md). Shared implementation:
+`../reading_engine/`. The source-PDF version must match a saved rewrite's original
+sections exactly; uncertain visual boundaries use labelled source-page panels.
+
 ## Parts
 
 | | where | what |

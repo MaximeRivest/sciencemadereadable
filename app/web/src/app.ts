@@ -46,7 +46,7 @@ function saveKeyForm() {
 }
 
 // ---------------------------------------------------------------- views
-function show(view: "home" | "results" | "reader" | "library" | "work" | "explore" | "api" | "support" | "fields") {
+function show(view: "home" | "results" | "reader" | "library" | "work" | "explore" | "api" | "support" | "fields" | "reading") {
   document.body.dataset.view = view;
   document.body.classList.remove("topics-mode");
   if (view !== "home") {   // leaving home closes its search tips, so Back finds the page as it was first seen
@@ -57,8 +57,8 @@ function show(view: "home" | "results" | "reader" | "library" | "work" | "explor
   window.scrollTo(0, 0);
   mapView(view);
   menu(false);
-  const here: Record<string, string> = { library: "#open-library", api: "#open-api", support: "#open-support", fields: "#open-fields" };
-  for (const id of ["#open-library", "#open-fields", "#open-api", "#open-support"])
+  const here: Record<string, string> = { library: "#open-library", api: "#open-api", support: "#open-support", fields: "#open-fields", reading: "#open-reading" };
+  for (const id of ["#open-library", "#open-fields", "#open-api", "#open-support", "#open-reading"])
     if (id === here[view]) $(id).setAttribute("aria-current", "page"); else $(id).removeAttribute("aria-current");
 }
 
@@ -604,6 +604,7 @@ function showWalkOnMapOnly(d: any) {
 
 async function openPaper(id: string) {
   show("reader");
+  $("#edition-go").hidden = true;
   if (running) { leaving = true; running.abort(); }
   progress.hide();
   $("#paper").innerHTML = `<div class="page-skeleton reader-skeleton" aria-hidden="true"><i class="h"></i><i class="h"></i><i class="h short"></i><i></i><i></i><i></i><i class="short"></i></div>
@@ -655,6 +656,8 @@ async function attach() {
 function showChosen() {
   if (!paper || !reader) return;
   const r = saved[chosen.id];
+  $("#edition-go").hidden = !r || r.source === "browser";
+  $("#edition-go").onclick = () => go(`?reading&doi=${encodeURIComponent(paper!.doi)}&model=${encodeURIComponent(chosen.id)}`);
   if (r) {
     reader.set(r.parts, Object.keys(r.parts));
     if (!running) track("read", { doi: paper.doi, model: chosen.id, src: r.source });
@@ -902,6 +905,16 @@ function route() {
   const q = new URLSearchParams(location.search);
   clearInterval(nowTimer);
   document.title = "ScienceMadeReadable";   // a paper or study page puts its own title in front
+  if (q.has("reading")) {
+    show("reading"); document.title = "PDF, audio and reading editions · ScienceMadeReadable";
+    $("#reading-desk").innerHTML = '<p role="status">Opening your reading desk…</p>';
+    import("./editions.ts").then(({ mount }) => {
+      if (document.body.dataset.view !== "reading") return;
+      mount($("#reading-desk"), q.get("doi") ?? "", q.get("model") ?? "our-9b");
+      focusTitle($("#reading-desk h1"));
+    }).catch(() => { $("#reading-desk").textContent = "The reading desk could not load. Please reload this page."; });
+    return;
+  }
   if (q.has("support")) return openSupport();
   if (q.has("library")) return openLibrary();
   if (q.has("fields")) return openFields(q.get("fields") ?? "");
@@ -1014,6 +1027,7 @@ initMap({
 });
 $("#brand").onclick = (e) => { e.preventDefault(); go(""); };
 for (const id of ["#open-library"]) $(id).onclick = (e) => { e.preventDefault(); go("?library"); };
+for (const id of ["#open-reading", "#home-reading"]) $(id).onclick = (e) => { e.preventDefault(); go("?reading"); };
 for (const id of ["#open-api", "#open-api-2", "#open-api-3"])
   $(id).onclick = (e) => { e.preventDefault(); ($("#about") as HTMLDialogElement).close(); go("?api"); };
 // the API page: a Copy button on every code box (counted, to know whether anyone sets up an agent)

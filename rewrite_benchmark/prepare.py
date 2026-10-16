@@ -12,6 +12,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import sys
 import urllib.request
 import xml.etree.ElementTree as ET
 
@@ -22,7 +23,8 @@ DOI = "10.1371/journal.pone.0300008"
 SESSION_ID = "01a0e736-a851-75b8-8af7-9bab57c64275"
 MESSAGE_IDS = {"opening": "7edc86a7", "introduction_rest": "c2d8f99b", "methods": "ebe8df96", "results": "f08d074c", "discussion": "2b066f5c"}
 ORDER = ["title", "abstract", "introduction_first", "introduction_rest", "methods", "results", "discussion", "conclusion"]
-BLOCKS = {"article-title", "abstract", "sec", "title", "p", "list", "list-item", "fig", "caption", "table-wrap", "table", "thead", "tbody", "tfoot", "tr", "disp-formula", "ref", "ref-list", "ack", "app", "app-group", "fn", "fn-group", "supplementary-material", "statement"}
+sys.path.insert(0, str(PROJECT))
+from reading_engine.jats_source import BLOCKS, tag, render, text
 
 
 def digest(value: str | bytes) -> str:
@@ -32,32 +34,6 @@ def digest(value: str | bytes) -> str:
 def write_json(path: Path, value) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
-
-
-def tag(node: ET.Element) -> str:
-    return node.tag.rsplit("}", 1)[-1]
-
-
-def render(node: ET.Element) -> str:
-    name = tag(node)
-    if name in {"graphic", "inline-graphic", "object-id"}:
-        return ""
-    if name == "alternatives":
-        for preferred in ("table", "tex-math", "math"):
-            match = next((child for child in node if tag(child) == preferred), None)
-            if match is not None:
-                return render(match)
-        return ""
-    value = (node.text or "") + "".join(render(child) + (child.tail or "") for child in node)
-    if name in BLOCKS:
-        return "\n\n" + value + "\n\n"
-    if name in {"td", "th"}:
-        return " | " + value + " "
-    return value
-
-
-def text(node: ET.Element) -> str:
-    return "\n\n".join(clean for paragraph in re.split(r"\n\s*\n", render(node)) if (clean := re.sub(r"\s+", " ", paragraph).strip()))
 
 
 def prepare_source(xml_path: Path, output: Path = DATA) -> dict:

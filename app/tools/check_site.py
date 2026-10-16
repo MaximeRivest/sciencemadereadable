@@ -227,7 +227,7 @@ def experience(p, b, errs):
     axe = Axe()
     for theme in ("light", "dark"):
         for q in ["", "?q=coral%20bleaching", "?topics=coral%20reefs%20and%20marine%20heatwaves", "?work=10.1126/science.aan8048",
-                  "?api", "?support", "?library"]:
+                  "?api", "?support", "?library", "?reading"]:
             pg.emulate_media(color_scheme=theme)
             pg.goto(BASE + q)
             pg.evaluate(f"document.documentElement.dataset.theme = '{theme}'")

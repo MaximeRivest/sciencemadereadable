@@ -1,0 +1,9 @@
+{
+  "pdf_sha256": "b2b223fdd946045f2ce5f567aa82ea082ada66488a3afe456022046e62cba620",
+  "blocks": {
+    "b0000": {"text_sha256": "09ea7b0a42341fddb2b28d082a69928add2f79bdc410146a7e5d6dcc8d2e9ec3", "role": "heading", "section": "other", "reason": "Inspected original PDF page 1: Article is the publication type above the actual title; retain outside rewrite."},
+    "b0091": {"text_sha256": "c7bfd2d3adda16555bf5172a7003821e3780ec0d79d7e73ea5a182e7e4aabe4b", "role": "caption", "section": "results_discussion", "reason": "Inspected original PDF page 10: this is the key directly below Table 4 in subsection 3.5 of Results and Discussion."},
+    "b0147": {"text_sha256": "8b00660b1a833bd9cad02579acf7d76c89a5b5f192cc1cc6a97366588a13d6b7", "role": "references", "section": "other", "reason": "Inspected original PDF page 13: numbered bibliography entry 40; retain outside rewrite."},
+    "b0148": {"text_sha256": "0439ad292a42f57f626c825e058c1367e0d264b6bb7febf693921738f5abc3b2", "role": "metadata", "section": "other", "reason": "Inspected original PDF page 13: explicitly labelled Disclaimer/Publisher's Note; retain outside rewrite."}
+  }
+}

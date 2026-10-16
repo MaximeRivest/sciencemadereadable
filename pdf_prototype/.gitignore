@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+runs/
+report-*.png
+reader-*.png
+reading/
+demo/

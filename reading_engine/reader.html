@@ -1,0 +1,1020 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>ScienceMadeReadable · Read and listen</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: var(--color-background-primary, #fff);
+        --fg: var(--color-text-primary, #111);
+        --muted: var(--color-text-secondary, #555);
+        --line: var(--color-border-primary, #bbb);
+        --soft: var(--color-background-secondary, #f4f4f4);
+        --size: 22px;
+        --leading: 1.6;
+        font-family: var(--font-sans, system-ui);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+      }
+      button,
+      select,
+      a.button {
+        font: inherit;
+        background: var(--bg);
+        color: var(--fg);
+        border: 1px solid var(--line);
+        border-radius: var(--border-radius-md, 6px);
+        padding: 11px 15px;
+        min-height: 46px;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.45;
+      }
+      button:hover,
+      a.button:hover {
+        background: var(--soft);
+      }
+      a {
+        color: inherit;
+        text-underline-offset: 3px;
+      }
+      button:focus-visible,
+      a:focus-visible,
+      select:focus-visible {
+        outline: 3px solid var(--fg);
+        outline-offset: 3px;
+      }
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+      }
+      h1,
+      h2,
+      h3 {
+        line-height: 1.25;
+      }
+      .home {
+        max-width: 920px;
+        margin: auto;
+        padding: clamp(18px, 4vw, 48px);
+        line-height: 1.65;
+      }
+      .home h1 {
+        font-family: Georgia, serif;
+        font-size: clamp(27px, 4vw, 40px);
+      }
+      .eyebrow {
+        font-size: 12px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .primary {
+        border: 2px solid var(--fg);
+        font-weight: 650;
+      }
+      .card {
+        border-top: 1px solid var(--line);
+        padding: 24px 0;
+        margin-top: 24px;
+      }
+      .notice {
+        border-left: 3px solid var(--fg);
+        padding: 10px 16px;
+        background: var(--soft);
+        font-size: 14px;
+      }
+      .downloads {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+      .downloads a {
+        flex-direction: column;
+        align-items: start;
+      }
+      .downloads small {
+        font-weight: 400;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .chapters li {
+        margin: 10px 0;
+      }
+      .audio {
+        width: 100%;
+        margin-top: 14px;
+      }
+      select {
+        max-width: 100%;
+      }
+      .reader {
+        height: 100vh;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .toolbar {
+        border-bottom: 1px solid var(--line);
+        padding: 10px 14px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .toolbar select {
+        min-width: 0;
+        flex: 1;
+        max-width: 340px;
+      }
+      .toolbar button {
+        padding: 8px 12px;
+      }
+      .page-shell {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        justify-content: center;
+        padding: 22px clamp(16px, 4vw, 48px);
+      }
+      #viewport {
+        width: 100%;
+        max-width: 850px;
+        height: 100%;
+        overflow: hidden;
+        scroll-behavior: auto;
+        overscroll-behavior: none;
+        touch-action: pan-y pinch-zoom;
+      }
+      #flow {
+        height: 100%;
+        width: 100%;
+        column-fill: auto;
+        column-gap: 40px;
+        font-family: Georgia, "Noto Serif", serif;
+        font-size: var(--size);
+        line-height: var(--leading);
+        overflow-wrap: anywhere;
+      }
+      #flow h1 {
+        font-size: 1.4em;
+        margin: 0 0 0.8em;
+        break-after: avoid;
+      }
+      #flow h2,
+      #flow h3,
+      #flow h4,
+      #flow h5,
+      #flow h6 {
+        font-size: 1.05em;
+        break-after: avoid;
+      }
+      #flow p {
+        margin: 0 0 1em;
+        orphans: 2;
+        widows: 2;
+      }
+      #flow pre {
+        white-space: pre-wrap;
+      }
+      #flow .source {
+        font: 14px/1.5 var(--font-sans, system-ui);
+        margin-bottom: 24px;
+      }
+      #flow a {
+        overflow-wrap: anywhere;
+      }
+      #flow img {
+        max-width: 100%;
+        max-height: 100%;
+      }
+      .pager {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-top: 1px solid var(--line);
+      }
+      .pager button {
+        min-width: 110px;
+      }
+      .pager output {
+        text-align: center;
+        font-size: 13px;
+      }
+      .settings {
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .settings label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+      }
+      .settings input {
+        width: 120px;
+      }
+      .inline-status {
+        font-size: 13px;
+      }
+      .hidden,
+      [hidden] {
+        display: none !important;
+      }
+      .skip {
+        position: absolute;
+        left: -9999px;
+      }
+      .skip:focus {
+        left: 15px;
+        top: 15px;
+        background: var(--bg);
+        z-index: 10;
+      }
+      * {
+        scroll-behavior: auto !important;
+        animation: none !important;
+        transition: none !important;
+      }
+      @media (max-width: 600px) {
+        .downloads {
+          grid-template-columns: 1fr;
+        }
+        .toolbar {
+          padding: 8px;
+        }
+        .toolbar button {
+          font-size: 14px;
+        }
+        .page-shell {
+          padding: 18px 18px 10px;
+        }
+        .pager button {
+          min-width: 90px;
+        }
+        .pager {
+          padding: 10px;
+        }
+        .home {
+          padding: 20px;
+        }
+        .settings input {
+          width: 100px;
+        }
+      }
+      #flow .source-visual {
+        height: var(--visual-height, 500px);
+        margin: 0;
+        width: 100%;
+        break-before: column;
+        break-after: column;
+        break-inside: avoid;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      #flow .source-visual figcaption {
+        font: 14px/1.4 var(--font-sans, system-ui);
+        flex: none;
+      }
+      #flow .visual-image {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: zoom-in;
+      }
+      #flow .visual-image img {
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+      .visual-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 10px;
+      }
+      .visual-grid button {
+        text-align: left;
+      }
+      .visual-grid small {
+        display: block;
+        color: var(--muted);
+      }
+      #visual-dialog {
+        width: 96vw;
+        max-width: 1500px;
+        height: 94vh;
+        height: 94dvh;
+        max-height: 96dvh;
+        padding: 0;
+        border: 2px solid var(--fg);
+        background: var(--bg);
+        color: var(--fg);
+      }
+      #visual-dialog[open] {
+        display: flex;
+        flex-direction: column;
+      }
+      #visual-dialog::backdrop {
+        background: var(--soft);
+        opacity: 0.88;
+      }
+      .visual-toolbar {
+        padding: 10px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .visual-toolbar h2 {
+        font-size: 16px;
+        margin: 0;
+        flex: 1;
+        min-width: 150px;
+      }
+      .visual-toolbar button,
+      .visual-toolbar a {
+        font-size: 14px;
+        padding: 8px 12px;
+      }
+      .zoom-stage {
+        min-height: 0;
+        flex: 1;
+        overflow: auto;
+        padding: 12px;
+        touch-action: pan-x pan-y pinch-zoom;
+      }
+      .zoom-stage img {
+        display: block;
+        max-width: none;
+        height: auto;
+        margin: auto;
+      }
+      .visual-help {
+        font-size: 13px;
+        padding: 8px 12px;
+        margin: 0;
+        border-top: 1px solid var(--line);
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#home-title">Skip to paper</a>
+    <main id="home" class="home">
+      <div class="eyebrow">ScienceMadeReadable · reading editions</div>
+      <h1 id="home-title"></h1>
+      <p id="source-credit" class="muted"></p>
+      <p class="notice" id="notice"></p>
+      <p class="muted" id="private-life" hidden></p>
+      <details id="quality-notes" hidden>
+        <summary>Source and formatting notes</summary>
+        <ul></ul>
+      </details>
+      <div class="row">
+        <button id="start" class="primary">Read on this screen</button
+        ><span class="muted" id="resume-note"></span>
+      </div>
+      <p class="muted">
+        E-ink mode: page buttons, no animation, no auto-scrolling. Text size and
+        your place are saved on this device when browser storage is available.
+      </p>
+      <section class="card">
+        <h2>Take it with you</h2>
+        <div class="downloads">
+          <a class="button" href="paper.epub" download
+            ><strong>EPUB</strong
+            ><small>Adjustable text · original figures and tables</small></a
+          ><a class="button" id="pdf-download" href="paper.pdf" download
+            ><strong>Reading PDF</strong
+            ><small>Large-print text · original figures and tables</small></a
+          ><a class="button" id="mp3-download" href="paper.mp3" download
+            ><strong>Full audio · MP3</strong
+            ><small id="audio-length">Kokoro narration</small></a
+          >
+        </div>
+        <p class="row">
+          <a href="original.pdf" target="_blank" rel="noopener">Original PDF</a
+          ><a href="narration.txt" download>Narration transcript</a
+          ><a id="bundle-link" href="reading.zip" download
+            >Offline bundle · ZIP</a
+          >
+        </p>
+        <p class="muted">
+          For an Android e-paper tablet, open this reader in its browser, or
+          download the EPUB into your preferred reading app. The EPUB adapts to
+          the app’s font and page settings.
+        </p>
+      </section>
+      <section class="card" id="listen">
+        <h2>Listen</h2>
+        <p class="muted" id="voice-note"></p>
+        <div class="row">
+          <label for="track">Chapter</label
+          ><select id="track"></select
+          ><a id="track-download" download>Download this chapter</a>
+        </div>
+        <audio class="audio" id="player" controls preload="metadata"></audio>
+        <div class="row">
+          <button id="back-audio">Back 15 seconds</button
+          ><button id="forward-audio">Forward 15 seconds</button
+          ><label
+            ><input id="continuous" type="checkbox" checked /> Continue to next
+            chapter</label
+          >
+        </div>
+        <p class="muted">
+          Citation numbers are omitted. Tables and formulas are announced rather
+          than read as rows or symbols. Technical pronunciations still need a
+          full listening review. No spoken summary replaces the rewrite.
+        </p>
+      </section>
+      <section class="card" id="visual-gallery" hidden>
+        <h2>Original figures and tables</h2>
+        <p class="muted">
+          Also placed beside their rewritten captions. Tap to enlarge, zoom and
+          pan. Uncertain boundaries use whole source pages; the complete
+          original remains available.
+        </p>
+        <div id="visual-grid" class="visual-grid"></div>
+      </section>
+      <section class="card">
+        <h2>Contents</h2>
+        <ol class="chapters" id="contents"></ol>
+        <p class="muted">
+          Figures and tables marked “original” are crops from the source PDF,
+          not regenerated content. Dense originals have their own reading pages;
+          tap to enlarge. The full original paper remains available.
+        </p>
+        <p class="muted" id="storage-note"></p>
+      </section>
+    </main>
+    <section class="reader" id="reader" aria-label="Paged reading view" hidden>
+      <header class="toolbar">
+        <button id="home-button" aria-label="Back to downloads and audio">
+          Formats</button
+        ><select id="chapter" aria-label="Jump to chapter"></select
+        ><button id="settings-button" aria-expanded="false">
+          Text settings</button
+        ><button id="listen-here">Listen</button>
+      </header>
+      <div class="settings" id="settings" hidden>
+        <label
+          >Text size
+          <input
+            id="font-size"
+            type="range"
+            min="17"
+            max="34"
+            step="1"
+            value="22"
+          /><output id="font-value">22</output></label
+        ><label
+          >Line spacing
+          <select id="line-space">
+            <option value="1.4">Compact</option>
+            <option value="1.6" selected>Comfortable</option>
+            <option value="1.85">Spacious</option>
+          </select></label
+        ><button id="fullscreen">Full screen</button>
+      </div>
+      <div class="page-shell">
+        <div id="viewport" tabindex="0" aria-label="Paper page">
+          <article id="flow"></article>
+        </div>
+      </div>
+      <footer class="pager">
+        <button id="previous" aria-label="Previous page">← Previous</button
+        ><output id="progress" aria-live="polite"></output
+        ><button id="next" aria-label="Next page">Next →</button>
+      </footer>
+    </section>
+    <dialog id="visual-dialog" aria-labelledby="visual-title">
+      <header class="visual-toolbar">
+        <h2 id="visual-title">Original visual</h2>
+        <button id="visual-prev" aria-label="Previous original image">←</button
+        ><button id="visual-next" aria-label="Next original image">→</button
+        ><button id="zoom-out" aria-label="Zoom out">−</button
+        ><button id="zoom-in" aria-label="Zoom in">+</button
+        ><button id="zoom-fit">Fit width</button
+        ><a id="visual-pdf" class="button" target="_blank" rel="noopener"
+          >Sharp PDF</a
+        ><button id="visual-close">Close</button>
+      </header>
+      <div class="zoom-stage" id="zoom-stage">
+        <img id="visual-full" alt="" />
+      </div>
+      <p class="visual-help">
+        Original source pixels and labels. Use + to enlarge, then pan to inspect
+        numbers. “Sharp PDF” opens a vector crop for unrestricted zoom.
+      </p>
+    </dialog>
+    <script>
+      /* READING_DATA */
+    </script>
+    <script>
+      "use strict";
+      const D = window.READING,
+        E = D.edition,
+        $ = (id) => document.getElementById(id),
+        key =
+          "smr-reading-" +
+          E.id +
+          (E.visuals_sha256 ? "-" + E.visuals_sha256 : "");
+      let state = {
+          chapter: 0,
+          page: 0,
+          font: 22,
+          leading: "1.6",
+          audioTrack: 0,
+          audioTime: 0,
+        },
+        storage = true;
+      try {
+        const saved = JSON.parse(localStorage.getItem(key) || "null");
+        if (saved) state = { ...state, ...saved };
+      } catch (e) {
+        storage = false;
+      }
+      state.chapter = Math.max(
+        0,
+        Math.min(E.chapters.length - 1, Number(state.chapter) || 0),
+      );
+      state.page = Math.max(0, Number(state.page) || 0);
+      state.font = Math.max(17, Math.min(34, Number(state.font) || 22));
+      if (!["1.4", "1.6", "1.85"].includes(state.leading))
+        state.leading = "1.6";
+      let pageCount = 1,
+        stride = 1,
+        currentPage = state.page,
+        reading = false,
+        resizeTimer,
+        restoreAudio = 0,
+        lastAudioSave = 0;
+      function save() {
+        try {
+          localStorage.setItem(key, JSON.stringify(state));
+        } catch (e) {
+          storage = false;
+          $("storage-note").textContent =
+            "Browser storage is unavailable; reading progress cannot be saved here.";
+        }
+      }
+      function escapeHTML(s) {
+        return String(s).replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      }
+      $("home-title").textContent = E.title;
+      $("notice").textContent =
+        E.notice + (E.audio_warning ? " " + E.audio_warning : "");
+      $("source-credit").textContent =
+        "Adapted from " +
+        E.original_title +
+        ". " +
+        (E.authors.length ? E.authors.join(", ") + ". " : "") +
+        (E.year || "") +
+        " · " +
+        E.license +
+        (E.source_version ? " · matched archive v" + E.source_version : "");
+      $("resume-note").textContent =
+        state.page || state.chapter
+          ? "Saved place: " + E.chapters[state.chapter].title
+          : "";
+      $("storage-note").textContent = storage
+        ? "Reading progress is stored only in this browser. It is not synced across devices."
+        : "Browser storage is unavailable; progress cannot be saved.";
+      $("pdf-download").hidden = !D.downloads.pdf;
+      $("bundle-link").hidden = !D.downloads.bundle;
+      if (E.quality_notes?.length) {
+        $("quality-notes").hidden = false;
+        for (const text of E.quality_notes) {
+          const li = document.createElement("li");
+          li.textContent = text;
+          $("quality-notes").querySelector("ul").append(li);
+        }
+      }
+      if (E.private_expires) {
+        $("private-life").hidden = false;
+        $("private-life").textContent =
+          "Online files expire " +
+          new Date(E.private_expires * 1000).toLocaleString() +
+          ". Downloaded copies do not expire. ";
+        const desk = document.createElement("a");
+        desk.href = "https://sciencemadereadable.com/?reading";
+        desk.textContent = "Your private reading desk";
+        $("private-life").append(desk);
+      }
+      for (const [i, c] of E.chapters.entries()) {
+        const option = new Option(c.title, String(i));
+        $("chapter").add(option);
+        const li = document.createElement("li"),
+          b = document.createElement("button");
+        b.textContent = c.title;
+        b.onclick = () => openChapter(i, 0);
+        li.append(b);
+        $("contents").append(li);
+      }
+      function applyType() {
+        document.documentElement.style.setProperty("--size", state.font + "px");
+        document.documentElement.style.setProperty("--leading", state.leading);
+        $("font-size").value = state.font;
+        $("font-value").value = state.font;
+        $("line-space").value = state.leading;
+      }
+      function updatePage(target) {
+        currentPage = Math.max(0, Math.min(pageCount - 1, target));
+        $("viewport").scrollLeft = currentPage * stride;
+        state.page = currentPage;
+        state.chapter = Number($("chapter").value);
+        state.anchor = anchor();
+        $("progress").textContent =
+          currentPage +
+          1 +
+          " / " +
+          pageCount +
+          " · " +
+          E.chapters[state.chapter].title;
+        $("previous").disabled = state.chapter === 0 && currentPage === 0;
+        $("next").disabled =
+          state.chapter === E.chapters.length - 1 &&
+          currentPage === pageCount - 1;
+        save();
+      }
+      function layout(target = currentPage, mark = null) {
+        if (!reading) return;
+        const width = $("viewport").clientWidth;
+        $("flow").style.setProperty(
+          "--visual-height",
+          Math.max(100, $("viewport").clientHeight - 4) + "px",
+        );
+        $("flow").style.columnWidth = width + "px";
+        stride = width + 40;
+        pageCount = Math.max(
+          1,
+          Math.round(($("flow").scrollWidth + 40) / stride),
+        );
+        if (mark) {
+          const node = $("flow").querySelector('[data-anchor="' + mark + '"]');
+          if (node) {
+            const x =
+              node.getBoundingClientRect().left -
+              $("viewport").getBoundingClientRect().left +
+              $("viewport").scrollLeft;
+            target = Math.floor((x + 2) / stride);
+          }
+        }
+        updatePage(target);
+      }
+      function anchor() {
+        const box = $("viewport").getBoundingClientRect();
+        let best = null;
+        for (const n of $("flow").querySelectorAll("[data-anchor]")) {
+          const r = n.getBoundingClientRect();
+          if (
+            r.left >= box.left - 2 &&
+            r.left < box.right &&
+            r.bottom > box.top
+          ) {
+            best = n.dataset.anchor;
+            break;
+          }
+        }
+        return best;
+      }
+      function reflow(mark = state.anchor) {
+        const old = currentPage;
+        requestAnimationFrame(() => layout(old, mark));
+      }
+      function openChapter(i, p = 0, mark = null) {
+        reading = true;
+        $("home").hidden = true;
+        $("reader").hidden = false;
+        $("chapter").value = String(i);
+        state.chapter = i;
+        const c = E.chapters[i];
+        $("flow").innerHTML =
+          "<h1>" +
+          escapeHTML(c.title) +
+          '</h1><p class="source">Original pages: ' +
+          c.source_pages
+            .map(
+              (p) =>
+                '<a href="original.pdf#page=' +
+                p +
+                '" target="_blank" rel="noopener">' +
+                p +
+                "</a>",
+            )
+            .join(", ") +
+          ".</p>" +
+          c.html;
+        for (const [j, n] of [
+          ...$("flow").querySelectorAll(
+            "h1,h2,h3,h4,p,li,figure.source-visual",
+          ),
+        ].entries())
+          n.dataset.anchor = "b" + j;
+        applyType();
+        currentPage = p;
+        requestAnimationFrame(() => {
+          layout(p, mark);
+          $("viewport").focus({ preventScroll: true });
+        });
+      }
+      $("start").onclick = () =>
+        openChapter(state.chapter, state.page, state.anchor);
+      $("chapter").onchange = () => openChapter(Number($("chapter").value), 0);
+      $("home-button").onclick = () => {
+        reading = false;
+        $("reader").hidden = true;
+        $("home").hidden = false;
+        $("resume-note").textContent =
+          "Saved place: " +
+          E.chapters[state.chapter].title +
+          " · page " +
+          (state.page + 1);
+        $("start").focus({ preventScroll: true });
+      };
+      function step(n) {
+        if (
+          n > 0 &&
+          currentPage === pageCount - 1 &&
+          state.chapter < E.chapters.length - 1
+        )
+          openChapter(state.chapter + 1, 0);
+        else if (n < 0 && currentPage === 0 && state.chapter > 0)
+          openChapter(state.chapter - 1, 1e6);
+        else updatePage(currentPage + n);
+      }
+      $("next").onclick = () => step(1);
+      $("previous").onclick = () => step(-1);
+      $("viewport").onkeydown = (e) => {
+        if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") {
+          e.preventDefault();
+          step(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          step(-1);
+        }
+      };
+      $("font-size").onchange = () => {
+        const mark = anchor();
+        state.font = Number($("font-size").value);
+        applyType();
+        reflow(mark);
+      };
+      $("line-space").onchange = () => {
+        const mark = anchor();
+        state.leading = $("line-space").value;
+        applyType();
+        reflow(mark);
+      };
+      $("settings-button").onclick = () => {
+        const show = $("settings").hidden;
+        $("settings").hidden = !show;
+        $("settings-button").setAttribute("aria-expanded", String(show));
+        reflow();
+      };
+      $("fullscreen").onclick = async () => {
+        try {
+          if (document.fullscreenElement) await document.exitFullscreen();
+          else await $("reader").requestFullscreen();
+        } catch (e) {
+          $("fullscreen").textContent = "Full screen unavailable";
+        }
+      };
+      window.addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => layout(currentPage, state.anchor), 150);
+      });
+      const originals = (E.visuals || []).flatMap((v) =>
+        v.parts.map((p) => ({ ...p, label: v.label, caption: v.caption })),
+      );
+      let visualIndex = 0,
+        zoom = 1;
+      function fitOriginal() {
+        const part = originals[visualIndex];
+        if (!part) return;
+        const width = Math.min(
+          part.width,
+          Math.max(100, $("zoom-stage").clientWidth - 24),
+        );
+        $("visual-full").style.width = width * zoom + "px";
+        $("zoom-fit").textContent =
+          zoom === 1 ? "Fit width" : Math.round(zoom * 100) + "% · fit";
+        $("zoom-out").disabled = zoom <= 0.5;
+        $("zoom-in").disabled = zoom >= 6;
+      }
+      function showOriginal(index) {
+        visualIndex = Math.max(0, Math.min(originals.length - 1, index));
+        const part = originals[visualIndex];
+        zoom = 1;
+        $("visual-title").textContent =
+          part.label +
+          (part.parts > 1
+            ? " · " +
+              (part.scope === "source-page" ? "source page" : "part") +
+              " " +
+              part.part +
+              " of " +
+              part.parts
+            : "") +
+          " · page " +
+          part.page;
+        $("visual-full").src = part.image;
+        $("visual-full").alt = part.caption;
+        $("visual-pdf").href = part.pdf;
+        $("visual-prev").disabled = visualIndex === 0;
+        $("visual-next").disabled = visualIndex === originals.length - 1;
+        if (!$("visual-dialog").open) $("visual-dialog").showModal();
+        fitOriginal();
+        $("zoom-stage").scrollTo(0, 0);
+      }
+      if (originals.length) {
+        $("visual-gallery").hidden = false;
+        for (const v of E.visuals) {
+          const b = document.createElement("button");
+          b.innerHTML =
+            escapeHTML(v.label) +
+            "<small>" +
+            v.parts.map((p) => "page " + p.page).join(", ") +
+            "</small>";
+          b.onclick = () =>
+            showOriginal(originals.findIndex((p) => p.id === v.parts[0].id));
+          $("visual-grid").append(b);
+        }
+      }
+      $("flow").addEventListener("click", (e) => {
+        const link = e.target.closest("a.visual-image");
+        if (!link) return;
+        const id = link.closest("[data-visual]").dataset.visual;
+        const index = originals.findIndex((p) => p.id === id);
+        if (index >= 0) {
+          e.preventDefault();
+          showOriginal(index);
+        }
+      });
+      $("visual-close").onclick = () => $("visual-dialog").close();
+      $("visual-prev").onclick = () => showOriginal(visualIndex - 1);
+      $("visual-next").onclick = () => showOriginal(visualIndex + 1);
+      $("zoom-in").onclick = () => {
+        zoom = Math.min(6, zoom * 1.5);
+        fitOriginal();
+      };
+      $("zoom-out").onclick = () => {
+        zoom = Math.max(0.5, zoom / 1.5);
+        fitOriginal();
+      };
+      $("zoom-fit").onclick = () => {
+        zoom = 1;
+        fitOriginal();
+      };
+      window.addEventListener("resize", () => {
+        if ($("visual-dialog").open) fitOriginal();
+      });
+      const audio = $("player");
+      if (D.audio) {
+        const A = D.audio,
+          tracks = A.tracks;
+        state.audioTrack = Math.max(
+          0,
+          Math.min(tracks.length - 1, Number(state.audioTrack) || 0),
+        );
+        $("audio-length").textContent =
+          Math.round(A.seconds / 60) + " minutes · MP3";
+        $("voice-note").textContent =
+          "Kokoro · " +
+          A.voice +
+          " · " +
+          A.speed +
+          "× synthesis speed · " +
+          Math.round(A.seconds / 60) +
+          " minutes";
+        for (const [i, t] of tracks.entries())
+          $("track").add(new Option(t.title, String(i)));
+        function loadTrack(i, time = 0, play = false) {
+          const t = tracks[i];
+          state.audioTrack = i;
+          state.audioTime = time;
+          $("track").value = String(i);
+          audio.src = t.file;
+          $("track-download").href = t.file;
+          restoreAudio = time;
+          if ("mediaSession" in navigator && "MediaMetadata" in window)
+            navigator.mediaSession.metadata = new MediaMetadata({
+              title: t.title,
+              artist: "ScienceMadeReadable · Kokoro",
+              album: E.title,
+            });
+          save();
+          if (play) audio.play().catch(() => {});
+        }
+        audio.onloadedmetadata = () => {
+          if (restoreAudio > 0) {
+            audio.currentTime = Math.min(
+              restoreAudio,
+              Math.max(0, audio.duration - 0.1),
+            );
+            restoreAudio = 0;
+          }
+        };
+        audio.ontimeupdate = () => {
+          if (Date.now() - lastAudioSave > 5000) {
+            state.audioTime = audio.currentTime;
+            save();
+            lastAudioSave = Date.now();
+          }
+        };
+        audio.onpause = () => {
+          state.audioTime = audio.currentTime;
+          save();
+        };
+        audio.onended = () => {
+          if ($("continuous").checked && state.audioTrack < tracks.length - 1)
+            loadTrack(state.audioTrack + 1, 0, true);
+        };
+        $("track").onchange = () =>
+          loadTrack(Number($("track").value), 0, false);
+        $("back-audio").onclick = () =>
+          (audio.currentTime = Math.max(0, audio.currentTime - 15));
+        $("forward-audio").onclick = () => {
+          if (Number.isFinite(audio.duration))
+            audio.currentTime = Math.min(
+              audio.duration,
+              audio.currentTime + 15,
+            );
+        };
+        $("listen-here").onclick = () => {
+          const id = E.chapters[state.chapter].id,
+            idx = tracks.findIndex((t) => t.id === id);
+          $("home-button").click();
+          loadTrack(Math.max(0, idx), 0, true);
+          $("listen").scrollIntoView({ behavior: "instant" });
+        };
+        if ("mediaSession" in navigator) {
+          for (const [action, handler] of Object.entries({
+            play: () => audio.play(),
+            pause: () => audio.pause(),
+            seekbackward: () => $("back-audio").click(),
+            seekforward: () => $("forward-audio").click(),
+            nexttrack: () =>
+              loadTrack(
+                Math.min(tracks.length - 1, state.audioTrack + 1),
+                0,
+                true,
+              ),
+            previoustrack: () =>
+              loadTrack(Math.max(0, state.audioTrack - 1), 0, true),
+          })) {
+            try {
+              navigator.mediaSession.setActionHandler(action, handler);
+            } catch (e) {}
+          }
+        }
+        loadTrack(state.audioTrack, Number(state.audioTime) || 0, false);
+      } else {
+        $("listen").hidden = true;
+        $("mp3-download").hidden = true;
+        $("listen-here").hidden = true;
+      }
+    </script>
+  </body>
+</html>

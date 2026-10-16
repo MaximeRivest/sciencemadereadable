@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "require_all_native_captions": true,
+  "require_all_placeholders": true,
+  "pdf_sha256": "b2b223fdd946045f2ce5f567aa82ea082ada66488a3afe456022046e62cba620",
+  "rewrite_sha256": "d579d30d9c31ac1244b3499972cc2e61999b52f4f3cf6b460fe57105646399ef",
+  "review": "Crop boundaries and caption placements checked against original PDF pages 5–10. Coordinates are PDF points, top-left origin, on the unrotated displayed page. Includes all four numbered tables and both numbered figures present in this PDF. Supplementary figures and tables are not included in the supplied PDF.",
+  "visuals": [
+    {
+      "id": "table-1", "kind": "table", "label": "Table 1", "chapter": "methods",
+      "caption": "SRM MS/MS transitions and optimized potentials.",
+      "anchor_prefix": "Table 1.", "placeholders_before": 0, "placeholders_after": 1,
+      "parts": [
+        {"page": 5, "rect": [32, 127, 565, 788], "checks": ["Table 1.", "Compound", "193.1"]},
+        {"page": 6, "rect": [32, 89, 565, 293], "checks": ["BPB-13C6", "collision cell exit potential"]}
+      ]
+    },
+    {
+      "id": "figure-1", "kind": "figure", "label": "Figure 1", "chapter": "results",
+      "caption": "Estimated response surface for desirability function in SALLE optimization.",
+      "anchor_prefix": "Figure 1.", "placeholders_before": 1, "placeholders_after": 0,
+      "parts": [{"page": 7, "rect": [163, 88, 512, 284], "checks": ["Figure 1.", "Estimated response surface"], "contained_images": 1}]
+    },
+    {
+      "id": "figure-2", "kind": "figure", "label": "Figure 2", "chapter": "results",
+      "caption": "Pareto diagrams showing the significance of standardized effects of DLLME conditions on peak areas for PFTrA, PFHxS, and BP-1.",
+      "anchor_prefix": "Figure 2.", "placeholders_before": 3, "placeholders_after": 0,
+      "parts": [{"page": 7, "rect": [33, 470, 565, 744], "checks": ["Figure 2.", "peak areas"], "contained_images": 1}]
+    },
+    {
+      "id": "table-2", "kind": "table", "label": "Table 2", "chapter": "results",
+      "caption": "Recovery assay, precision, and trueness of the method.",
+      "anchor_prefix": "Table 2.", "placeholders_before": 0, "placeholders_after": 1,
+      "parts": [
+        {"page": 8, "rect": [32, 478, 565, 781], "checks": ["Table 2.", "PFHxA", "22.300"]},
+        {"page": 9, "rect": [32, 89, 565, 362], "checks": ["PFUnA", "Mean of 18 determinations"]}
+      ]
+    },
+    {
+      "id": "table-3", "kind": "table", "label": "Table 3", "chapter": "results",
+      "caption": "Analytical and statistical parameters.",
+      "anchor_prefix": "Table 3.", "placeholders_before": 0, "placeholders_after": 1,
+      "parts": [{"page": 9, "rect": [32, 446, 565, 763], "checks": ["Table 3.", "4-OH-BP", "linear dynamic range"]}]
+    },
+    {
+      "id": "table-4", "kind": "table", "label": "Table 4", "chapter": "results",
+      "caption": "Application of the proposed method to meconium samples.",
+      "anchor_prefix": "Table 4.", "placeholders_before": 0, "placeholders_after": 1,
+      "parts": [{"page": 10, "rect": [32, 301, 565, 678], "checks": ["Table 4.", "S01", "S20", "not detected"]}]
+    }
+  ]
+}

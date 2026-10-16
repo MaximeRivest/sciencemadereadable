@@ -20,9 +20,13 @@ import http.server
 import json
 import re
 import os
+import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import editions_proxy
 
 WEB = Path(__file__).resolve().parents[1] / "web"
 BACKENDS = {"data": {"prod": "http://127.0.0.1:8810", "dev": "http://127.0.0.1:8811",
@@ -90,6 +94,9 @@ def make_handler(data: str, queue: str, names: tuple[str, str]):
 
         def route(self, method: str):
             p = self.path
+            if editions_proxy.applies(p):
+                editions_proxy.proxy(self, os.environ.get('SMR_READING_DEV_API', 'http://127.0.0.1:8826'))
+                return True
             m = MAP_V2.match(p.split("?")[0])
             if m and MAP_V2_ROOT:
                 # the map's second format, straight from the release directory while the data API
@@ -107,6 +114,21 @@ def make_handler(data: str, queue: str, names: tuple[str, str]):
                 body = self.rfile.read(int(self.headers.get("Content-Length") or 0)) if method == "POST" else None
                 return self.proxy(queue + p, method, body)
             return None
+
+        def do_DELETE(self):
+            if editions_proxy.applies(self.path):
+                return self.route('DELETE')
+            self.send_body(404, b'{"error":"not found"}', 'application/json')
+
+        def do_OPTIONS(self):
+            if editions_proxy.applies(self.path):
+                return self.route('OPTIONS')
+            self.send_body(404, b'{"error":"not found"}', 'application/json')
+
+        def do_HEAD(self):
+            if editions_proxy.applies(self.path):
+                return self.route('HEAD')
+            return super().do_HEAD()
 
         def do_POST(self):
             if self.route("POST") is None:
