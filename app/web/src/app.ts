@@ -295,6 +295,20 @@ async function openTopics(q: string, group: number | null, mapOnly = false, fiel
                          at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt });
   track("topics", { groups: d.groups.length, cached: d.cached ? 1 : 0, sub: group ? 1 : 0 });
   restoreScroll();
+  // A map made just now gets AI-written group names a few seconds later (the search service writes them in the
+  // background): fetch it once more and show them, unless the reader has moved on or scrolled into the groups.
+  if (!d.cached && !field && !d.groups.some((g) => g.label)) {
+    const here = location.search;
+    const later = async (waits: number[]) => {
+      if (!waits.length || run !== searchRun || location.search !== here || window.scrollY > 400) return;
+      const d2 = await fetchTopics(q, o).catch(() => null);
+      if (run !== searchRun || location.search !== here || window.scrollY > 400) return;
+      if (!d2 || "pending" in d2 || !d2.groups.some((g) => g.label)) { setTimeout(() => later(waits.slice(1)), waits[0]); return; }
+      renderTopics(box, d2, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q),
+                              at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt });
+    };
+    setTimeout(() => later([10000, 15000, 0]), 8000);    // after ~8 s, ~18 s and ~33 s
+  }
 }
 
 /** The box picked in a topic map's overview stays in the address (replaced, not a new page: Back still leaves the
