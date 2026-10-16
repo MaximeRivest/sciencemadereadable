@@ -98,6 +98,7 @@ const LENSES: [key: string, label: string, help: (u: string) => string][] = [
   ["core", "Core", (u) => `The works this ${u}'s studies cite most: its foundations.`],
   ["rising", "Rising", (u) => `Works from the last five years already cited by many of this ${u}'s studies.`],
   ["distinctive", "Only here", () => "Works cited mostly by this group, not by the others: what sets it apart."],
+  ["foundations", "Foundations from outside the field", (u) => `What this ${u}'s studies cite most that is not itself part of the field: methods, tools and classics from neighbouring fields.`],
   ["experts", "Experts", (u) => `The authors whose works this ${u} cites most (an h-index counted inside the ${u}: first authors get full credit, last authors half, others less).`],
   ["bridges", "Bridges", () => "Studies of this group with many links to another group."],
   ["newest", "Newest", (u) => `The latest studies in this ${u}.`],
@@ -291,7 +292,7 @@ function why(key: string, p: TopicPaper, names: Map<number, string>): string {
     return m ? `${p.why!.replace(/ go to group \d+/, "")} go to group ${m[1]}: ${names.get(Number(m[1])) ?? ""}` : p.why ?? "";
   }
   const out = (p.why ?? "").replace(/^cited by/, "Cited by").replace(/^cites/, "Cites").replace(/^from/, "From");
-  return p.in_map === false && key !== "start_here" ? `${out} · not among the mapped studies (no English abstract, or older)` : out;
+  return p.in_map === false && key !== "start_here" && key !== "foundations" ? `${out} · not among the mapped studies (no English abstract, or older)` : out;
 }
 
 function expert(e: Expert, deps: Deps, unit = "group"): HTMLElement {
