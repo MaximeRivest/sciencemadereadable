@@ -863,13 +863,13 @@ async function openLibrary() {
 }
 
 // ---------------------------------------------------------------- whole-field maps (?fields, fields.ts)
-async function openFields(q: string) {
+async function openFields(q: string, ask = "") {
   show("fields");
   document.title = "Whole-field maps · ScienceMadeReadable";
   const box = $("#fields-view");
   if (!box.innerHTML) box.innerHTML = `<p class="quiet">Loading…</p>`;
-  await renderFields(box, go, q.trim());
-  focusTitle($("#fields-view h1"));
+  await renderFields(box, go, q.trim(), ask.trim());
+  if (!ask) focusTitle($("#fields-view h1"));
   restoreScroll();
 }
 $("#open-fields").onclick = (e) => { e.preventDefault(); go("?fields"); };
@@ -926,7 +926,7 @@ function route() {
   }
   if (q.has("support")) return openSupport();
   if (q.has("library")) return openLibrary();
-  if (q.has("fields")) return openFields(q.get("fields") ?? "");
+  if (q.has("fields")) return openFields(q.get("fields") ?? "", q.get("ask") ?? "");
   if (q.has("api")) { show("api"); document.title = "Search API for agents · ScienceMadeReadable"; focusTitle($("#api-view h1")); restoreScroll(); return; }
   if (q.has("map")) {
     if (q.get("topics")) {

@@ -875,3 +875,14 @@ body[data-view="reading"] #map { display: none; }
 main.legal { display: block; max-width: 760px; margin: 0 auto; padding: 24px 24px 48px; flex: 1; }
 main.legal h2 { font: 500 22px/1.2 var(--serif); margin: 28px 0 8px; }
 main.legal li { margin: 4px 0; }
+
+/* topic wording help before a whole-field map, and AI-written group descriptions (src/fields.ts, src/topics.ts) */
+.fm-pick { margin: 14px 0 6px; font-weight: 600; }
+.fm-options { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.fm-option { width: 100%; text-align: left; padding: 11px 14px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--card); color: var(--ink); font: inherit; cursor: pointer; display: block; }
+.fm-option:hover, .fm-option:focus-visible { border-color: var(--accent); }
+.fm-note { color: var(--accent); font-size: 13px; margin-left: 6px; }
+.fm-def { display: block; margin-top: 3px; }
+.tg-about { margin: 4px 0 2px; line-height: 1.5; max-width: 68ch; }
+.tg-words { margin: 0 0 4px; }

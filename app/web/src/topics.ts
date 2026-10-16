@@ -18,14 +18,16 @@ export interface Expert { author: string; name: string; h: number; papers_in_gro
 export interface CloudWord { t: string; share: number; lift: number; score: number }
 export type Lenses = Record<string, TopicPaper[]> & { experts: Expert[] };
 /** A group of a group, carried by the map (the data API makes the splits with the map). */
+/** An AI-written name and description of a group (whole-field maps; search/srl_search/suggest.py). */
+export interface Label { name: string; about?: string | null; by?: string }
 export interface Sub {
   id: number; name: string; size: number; years?: number[] | null; typical?: TopicPaper; cites_groups?: Record<string, number>;
-  cloud?: CloudWord[]; lenses: Lenses;
+  cloud?: CloudWord[]; lenses: Lenses; label?: Label | null; words?: string;
 }
 export interface Group {
   id: number; name: string; size: number; years?: number[]; typical: TopicPaper; centre?: { x: number; y: number } | null;
   cites_groups: Record<string, number>; between: number; with_references: number; cloud?: CloudWord[];
-  lenses: Lenses; subgroups?: Sub[]; subgroups_other?: number;
+  lenses: Lenses; subgroups?: Sub[]; subgroups_other?: number; label?: Label | null; words?: string;
 }
 /** The whole map read as one group (maps made before 2026-10-15 have none). */
 export interface Overall { size: number; years?: number[] | null; cloud?: CloudWord[]; lenses: Lenses }
@@ -56,7 +58,25 @@ export async function fetchTopics(q: string, o: TopicOptions, signal?: AbortSign
   const d = await r.json().catch(() => ({}));
   if (!r.ok) throw new TopicError(r.status, d.detail ?? d.error ?? "", Number(r.headers.get("Retry-After")) || d.retry_after);
   if (r.status === 202) return { pending: d.progress as FieldPending };
-  return d as TopicMap;
+  return named(d as TopicMap);
+}
+
+/** Where an AI name exists, it becomes the group's name everywhere; its telltale phrases move to `words`. */
+function named(d: TopicMap): TopicMap {
+  const swap = (g: { name: string; label?: Label | null; words?: string }) => {
+    if (g.label?.name && g.words === undefined) { g.words = g.name; g.name = g.label.name; }
+  };
+  for (const g of d.groups ?? []) { swap(g); for (const s of g.subgroups ?? []) swap(s); }
+  const p = d.parent as (TopicMap["parent"] & { label?: Label | null }) | undefined;
+  if (p?.label?.name) p.name = p.label.name;
+  return d;
+}
+
+/** The AI's description of a group, and the words that set it apart (the map's own, as before). */
+export function about(g: { label?: Label | null; words?: string }): string {
+  if (!g.label?.about && !g.words) return "";
+  return (g.label?.about ? `<p class="tg-about">${esc(g.label.about)}</p>` : "") +
+    (g.words ? `<p class="tg-words quiet small">Words that set it apart: ${esc(g.words)}</p>` : "");
 }
 
 export class TopicError extends Error {
@@ -120,7 +140,7 @@ export function renderTopics(box: HTMLElement, d: TopicMap, deps: Deps) {
       `<p class="topics-intro">Studies land in the same group when they cite the same works and talk about the same things. ` +
       `Each group's name is made of the words that set it apart (chosen automatically), and its reading lists come from ` +
       `what its own studies cite: what matters to <em>that</em> group.</p>` +
-      `<p class="quiet small"><a href="${esc(deps.url({ field: true, group: null }))}" data-go>Map the whole field instead</a>: every ` +
+      `<p class="quiet small"><a href="?fields&ask=${encodeURIComponent(d.question)}" data-go>Map the whole field instead</a>: every ` +
       `study on this topic, often tens of thousands, not just the closest 1,000. The first time takes about half an hour; then ` +
       `it opens at once for everyone.</p><p class="quiet small" id="field-near"></p>`;
     fieldsMade(d.question, 1).then(([m]) => {
@@ -165,7 +185,7 @@ function card(g: Group, names: Map<number, string>, deps: Deps, canSplit: boolea
     .map(([k]) => `builds on group ${k} (${esc(names.get(Number(k)) ?? "")})`);
   const meta = [`${g.size.toLocaleString()} studies`, span(g.years), ...uses].filter(Boolean).join(" · ");
   sec.innerHTML = `<h3 id="tg-${g.id}"><span class="tg-chip" aria-hidden="true"></span><span class="tg-num">Group ${g.id}</span> ${esc(g.name)}</h3>` +
-    `<p class="tg-meta">${meta}</p>`;
+    about(g) + `<p class="tg-meta">${meta}</p>`;
   sec.onpointerenter = () => hover(deps, g.id);
   sec.onpointerleave = () => hover(deps, null);
   sec.addEventListener("focusin", () => hover(deps, g.id));

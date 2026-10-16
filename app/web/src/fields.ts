@@ -32,6 +32,16 @@ export async function fieldsMade(q = "", limit = 200): Promise<FieldMade[]> {
   if (q) p.set("q", q);
   try { const r = await fetch(`${API}/api/data/fields?${p}`); return r.ok ? (await r.json()).maps : []; } catch { return []; }
 }
+export interface Suggestion { topic: string; definition?: string | null; note?: string }
+export async function suggestTopics(q: string, definition: string): Promise<Suggestion[] | null> {
+  const p = new URLSearchParams({ q });
+  if (definition) p.set("definition", definition);
+  try {
+    const r = await fetch(`${API}/api/data/fields/suggest?${p}`, { signal: AbortSignal.timeout(45000) });
+    return r.ok ? (await r.json()).suggestions : null;
+  } catch { return null; }
+}
+
 export async function verifyPaid(session: string): Promise<{ ok: boolean; status: number; d: any }> {
   try {
     const r = await fetch(`${API}/api/fields/paid?session=${encodeURIComponent(session)}`);
@@ -81,7 +91,7 @@ function made(m: FieldMade, url: (m: FieldMade) => string): string {
 }
 
 /** The ?fields page: the line, the maps already made (searchable), and asking for a new one. */
-export async function renderFields(box: HTMLElement, go: (url: string) => void, q = "") {
+export async function renderFields(box: HTMLElement, go: (url: string) => void, q = "", ask = "") {
   const [qu, all] = await Promise.all([fieldQueue(), fieldsMade(q)]);
   const url = (m: { topic: string; definition?: string | null }) => fieldUrl(m.topic, m.definition);
   const shown = q ? all.filter((m) => (m.score ?? 0) >= 0.5).slice(0, 30) : all;   // holds half the closest studies
@@ -108,10 +118,10 @@ export async function renderFields(box: HTMLElement, go: (url: string) => void, 
   h += `<h2 class="fm-h">Ask for a map</h2>` +
     `<form id="fm-ask" class="fm-ask"><input id="fm-topic" required minlength="3" maxlength="200" placeholder="A topic, as papers about it would name it" aria-label="Topic">` +
     `<input id="fm-def" maxlength="600" placeholder="What it covers, in a sentence (optional; helps when the words are ambiguous)" aria-label="What it covers">` +
-    `<button class="primary-btn" type="submit">Ask for it</button></form>` +
+    `<button class="primary-btn" type="submit">Ask for it</button></form><div id="fm-suggest" aria-live="polite"></div>` +
     `<h2 class="fm-h">How the line works</h2>` +
     `<p class="quiet">Maps are made one at a time, in about 15 minutes each. The free line goes in the order asked, about ` +
-    `${qu?.free_per_day ?? 10} maps a day (each uses about a dollar of AI to judge its studies), at most two waiting per reader. ` +
+    `${qu?.free_per_day ?? 40} maps a day (each takes 15–25 minutes on our graphics card), at most two waiting per reader. ` +
     `A map can be paid for to go first. Topics in the line are public, as their maps will be.</p>`;
   box.innerHTML = h;
   for (const a of box.querySelectorAll<HTMLAnchorElement>("a[data-go]"))
@@ -121,10 +131,34 @@ export async function renderFields(box: HTMLElement, go: (url: string) => void, 
     const v = (box.querySelector("#fm-q") as HTMLInputElement).value.trim();
     go(v ? `?fields=${encodeURIComponent(v)}` : "?fields");
   };
-  (box.querySelector("#fm-ask") as HTMLFormElement).onsubmit = (e) => {
+  const form = box.querySelector("#fm-ask") as HTMLFormElement;
+  form.onsubmit = (e) => {
     e.preventDefault();
     const t = (box.querySelector("#fm-topic") as HTMLInputElement).value.trim();
     const d = (box.querySelector("#fm-def") as HTMLInputElement).value.trim();
-    if (t) go(fieldUrl(t, d || null));
+    if (t) offer(box.querySelector("#fm-suggest") as HTMLElement, t, d, go);
   };
+  if (ask) {                                   // from a 1,000-paper map's "Map the whole field instead"
+    (box.querySelector("#fm-topic") as HTMLInputElement).value = ask;
+    form.scrollIntoView({ block: "center" });
+    offer(box.querySelector("#fm-suggest") as HTMLElement, ask, "", go);
+  }
+}
+
+/** Before a map is asked for: five clearer versions of the topic, written by an AI; or the person's own words. */
+async function offer(el: HTMLElement, topic: string, definition: string, go: (url: string) => void) {
+  el.innerHTML = `<p class="checking">Finding clearer ways to name this topic…</p>`;
+  const list = await suggestTopics(topic, definition);
+  const own = { topic, definition: definition || null, note: "exactly what you typed" };
+  const options = [...(list ?? []), own];
+  el.innerHTML = (list ? `<p class="fm-pick">Which one do you mean? A clear name and scope make a much better map.</p>`
+      : `<p class="quiet small">Suggestions aren't available right now; you can still ask with your own words.</p>`) +
+    `<ul class="fm-options">` + options.map((o, i) =>
+      `<li><button type="button" class="fm-option" data-i="${i}"><b>${esc(o.topic)}</b>` +
+      (o.note ? ` <span class="fm-note">${esc(o.note)}</span>` : "") +
+      (o.definition ? `<span class="fm-def quiet small">${esc(o.definition)}</span>` : "") + `</button></li>`).join("") +
+    `</ul>` + (list ? `<p class="quiet small">Suggestions written by an AI; check they match what you mean.</p>` : "");
+  for (const b of el.querySelectorAll<HTMLButtonElement>(".fm-option"))
+    b.onclick = () => { const o = options[Number(b.dataset.i)]; go(fieldUrl(o.topic, o.definition)); };
+  (el.querySelector(".fm-option") as HTMLButtonElement | null)?.focus();
 }

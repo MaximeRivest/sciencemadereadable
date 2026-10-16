@@ -7,7 +7,7 @@
  * the sizes allow, biggest first, so sizes compare and names fit.
  */
 import type { CloudWord, Deps, Group, Lenses, Sub, TopicMap } from "./topics.ts";
-import { legend } from "./topics.ts";
+import { about, legend } from "./topics.ts";
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
@@ -207,7 +207,7 @@ function detail(panel: HTMLElement, d: TopicMap, a: At, deps: Deps, parts: Parts
   const subs = !s && g ? g.subgroups ?? [] : [];
   const meta = [`${it.size.toLocaleString()} studies`, parts.span(it.years),
     subs.length ? `${subs.length} subgroups` : "", !g && d.groups.length ? `${d.groups.length} groups` : ""].filter(Boolean).join(" · ");
-  panel.insertAdjacentHTML("beforeend", `<p class="tg-meta">${meta}</p>`);
+  panel.insertAdjacentHTML("beforeend", (s || g ? about(it as Sub) : "") + `<p class="tg-meta">${meta}</p>`);
   const vs = s ? `the rest of group ${g!.id}` : g ? "the other groups" : "all of science";
   if (it.cloud?.length) panel.append(parts.cloud(it.cloud, 30, vs, legend(vs)));
   const names = new Map((s ? g!.subgroups! : d.groups).map((x) => [x.id, x.name]));
