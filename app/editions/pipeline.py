@@ -294,6 +294,33 @@ def check_document(run, extraction):
         )
 
 
+FALLBACK_REASON = (
+    "page read by the simpler backup OCR; compare its text with the original page"
+)
+
+
+def flag_fallback_pages(run, labelled, extraction):
+    """Blocks from backup-OCR pages always need the reader's explicit check."""
+    pages = extraction["artifact"]["meta"]["extra"].get("fallback_pages") or []
+    if not pages:
+        return
+    labelled["fallback_pages"] = pages
+    flagged = {r["block"] for r in labelled["review"]}
+    for b in labelled["ledger"]:
+        if b["page"] in pages:
+            b["review_reasons"] = list(b.get("review_reasons", [])) + [FALLBACK_REASON]
+            if b["id"] in flagged:
+                next(r for r in labelled["review"] if r["block"] == b["id"])[
+                    "reasons"
+                ].append(FALLBACK_REASON)
+            else:
+                labelled["review"].append(
+                    {"block": b["id"], "page": b["page"], "reasons": [FALLBACK_REASON]}
+                )
+    labelled["ready"] = False
+    save(run / "labelled.json", labelled)
+
+
 def pdf_input(run, config):
     progress(run, "extracting", "Reading PDF pages with Attachments and LightOnOCR")
     extraction = extract_images(run / "source.pdf", run, ATTACHMENTS)
@@ -306,6 +333,7 @@ def pdf_input(run, config):
     if not (run / "labelled.json").exists():
         progress(run, "classifying", "Identifying research sections with Jev")
         labelled = label(run)
+        flag_fallback_pages(run, labelled, extraction)
     else:
         labelled = json.loads((run / "labelled.json").read_text())
     if not config.get("confirmed"):

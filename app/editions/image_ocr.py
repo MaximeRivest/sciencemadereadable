@@ -132,7 +132,7 @@ def extract_images(pdf, run, service):
     shutil.copyfile(rendered / "original.pdf", run / "original.pdf")
     shutil.copyfile(rendered / "native-diagnostic.json", run / "native-diagnostic.json")
     (run / "pages").mkdir(exist_ok=True)
-    text_parts, segments, models = [], [], []
+    text_parts, segments, models, fallback_pages = [], [], [], []
     offset = 0
     for p in pages:
         number = p["page"]
@@ -153,11 +153,23 @@ def extract_images(pdf, run, service):
             artifact["images"] = []  # never keep the service's encoded preview
         meta = artifact.get("meta", {})
         extra = meta.get("extra", {})
-        if (
-            meta.get("error")
-            or meta.get("warnings")
-            or extra.get("ocr_backend") != "lighton"
-            or extra.get("ocr_engine_fallback")
+        warnings = meta.get("warnings") or []
+        # LightOnOCR occasionally gets stuck repeating itself on a dense page;
+        # Attachments then reads that page with RapidOCR. Accept only that exact,
+        # disclosed fallback: the page is then forced into the reader's review.
+        fell_back = (
+            extra.get("ocr_backend") == "rapidocr"
+            and extra.get("ocr_engine_fallback") == "rapidocr"
+            and len(warnings) == 1
+            and "RapidOCR" in str(warnings[0])
+        )
+        if meta.get("error") or (
+            not fell_back
+            and (
+                warnings
+                or extra.get("ocr_backend") != "lighton"
+                or extra.get("ocr_engine_fallback")
+            )
         ):
             raise ValueError(
                 f"LightOnOCR could not reliably read page {number}. Please retry later or use a clearer PDF."
@@ -180,8 +192,13 @@ def extract_images(pdf, run, service):
         offset += len(text) + 2
         text_parts.append(text)
         models.append(extra.get("ocr_model"))
+        if fell_back:
+            fallback_pages.append(number)
         raw.unlink()  # raw RGB is a bounded intermediate, not a permanent duplicate
-        print(f"LightOnOCR page {number}/{count}", flush=True)
+        print(
+            f"{'Fallback OCR' if fell_back else 'LightOnOCR'} page {number}/{count}",
+            flush=True,
+        )
     artifact = {
         "text": "\n\n".join(text_parts),
         "images": [],
@@ -194,6 +211,7 @@ def extract_images(pdf, run, service):
                 "ocr_backend": "lighton",
                 "ocr_pages": list(range(1, count + 1)),
                 "ocr_models": models,
+                "fallback_pages": fallback_pages,
             },
         },
     }

@@ -308,3 +308,77 @@ def test_review_requires_owner_and_resolved_blocks(client):
     )
     assert store.get(j["id"])["config"]["confirmed"] is True
     assert json.loads((folder / "labelled.json").read_text())["ready"] is True
+
+
+def test_backup_ocr_page_must_be_explicitly_confirmed(client):
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "reading_engine"))
+    from label import assemble
+    from pipeline import flag_fallback_pages
+
+    j = new(client)
+    store = client.app.state.store
+    folder = store.jobs / j["id"]
+    blocks, answers = [], {}
+    rows = [
+        ("title", "title", "Title", 1),
+        ("paragraph", "introduction", "Intro", 1),
+        ("paragraph", "methods", "Methods", 2),
+        ("paragraph", "results", "Results", 2),
+    ]
+    for i, (role, section, text, page) in enumerate(rows):
+        bid = f"b{i:04d}"
+        blocks.append(
+            {
+                "id": bid,
+                "page": page,
+                "start": i * 20,
+                "end": i * 20 + len(text),
+                "text": text,
+            }
+        )
+        for kind, choice in [("role", role), ("section", section)]:
+            answers[bid + "_" + kind] = {
+                "choice": choice,
+                "confidence": 1,
+                "probabilities": {choice: 1},
+            }
+    data = assemble(blocks, answers)
+    data["accounting"] = {}
+    assert data["ready"]
+    flag_fallback_pages(
+        folder, data, {"artifact": {"meta": {"extra": {"fallback_pages": [2]}}}}
+    )
+    assert not data["ready"] and {r["block"] for r in data["review"]} == {
+        "b0002",
+        "b0003",
+    }
+    store.update(j["id"], state="review")
+    url = f"/api/editions/jobs/{j['id']}/confirm"
+    assert (
+        client.post(url, headers=auth(j), json={"confirmed": True}).status_code == 422
+    )
+    assert (
+        client.post(
+            url,
+            headers=auth(j),
+            json={
+                "confirmed": True,
+                "changes": {"b0002": {"role": "paragraph", "section": "methods"}},
+            },
+        ).status_code
+        == 422
+    )
+    ok = {
+        "b0002": {"role": "paragraph", "section": "methods"},
+        "b0003": {"role": "paragraph", "section": "results"},
+    }
+    assert (
+        client.post(
+            url, headers=auth(j), json={"confirmed": True, "changes": ok}
+        ).status_code
+        == 200
+    )
+    saved = json.loads((folder / "labelled.json").read_text())
+    assert saved["ready"] and saved["fallback_pages"] == [2]

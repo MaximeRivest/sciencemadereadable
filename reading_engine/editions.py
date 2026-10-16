@@ -326,6 +326,19 @@ def make_edition(run, out, visual_manifest=None, regenerate_pdf=False, automatic
                 + number.upper()
             )
     notes = []
+    fallback = (
+        extraction.get("artifact", {})
+        .get("meta", {})
+        .get("extra", {})
+        .get("fallback_pages")
+        or []
+    )
+    if fallback:
+        notes.append(
+            "Original page(s) "
+            + ", ".join(map(str, fallback))
+            + " were read with a simpler backup OCR engine and checked by the reader before rewriting. Compare details on those pages with the original."
+        )
     unplaced = sorted(references - placed)
     if unplaced:
         notes.append(

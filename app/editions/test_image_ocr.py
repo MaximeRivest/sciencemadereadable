@@ -27,3 +27,70 @@ def test_png_has_only_controller_generated_structure():
 def test_invalid_raw_pixel_protocol_is_rejected(w, h, data):
     with pytest.raises(ValueError):
         png_from_rgb(w, h, data)
+
+
+def fake_run(pages):
+    import json
+
+    def run(operation, source, output, timeout=0):
+        from pathlib import Path
+
+        out = Path(output)
+        (out / "rgb").mkdir(parents=True)
+        (out / "original.pdf").write_bytes(Path(source).read_bytes())
+        (out / "native-diagnostic.json").write_text("[]")
+        (out / "render.json").write_text(json.dumps({"pages": pages}))
+        (out / "pixel-pages.json").write_text(
+            json.dumps(
+                [{"page": n, "width": 2, "height": 2} for n in range(1, pages + 1)]
+            )
+        )
+        for n in range(1, pages + 1):
+            (out / "rgb" / f"{n}.rgb").write_bytes(bytes(12))
+
+    return run
+
+
+def artifact(backend="lighton", warnings=(), fallback=None):
+    extra = {"ocr_backend": backend, "ocr_model": "m"}
+    if fallback:
+        extra["ocr_engine_fallback"] = fallback
+    return {
+        "text": "Readable page text.",
+        "meta": {"extra": extra, "warnings": list(warnings)},
+    }
+
+
+STUCK = "ocr: LightOnOCR did not read the image: it did not finish the page (it repeated itself). RapidOCR, a simpler engine, read it instead"
+
+
+def test_disclosed_backup_ocr_page_is_kept_and_recorded(tmp_path, monkeypatch):
+    import image_ocr
+
+    (tmp_path / "source.pdf").write_bytes(b"%PDF-1.7 fixture")
+    monkeypatch.setattr(image_ocr.sandbox, "run", fake_run(2))
+    answers = {1: artifact(), 2: artifact("rapidocr", [STUCK], "rapidocr")}
+    monkeypatch.setattr(
+        image_ocr, "process_image", lambda service, image, n: answers[n]
+    )
+    result = image_ocr.extract_images(tmp_path / "source.pdf", tmp_path, "unix:/x")
+    assert result["artifact"]["meta"]["extra"]["fallback_pages"] == [2]
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        artifact("rapidocr", ["something else"], "rapidocr"),
+        artifact("rapidocr", [STUCK, "extra"], "rapidocr"),
+        artifact("lighton", ["unexpected warning"]),
+        {"text": "x", "meta": {"error": "failed", "extra": {}}},
+    ],
+)
+def test_other_ocr_problems_still_stop(tmp_path, monkeypatch, bad):
+    import image_ocr
+
+    (tmp_path / "source.pdf").write_bytes(b"%PDF-1.7 fixture")
+    monkeypatch.setattr(image_ocr.sandbox, "run", fake_run(1))
+    monkeypatch.setattr(image_ocr, "process_image", lambda service, image, n: bad)
+    with pytest.raises(ValueError):
+        image_ocr.extract_images(tmp_path / "source.pdf", tmp_path, "unix:/x")

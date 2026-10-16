@@ -465,6 +465,16 @@ def create_app(root=None, start_worker=None, secure_cookies=None):
                 ),
                 reason="Confirmed by the reader against the extracted text and source page",
             )
+        unchecked = [
+            b["id"]
+            for b in current["ledger"]
+            if b["page"] in current.get("fallback_pages", []) and b["id"] not in changes
+        ]
+        if unchecked:
+            raise Denied(
+                422,
+                "Check every block from the backup-OCR page(s) against the original before continuing.",
+            )
         blocks = [
             {k: b[k] for k in ("id", "page", "text", "start", "end")}
             for b in current["ledger"]
