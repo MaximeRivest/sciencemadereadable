@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://pmc-oa-opendata.s3.amazonaws.com; connect-src 'self' https:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://pmc-oa-opendata.s3.amazonaws.com; connect-src 'self' https:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ScienceMadeReadable</title>
@@ -24,7 +24,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="The map of science: millions of studies as points of light, coloured by field.">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=456fcd719f">
+<link rel="stylesheet" href="style.css?v=b98eacfd0b">
 <!-- the sharp map image first: the page shows it while the live map loads (atlas.ts); the theme's own only -->
 <link rel="preload" as="image" href="map/science-map-dark.webp" media="(prefers-color-scheme: dark)" fetchpriority="high">
 <link rel="preload" as="image" href="map/science-map-light.webp" media="(prefers-color-scheme: light)" fetchpriority="high">
@@ -43,6 +43,7 @@
     <button type="button" id="menu-btn" class="menu-btn" aria-expanded="false" aria-controls="nav-links">Menu</button>
     <div id="nav-links" class="nav-links">
     <a href="?library" id="open-library">Library</a>
+    <a href="?reading" id="open-reading">PDF & audio</a>
     <a href="?fields" id="open-fields" title="Maps of whole research fields: made, being made, and asking for one">Field maps</a>
     <a href="?api" id="open-api" title="Use this search from your code or AI agent">API</a>
     <a href="#" id="open-settings">Settings</a>
@@ -66,6 +67,7 @@
     </span>
     <button>Search</button>
   </form>
+  <p class="edition-home-link"><a href="?reading" id="home-reading">Or bring your own research PDF →</a></p>
   <!-- #home-tips: a copy of the results page's .search-tips, made by app.ts -->
 </main>
 
@@ -346,6 +348,8 @@ for p in r.json()["results"]:
   <div id="work"></div>
 </main>
 
+<main id="reading-view" class="view"><div id="reading-desk"></div></main>
+
 <main id="reader-view" class="view">
   <div class="toolbar">
     <label class="written">Written by
@@ -353,6 +357,7 @@ for p in r.json()["results"]:
     </label>
     <span id="model-score" class="quiet small"></span>
     <button id="go" hidden>Make it readable</button>
+    <button id="edition-go" hidden>Read, listen & download</button>
     <span id="status" role="status"></span>
     <label class="side"><input id="side" type="checkbox" checked> Original alongside</label>
   </div>
@@ -424,6 +429,6 @@ for p in r.json()["results"]:
 <noscript><p class="noscript">ScienceMadeReadable needs JavaScript to search and to show the map. Without it, the
   <a href="https://api.sciencemadereadable.com/api/data/llms.txt">search guide</a> and
   <a href="https://ask.sciencemadereadable.com/why%20do%20we%20sleep">plain-text search</a> still work.</p></noscript>
-<script type="module" src="app.js?v=9b6131890a"></script>
+<script type="module" src="app.js?v=684d340281"></script>
 </body>
 </html>

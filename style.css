@@ -789,3 +789,49 @@ body.topics-mode #readable-only { display: none; }
 .field-offer ul { margin: 8px 0 14px; padding-left: 20px; color: var(--muted); line-height: 1.5; }
 .fo-times { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0; }
 .field-paid-note { background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; }
+
+/* Private reading desk: lazy-loaded behaviour, no changes to the public library. */
+body[data-view="reading"] #reading-view { display: block; max-width: 1080px; }
+body[data-view="reading"] #map { display: none; }
+.edition-home-link { text-align: center; margin: 14px 0 0; position: relative; z-index: 3; }
+.edition-home-link a { font-size: 15px; display: inline-block; padding: 8px 12px; }
+.edition-heading { margin: 38px 0 26px; max-width: 720px; }
+.edition-kicker { color: var(--accent); letter-spacing: .13em; font-size: 12px; font-weight: 600; }
+.edition-heading h1 { font: 500 clamp(34px,5vw,52px)/1.1 var(--serif); margin: 10px 0 16px; }
+.edition-heading p { color: var(--muted); }
+.edition-layout { display: grid; grid-template-columns: 1.4fr 1fr; gap: 22px; }
+.edition-card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; min-width: 0; }
+.edition-card h2, .edition-jobs h2, .edition-review h2 { font: 500 25px/1.25 var(--serif); margin: 0 0 16px; }
+.edition-card p { font-size: 15px; }
+.edition-doi { overflow-wrap: anywhere; }
+.edition-drop { display: flex; flex-direction: column; gap: 8px; padding: 24px; border: 2px dashed var(--line); border-radius: 12px; cursor: pointer; }
+.edition-drop span { color: var(--muted); font-size: 14px; }
+.edition-drop input { max-width: 100%; font: inherit; font-size: 14px; }
+.edition-check { display: flex; align-items: flex-start; gap: 10px; margin: 16px 0; font-size: 15px; line-height: 1.5; }
+.edition-check input { flex: none; margin-top: 5px; width: 18px; height: 18px; accent-color: var(--accent); }
+.edition-privacy ul { padding-left: 20px; font-size: 15px; }
+.edition-privacy li { margin: 12px 0; }
+.edition-restore { display: flex; gap: 8px; flex-direction: column; font-size: 14px; }
+.edition-restore input { max-width: 100%; }
+.edition-message { min-height: 24px; overflow-wrap: anywhere; }
+.edition-message.error { color: var(--danger); }
+.edition-jobs { margin: 40px 0; }
+.edition-job { border-bottom: 1px solid var(--line); padding: 22px 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+.edition-job h3 { font: 500 21px/1.35 var(--serif); margin: 0; overflow-wrap: anywhere; }
+.edition-job p { margin: 8px 0; font-size: 14px; }
+.edition-job .edition-job-state { font-weight: 650; color: var(--accent); }
+.edition-job-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; max-width: 330px; flex: none; }
+#reading-view button { min-height: 44px; }
+.edition-review { margin: 30px 0 60px; padding-top: 28px; border-top: 2px solid var(--line); }
+.edition-section-summary { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+.edition-section-summary span { font-size: 13px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; }
+.edition-block { border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin: 12px 0; background: var(--card); }
+.edition-block summary { cursor: pointer; font-size: 14px; padding: 6px 0; }
+.edition-block pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 340px; overflow: auto; font: 14px/1.6 var(--sans); padding: 12px; background: var(--paper); }
+.edition-labels { display: flex; gap: 12px; flex-wrap: wrap; }
+.edition-labels label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.edition-labels select { max-width: 100%; font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+#edition-page-dialog { width: min(95vw,1100px); max-height: 94vh; padding: 16px; }
+#edition-page-dialog img { display: block; width: 100%; height: auto; margin-top: 16px; }
+#edition-page-dialog .edition-close { position: sticky; top: 0; }
+@media(max-width:720px) { .edition-layout { grid-template-columns: 1fr; }.edition-card { padding: 20px; }.edition-job { display: block; }.edition-job-actions { justify-content: flex-start; max-width: none; margin-top: 14px; }.edition-heading { margin-top: 24px; } }
