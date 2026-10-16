@@ -15,7 +15,9 @@ entry points are symlinks to it. No production code imports a prototype output.
 - English original-research PDFs, 1–20 pages, at most 25 MiB.
 - Explicit permission and TypeSafe processing consent before upload. PDF text
   goes to TypeSafe; OCR, glossary, rewriting and speech are local. Offline
-  glossary lookup refuses an online fallback for private documents.
+  glossary lookup refuses an online fallback for private documents. The offline
+  snapshot has no Wiktionary rows, so private documents skip that dictionary
+  source (public papers still query it); a few one-word definitions may be absent.
 - PDF sections are always reviewed before rewriting. Low-confidence decisions
   require explicit block approvals; unknown/missing required sections stop.
 - Private jobs are not inserted in the public library or public rewrite queue.

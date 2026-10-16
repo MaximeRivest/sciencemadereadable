@@ -56,6 +56,10 @@ def prepare(run):
         )
 
     G.get_json = no_online_lookup
+    # The offline snapshot has no Wiktionary rows, so the shared glossary would ask
+    # Wiktionary online for single words. Private documents skip that source: a
+    # few one-word definitions may be missing, but no term leaves this server.
+    G.wiktionary = lambda term: None
     print("Building the reference glossary from PDF text…", flush=True)
     entries = G.glossary(
         {
