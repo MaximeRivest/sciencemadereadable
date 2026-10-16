@@ -39,7 +39,7 @@ a { color: var(--accent); }
 .view { display: none; width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 24px; flex: 1; }
 body[data-view="home"] #home, body[data-view="results"] #results-view, body[data-view="reader"] #reader-view,
 body[data-view="library"] #library-view, body[data-view="work"] #work-view, body[data-view="api"] #api-view,
-body[data-view="support"] #support-view, body[data-view="fields"] #fields-view { display: block; }
+body[data-view="support"] #support-view, body[data-view="fields"] #fields-view, body[data-view="account"] #account-view { display: block; }
 body[data-view="home"] nav.top .search, body[data-view="home"] nav.top #brand { visibility: hidden; }
 
 /* top bar */
@@ -426,10 +426,10 @@ body[data-view="home"] #map { --s: max(1250px, 125vw); width: var(--s); height: 
 body[data-view="results"] #map { --s: min(400px, 34vw); width: var(--s); height: var(--s);
   left: min(calc(50vw + 250px), calc(100vw - var(--s) - 32px)); top: 120px; }
 body[data-view="results"] .map-img, body[data-view="work"] .map-img, body[data-view="reader"] .map-img,
-body[data-view="library"] .map-img, body[data-view="api"] .map-img, body[data-view="support"] .map-img { filter: grayscale(1) contrast(1.1); opacity: .42; }
+body[data-view="library"] .map-img, body[data-view="api"] .map-img, body[data-view="support"] .map-img, body[data-view="account"] .map-img { filter: grayscale(1) contrast(1.1); opacity: .42; }
 /* a study: a small "you are here"; the reader and the library: a small round map button */
 body[data-view="work"] #map { --s: 170px; width: var(--s); height: var(--s); left: calc(100vw - 200px); top: calc(100vh - 200px); }
-body[data-view="reader"] #map, body[data-view="library"] #map, body[data-view="api"] #map, body[data-view="support"] #map { --s: 56px; width: var(--s); height: var(--s);
+body[data-view="reader"] #map, body[data-view="library"] #map, body[data-view="api"] #map, body[data-view="support"] #map, body[data-view="account"] #map { --s: 56px; width: var(--s); height: var(--s);
   left: calc(100vw - 76px); top: calc(100vh - 76px); }
 @media (max-width: 1100px) {
   body[data-view="results"] #map, body[data-view="work"] #map { --s: 56px; left: calc(100vw - 76px); top: calc(100vh - 76px); } }
@@ -503,20 +503,9 @@ body:not([data-view="work"]) .you-are-here { display: none; }
 @media (prefers-reduced-motion: reduce) { #map, .map-img, #globe { transition: none !important; } .qmark { animation: none; } }
 /* beside text the map is a control: above the (wide, transparent) content boxes, so it can be clicked */
 body[data-view="results"] #map, body[data-view="work"] #map, body[data-view="reader"] #map, body[data-view="library"] #map, body[data-view="api"] #map, body[data-view="support"] #map { z-index: 6; }
-/* small screens: the search gets its own row under the brand and links */
-@media (max-width: 820px) {
-  nav.top { flex-wrap: wrap; row-gap: 10px; }
-  form.search.mini { order: 3; flex-basis: 100%; max-width: none; }
-  body[data-view="home"] form.search.mini { display: none; }
-}
-@media (max-width: 560px) {
-  nav.top { padding: 10px 16px; gap: 10px; }
-  #brand { font-size: 17px; }
-  .nav-right { gap: 6px; }
-  #gpu { display: none; }
-  .support-link { white-space: nowrap; }
-  .search-opts { gap: 8px; }
-  /* phones: one row (brand, Menu, Support), the other links in a panel under it */
+/* below 1180 px the bar's links don't fit beside a usable search box (they wrapped from ~960 px, and the search
+   shrank to ~40 px): brand, search, Menu and Support stay in the bar, the other links fold into a panel under it */
+@media (max-width: 1180px) {
   .menu-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; font-size: 14px;
               color: var(--muted); background: transparent; }
   .menu-btn::after { content: ""; width: 7px; height: 7px; border: solid currentColor; border-width: 0 1.6px 1.6px 0;
@@ -532,6 +521,20 @@ body[data-view="results"] #map, body[data-view="work"] #map, body[data-view="rea
   .nav-links a:hover, .nav-links #theme:hover { background: var(--accent-soft); }
   .nav-links #theme { width: auto; height: auto; border: 0; background: transparent; justify-content: flex-start; gap: 10px; }
   .nav-links #theme .theme-text { display: inline; order: 2; }
+}
+/* small screens: the search gets its own row under the brand and links */
+@media (max-width: 820px) {
+  nav.top { flex-wrap: wrap; row-gap: 10px; }
+  form.search.mini { order: 3; flex-basis: 100%; max-width: none; }
+  body[data-view="home"] form.search.mini { display: none; }
+}
+@media (max-width: 560px) {
+  nav.top { padding: 10px 16px; gap: 10px; }
+  #brand { font-size: 17px; }
+  .nav-right { gap: 6px; }
+  #gpu { display: none; }
+  .support-link { white-space: nowrap; }
+  .search-opts { gap: 8px; }
   .support-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px 0 8px; }
 }
 
@@ -835,3 +838,51 @@ body[data-view="reading"] #map { display: none; }
 #edition-page-dialog img { display: block; width: 100%; height: auto; margin-top: 16px; }
 #edition-page-dialog .edition-close { position: sticky; top: 0; }
 @media(max-width:720px) { .edition-layout { grid-template-columns: 1fr; }.edition-card { padding: 20px; }.edition-job { display: block; }.edition-job-actions { justify-content: flex-start; max-width: none; margin-top: 14px; }.edition-heading { margin-top: 24px; } }
+
+/* ---------------------------------------------------------------- the account page (?account, web/src/account.ts) */
+#account-view { max-width: 820px; padding-top: 24px; padding-bottom: 40px; }
+#account-view p { margin: 8px 0; }
+#account-view code, #account-view pre { font: 13.5px/1.55 ui-monospace, "SF Mono", Menlo, monospace; }
+#account-view .codebox pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.acct-h { font: 500 22px/1.2 var(--serif); margin: 0 0 8px; }
+#account-view > div > h2.acct-h { margin-top: 32px; }
+.acct-levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0 4px; }
+.acct-level { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.acct-level.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.acct-level h3 { font-size: 15px; margin: 0; color: var(--muted); font-weight: 600; }
+.acct-rate { font: 500 24px/1.2 var(--serif); margin: 4px 0 !important; }
+.acct-price { font-weight: 600; margin: 6px 0 0 !important; }
+.acct-providers { display: flex; flex-wrap: wrap; gap: 10px; }
+.acct-who #acct-out { margin-left: 8px; vertical-align: baseline; }
+.acct-usage b { font-variant-numeric: tabular-nums; }
+.acct-bar { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; margin: 4px 0 10px; }
+.acct-bar span { display: block; height: 100%; background: var(--accent); }
+.acct-note, .acct-message { background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; }
+.acct-keys { list-style: none; padding: 0; margin: 10px 0; }
+.acct-keys li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.acct-keys li:first-child { border-top: 0; }
+.acct-make { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.acct-make input { flex: 1 1 260px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--ink); font: inherit; }
+.acct-fresh { border: 1px solid var(--accent); border-radius: 12px; padding: 14px 16px; margin: 12px 0; }
+.acct-fresh h3 { margin: 10px 0 4px; font-size: 16px; }
+.acct-fresh h3:first-child { margin-top: 0; }
+.acct-fresh .api-for { font-size: 13.5px; color: var(--muted); margin: 10px 0 0; }
+.acct-foot { margin-top: 28px !important; }
+.linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--danger); text-decoration: underline; cursor: pointer; }
+@media (max-width: 640px) { .acct-levels { grid-template-columns: 1fr; } .acct-keys li { align-items: flex-start; } }
+
+/* ---------------------------------------------------------------- terms.html, privacy.html */
+main.legal { display: block; max-width: 760px; margin: 0 auto; padding: 24px 24px 48px; flex: 1; }
+main.legal h2 { font: 500 22px/1.2 var(--serif); margin: 28px 0 8px; }
+main.legal li { margin: 4px 0; }
+
+/* topic wording help before a whole-field map, and AI-written group descriptions (src/fields.ts, src/topics.ts) */
+.fm-pick { margin: 14px 0 6px; font-weight: 600; }
+.fm-options { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.fm-option { width: 100%; text-align: left; padding: 11px 14px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--card); color: var(--ink); font: inherit; cursor: pointer; display: block; }
+.fm-option:hover, .fm-option:focus-visible { border-color: var(--accent); }
+.fm-note { color: var(--accent); font-size: 13px; margin-left: 6px; }
+.fm-def { display: block; margin-top: 3px; }
+.tg-about { margin: 4px 0 2px; line-height: 1.5; max-width: 68ch; }
+.tg-words { margin: 0 0 4px; }

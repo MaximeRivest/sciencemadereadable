@@ -24,7 +24,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="The map of science: millions of studies as points of light, coloured by field.">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=b98eacfd0b">
+<link rel="stylesheet" href="style.css?v=ca89474df0">
 <!-- the sharp map image first: the page shows it while the live map loads (atlas.ts); the theme's own only -->
 <link rel="preload" as="image" href="map/science-map-dark.webp" media="(prefers-color-scheme: dark)" fetchpriority="high">
 <link rel="preload" as="image" href="map/science-map-light.webp" media="(prefers-color-scheme: light)" fetchpriority="high">
@@ -46,6 +46,7 @@
     <a href="?reading" id="open-reading">PDF & audio</a>
     <a href="?fields" id="open-fields" title="Maps of whole research fields: made, being made, and asking for one">Field maps</a>
     <a href="?api" id="open-api" title="Use this search from your code or AI agent">API</a>
+    <a href="?account" id="open-account" title="API keys and limits for your programs and AI agents">Account</a>
     <a href="#" id="open-settings">Settings</a>
     <a href="#" id="open-about">About</a>
     <button id="theme" type="button" aria-label="Switch between light and dark" title="Light or dark"><span class="theme-text" aria-hidden="true">Light or dark</span>
@@ -238,6 +239,8 @@ for p in r.json()["results"]:
   <ul class="api-notes">
     <li><b>Be gentle:</b> 30 requests (or MCP tool calls) a minute per address (reading the guide doesn't count). Ask for up to 100 results
       in one search rather than many small ones. Go over and the answer says how many seconds to wait.</li>
+    <li><b>Need more?</b> <a href="?account" id="api-account">Make an account</a> for an API key: 60 requests a minute for
+      your programs wherever they run, free, or 300 a minute with the paid plan. Without a key, nothing changes.</li>
     <li><b>What it covers:</b> English titles and abstracts from OpenAlex, not full texts. New papers arrive with each
       data update, so the very latest may be missing. The <a href="https://api.sciencemadereadable.com/api/data/llms.txt" target="_blank" rel="noopener">guide</a>
       gives today's exact numbers.</li>
@@ -349,6 +352,7 @@ for p in r.json()["results"]:
 </main>
 
 <main id="reading-view" class="view"><div id="reading-desk"></div></main>
+<main id="account-view" class="view"><div id="account-box"></div></main>
 
 <main id="reader-view" class="view">
   <div class="toolbar">
@@ -429,6 +433,6 @@ for p in r.json()["results"]:
 <noscript><p class="noscript">ScienceMadeReadable needs JavaScript to search and to show the map. Without it, the
   <a href="https://api.sciencemadereadable.com/api/data/llms.txt">search guide</a> and
   <a href="https://ask.sciencemadereadable.com/why%20do%20we%20sleep">plain-text search</a> still work.</p></noscript>
-<script type="module" src="app.js?v=684d340281"></script>
+<script type="module" src="app.js?v=5302382c5d"></script>
 </body>
 </html>
