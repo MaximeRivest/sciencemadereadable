@@ -150,9 +150,15 @@ def _today() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 
+SIGNIN_SECRET = re.compile(r"(?<=[?&])(code|state)=[^&\s\"]+")
+
+
 def scrub(text: str) -> str:
-    """A log line without any API key in it."""
-    return KEY_IN_TEXT.sub("smr_…", text)
+    """A log line without any API key in it, nor a sign-in's one-time code."""
+    text = KEY_IN_TEXT.sub("smr_…", text)
+    if "/api/account/callback/" in text:
+        text = SIGNIN_SECRET.sub(r"\1=…", text)
+    return text
 
 
 # ---------------------------------------------------------------- sign-in (OAuth 2, authorization code + PKCE)
