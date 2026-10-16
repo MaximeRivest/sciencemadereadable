@@ -46,7 +46,7 @@ function saveKeyForm() {
 }
 
 // ---------------------------------------------------------------- views
-function show(view: "home" | "results" | "reader" | "library" | "work" | "explore" | "api" | "support" | "fields" | "reading") {
+function show(view: "home" | "results" | "reader" | "library" | "work" | "explore" | "api" | "support" | "fields" | "reading" | "account") {
   document.body.dataset.view = view;
   document.body.classList.remove("topics-mode");
   if (view !== "home") {   // leaving home closes its search tips, so Back finds the page as it was first seen
@@ -57,8 +57,8 @@ function show(view: "home" | "results" | "reader" | "library" | "work" | "explor
   window.scrollTo(0, 0);
   mapView(view);
   menu(false);
-  const here: Record<string, string> = { library: "#open-library", api: "#open-api", support: "#open-support", fields: "#open-fields", reading: "#open-reading" };
-  for (const id of ["#open-library", "#open-fields", "#open-api", "#open-support", "#open-reading"])
+  const here: Record<string, string> = { library: "#open-library", api: "#open-api", support: "#open-support", fields: "#open-fields", reading: "#open-reading", account: "#open-account" };
+  for (const id of ["#open-library", "#open-fields", "#open-api", "#open-support", "#open-reading", "#open-account"])
     if (id === here[view]) $(id).setAttribute("aria-current", "page"); else $(id).removeAttribute("aria-current");
 }
 
@@ -915,6 +915,15 @@ function route() {
     }).catch(() => { $("#reading-desk").textContent = "The reading desk could not load. Please reload this page."; });
     return;
   }
+  if (q.has("account")) {
+    show("account"); document.title = "Your account · ScienceMadeReadable";
+    $("#account-box").innerHTML = '<p role="status">Opening your account…</p>';
+    import("./account.ts").then(({ mount }) => {
+      if (document.body.dataset.view !== "account") return;
+      return mount($("#account-box"), go).then(() => focusTitle($("#account-box h1")));
+    }).catch(() => { $("#account-box").textContent = "The account page could not load. Please reload this page."; });
+    return;
+  }
   if (q.has("support")) return openSupport();
   if (q.has("library")) return openLibrary();
   if (q.has("fields")) return openFields(q.get("fields") ?? "");
@@ -1027,6 +1036,7 @@ initMap({
 });
 $("#brand").onclick = (e) => { e.preventDefault(); go(""); };
 for (const id of ["#open-library"]) $(id).onclick = (e) => { e.preventDefault(); go("?library"); };
+for (const id of ["#open-account", "#api-account"]) $(id).onclick = (e) => { e.preventDefault(); go("?account"); };
 for (const id of ["#open-reading", "#home-reading"]) $(id).onclick = (e) => { e.preventDefault(); go("?reading"); };
 for (const id of ["#open-api", "#open-api-2", "#open-api-3"])
   $(id).onclick = (e) => { e.preventDefault(); ($("#about") as HTMLDialogElement).close(); go("?api"); };

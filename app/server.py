@@ -25,7 +25,12 @@ GET /api/data/...        the data API (search/srl_search, release in DATA.md), r
                          topics and topics/WORDS (topic maps; each counts as TOPIC_COST requests);
                          its guide for programs and agents (llms.txt), reference (docs) and spec (openapi.json).
                          Per-address limits a minute (DATA_LIMITS): 30 for programs and agents, 60 for the
-                         site's own pages, the guide apart; tiles are immutable (cached a year).
+                         site's own pages, the guide apart; tiles are immutable (cached a year). With an API
+                         key (Authorization: Bearer smr_..., or ?key=smr_...): the account's limit instead
+                         (accounts.py: 60 free, 300 paid); a key that isn't valid is refused (401), never
+                         quietly treated as no key. Keys are stripped before passing on, and from the log.
+/api/account/...         sign-in (GitHub, Google), the account, its keys and plan (accounts.py; the page:
+                         web/src/account.ts). A cookie session on this address, sent only by the site's pages.
 POST /mcp                the same search as an MCP server for AI apps (search/srl_search/mcp_server.py),
                          passed through as is. Tool calls count against the programs' limit (DATA_LIMITS
                          "api"); a call over it is answered as a tool error the model can read (wait N
@@ -63,6 +68,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
+import accounts
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait as wait_all
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -457,20 +463,28 @@ class Handler(SimpleHTTPRequestHandler):
         super().__init__(*a, directory=str(WEB), **k)
 
     def log_message(self, fmt, *args):
-        sys.stderr.write("%s %s\n" % (time.strftime("%H:%M:%S"), fmt % args))
+        sys.stderr.write("%s %s\n" % (time.strftime("%H:%M:%S"), accounts.scrub(fmt % args)))   # never an API key
 
-    def send_json(self, status: int, value):
+    def send_json(self, status: int, value, headers: dict | list | None = None):
         body = json.dumps(value, ensure_ascii=False).encode()
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
+        for k, v in (headers.items() if isinstance(headers, dict) else headers or []):
+            self.send_header(k, v)
         self.end_headers()
         self.wfile.write(body)
 
     def end_headers(self):
         api = self.path.startswith("/api/") or is_mcp(self.path)
-        if api and not self.path.startswith("/api/worker/") and not editions_proxy.applies(self.path):
+        if api and self.path.startswith("/api/account"):
+            # the account routes carry a cookie: only the site's own pages may read their answers
+            if self.headers.get("Origin") in accounts.ORIGINS:
+                self.send_header("Access-Control-Allow-Origin", self.headers["Origin"])
+                self.send_header("Access-Control-Allow-Credentials", "true")
+            self.send_header("Vary", "Origin")
+        elif api and not self.path.startswith("/api/worker/") and not editions_proxy.applies(self.path):
             # the page may live elsewhere (GitHub Pages); nothing here uses cookies or logins
             self.send_header("Access-Control-Allow-Origin", "*")
         if not api:
@@ -547,6 +561,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json(200, library())
         if u.path.startswith("/api/data/"):
             return self.data_proxy(u)
+        if u.path == "/api/account" or u.path.startswith("/api/account/"):
+            return self.account("GET", u)
         if u.path == "/api/ask" or u.path.startswith("/api/ask/"):
             return self.ask(u)
         if u.path == "/api/search":
@@ -643,16 +659,29 @@ class Handler(SimpleHTTPRequestHandler):
         route = DATA_ROUTES.match(u.path)
         if not route or len(u.query) > 2000 or ".." in urllib.parse.unquote(u.path):
             return self.send_json(404, {"error": "not found"})
+        text = route.group(1).startswith(("search/", "topics/"))   # answered as plain text
+        key = api_key(self.headers, u.query)
+        acct = None
+        if key:
+            u = u._replace(query=strip_key(u.query))   # the search service never sees it
+            acct = accounts.key_account(key)
+            if not acct:
+                return (self.send_text(401, BAD_KEY + "\n") if text else self.send_json(401, {"error": BAD_KEY}))
         tiles = route.group(1).startswith("map/tiles/")
         kind = ("tile" if tiles else "doc" if route.group(1) in DOC_ROUTES
                 else "site" if self.headers.get("Origin") in SITE_ORIGINS else "api")
         # a topic map counts TOPIC_COST; reading one of its groups (read=N, an existing map) counts once
         topic = route.group(1).split("/")[0] == "topics" and "read=" not in u.query
-        wait = rate_wait(kind + ":" + self.client(), DATA_LIMITS[kind], TOPIC_COST if topic else 1)
+        cost = TOPIC_COST if topic else 1
+        keyed = acct is not None and kind in ("api", "site")   # guide and tiles stay per address, uncounted
+        limit = acct["per_minute"] if keyed else DATA_LIMITS[kind]
+        wait = rate_wait(("acct:" + acct["user"]) if keyed else (kind + ":" + self.client()), limit, cost)
         if wait:
-            body = json.dumps({"error": f"Too many requests: {DATA_LIMITS[kind]} a minute per address"
+            body = json.dumps({"error": (f"Too many requests: {limit} a minute for this key" if keyed
+                                         else f"Too many requests: {DATA_LIMITS[kind]} a minute per address")
                                         + (f" (a topic map counts as {TOPIC_COST})" if topic else "") + ". "
-                                        f"Try again in {wait} seconds.", "retry_after": wait}).encode()
+                                        f"Try again in {wait} seconds." + more_line(acct, kind),
+                               "retry_after": wait}).encode()
             self.send_response(429)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
@@ -660,6 +689,19 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_header("Retry-After", str(wait))
             self.end_headers()
             return self.wfile.write(body)
+        if keyed:
+            accounts.count(acct["user"], cost)
+        slot = keyed and acct["plan"] == "paid"
+        if slot and not PAID_SLOTS.acquire(timeout=PAID_WAIT_S):
+            return self.send_json(503, {"error": "Many paid requests at once right now. Try again in 5 seconds.",
+                                        "retry_after": 5}, {"Retry-After": "5"})
+        try:
+            return self.data_forward(u, route, tiles, topic)
+        finally:
+            if slot:
+                PAID_SLOTS.release()
+
+    def data_forward(self, u, route, tiles: bool, topic: bool):
         path = u.path[len("/api/data"):]
         for prefix in ("/search/", "/topics/"):
             if path.startswith(prefix):
@@ -705,6 +747,9 @@ class Handler(SimpleHTTPRequestHandler):
         except ValueError:
             msg = None   # the server answers that with a proper JSON-RPC parse error
         msgs = msg if isinstance(msg, list) else [msg]
+        key = api_key(self.headers, urllib.parse.urlparse(self.path).query)
+        acct = accounts.key_account(key) if key else None
+        calls = 0
         for m in msgs:
             if not isinstance(m, dict) or "method" not in m:
                 continue
@@ -716,24 +761,49 @@ class Handler(SimpleHTTPRequestHandler):
                              f"{str(app.get('name', '') if isinstance(app, dict) else '')[:60]}\n")
             if m["method"] != "tools/call":
                 continue   # handshake, listing tools, reading the guide: free, like the guide itself
-            wait = rate_wait("api:" + self.client(), DATA_LIMITS["api"],
-                             TOPIC_COST if params.get("name") == "map_topic" else 1)
+            calls += 1
+            if key and not acct:   # said as a tool error the model can relay: a 401 would make apps try to sign in
+                if isinstance(msg, list):
+                    return self.send_json(401, {"error": BAD_KEY})
+                return self.mcp_tool_error(m, meta, BAD_KEY)
+            cost = TOPIC_COST if params.get("name") == "map_topic" else 1
+            limit = acct["per_minute"] if acct else DATA_LIMITS["api"]
+            wait = rate_wait(("acct:" + acct["user"]) if acct else ("api:" + self.client()), limit, cost)
             if not wait:
+                if acct:
+                    accounts.count(acct["user"], cost)
                 continue
+            per = "for this key" if acct else "per address"
             if isinstance(msg, list):   # an old-style batch: no single call to answer for
-                return self.send_json(429, {"error": f"Too many requests: {DATA_LIMITS['api']} tool calls a minute "
-                                                     f"per address. Try again in {wait} seconds.", "retry_after": wait})
-            version = self.headers.get("Mcp-Protocol-Version") or meta.get("io.modelcontextprotocol/protocolVersion")
-            modern = bool(version) and version not in HANDSHAKE_VERSIONS
-            result = {"content": [{"type": "text", "text": (
-                f"Rate limit: this search allows {DATA_LIMITS['api']} tool calls a minute per address (map_topic counts "
+                return self.send_json(429, {"error": f"Too many requests: {limit} tool calls a minute "
+                                                     f"{per}. Try again in {wait} seconds.", "retry_after": wait})
+            return self.mcp_tool_error(m, meta, (
+                f"Rate limit: this search allows {limit} tool calls a minute {per} (map_topic counts "
                 f"as {TOPIC_COST}). Wait {wait} "
                 "seconds, then retry the same call. To need fewer calls: one search with a larger limit instead of "
-                "several small ones, and get_papers with several ids at once.")}], "isError": True}
-            if modern:
-                result["resultType"] = "complete"   # required by 2026-07-28; older clients may reject unknown keys
-            body = json.dumps({"jsonrpc": "2.0", "id": m.get("id"), "result": result}).encode()
-            return self.mcp_send(200, body, "application/json", {"Retry-After": str(wait)})
+                "several small ones, and get_papers with several ids at once." + more_line(acct, "api")),
+                {"Retry-After": str(wait)})
+        slot = bool(acct) and acct["plan"] == "paid" and calls > 0
+        if slot and not PAID_SLOTS.acquire(timeout=PAID_WAIT_S):
+            m = msgs[0] if isinstance(msgs[0], dict) else {}
+            return self.mcp_tool_error(m, {}, "Many paid requests at once right now. Wait 5 seconds, then retry the "
+                                              "same call.", {"Retry-After": "5"})
+        try:
+            return self.mcp_forward(raw, msg)
+        finally:
+            if slot:
+                PAID_SLOTS.release()
+
+    def mcp_tool_error(self, m: dict, meta: dict, text: str, extra: dict | None = None):
+        version = self.headers.get("Mcp-Protocol-Version") or meta.get("io.modelcontextprotocol/protocolVersion")
+        modern = bool(version) and version not in HANDSHAKE_VERSIONS
+        result = {"content": [{"type": "text", "text": text}], "isError": True}
+        if modern:
+            result["resultType"] = "complete"   # required by 2026-07-28; older clients may reject unknown keys
+        body = json.dumps({"jsonrpc": "2.0", "id": m.get("id"), "result": result}).encode()
+        return self.mcp_send(200, body, "application/json", extra)
+
+    def mcp_forward(self, raw: bytes, msg):
         headers = {k: v for k, v in self.headers.items()
                    if k.lower() in ("content-type", "accept", "last-event-id") or k.lower().startswith("mcp-")}
         req = urllib.request.Request(SEARCH_API + "/mcp", data=raw, method="POST", headers=headers)
@@ -767,6 +837,83 @@ class Handler(SimpleHTTPRequestHandler):
             return self.mcp_send(405, b"", "text/plain", {"Allow": "POST"})
         return self.send_text(200, MCP_HELP)
 
+    def cookie(self, name: str) -> str | None:
+        for part in (self.headers.get("Cookie") or "").split(";"):
+            k, _, v = part.strip().partition("=")
+            if k == name:
+                return v
+        return None
+
+    def redirect(self, url: str, cookies: list[str]):
+        self.send_response(302)
+        self.send_header("Location", url)
+        for c in cookies:
+            self.send_header("Set-Cookie", c)
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
+    def account(self, method: str, u):
+        """/api/account/...: sign-in, the account, its keys and plan (accounts.py). Changes are POSTs with JSON from
+        the site's own pages only (Origin checked; the cookie is SameSite=Lax as well)."""
+        if rate_wait("acct-page:" + self.client(), 60):
+            return self.send_json(429, {"error": "Too many account requests. Wait a minute."})
+        path = u.path.rstrip("/")
+        args = {k: v[0] for k, v in urllib.parse.parse_qs(u.query).items()}
+        private = not isinstance(self, PublicHandler)
+        token = self.cookie(accounts.SESSION_COOKIE)
+        try:
+            if method == "GET" and path.startswith("/api/account/login/"):
+                url, value = accounts.login_start(path.rsplit("/", 1)[-1], args.get("to", "site"))
+                return self.redirect(url, [set_cookie(accounts.LOGIN_COOKIE, value, "/api/account/callback", accounts.LOGIN_S)])
+            if method == "GET" and path.startswith("/api/account/callback/"):
+                started = self.cookie(accounts.LOGIN_COOKIE)
+                gone = set_cookie(accounts.LOGIN_COOKIE, "", "/api/account/callback", 0)
+                back = accounts.RETURN_TO.get((started or "").rsplit(".", 1)[-1], accounts.SITE)
+                try:
+                    session, uid, to = accounts.login_finish(path.rsplit("/", 1)[-1], args, started)
+                except accounts.AccountError as e:
+                    sys.stderr.write(f"account sign-in refused: {e.code}\n")
+                    return self.redirect(f"{back}/?account&signin={e.code}", [gone])
+                return self.redirect(f"{accounts.RETURN_TO[to]}/?account",
+                                     [gone, set_cookie(accounts.SESSION_COOKIE, session, "/api/account", accounts.SESSION_S)])
+            if method == "GET" and path == "/api/account/subscribed":
+                return self.send_json(*accounts.verify_checkout(args.get("session", "")))
+            if method == "GET" and path == "/api/account":
+                uid = accounts.session_user(token)
+                return self.send_json(200, (uid and accounts.me(uid, private)) or {
+                    "signed_in": False, "providers": accounts.providers(), "plans": accounts.PLANS,
+                    "offer": accounts.offer(private)})
+            if method != "POST":
+                return self.send_json(404, {"error": "not found"})
+            if self.headers.get("Origin") not in accounts.ORIGINS or "json" not in (self.headers.get("Content-Type") or ""):
+                return self.send_json(403, {"error": "Account changes are made from sciencemadereadable.com."})
+            gone = set_cookie(accounts.SESSION_COOKIE, "", "/api/account", 0)
+            if path == "/api/account/logout":
+                accounts.end_session(token)
+                return self.send_json(200, {"signed_in": False}, [("Set-Cookie", gone)])
+            uid = accounts.session_user(token)
+            if not uid:
+                return self.send_json(401, {"error": "Please sign in again.", "code": "signed_out"})
+            try:
+                d = self.body_json(10_000)
+            except ValueError:
+                return self.send_json(400, {"error": "send JSON"})
+            if path == "/api/account/keys":
+                return self.send_json(200, accounts.make_key(uid, d.get("name", "")))
+            if path == "/api/account/keys/revoke":
+                ok = accounts.revoke_key(uid, str(d.get("id", "")))
+                return self.send_json(200 if ok else 404, {"revoked": ok} if ok else {"error": "no such key"})
+            if path == "/api/account/delete":
+                if d.get("confirm") != "delete":
+                    return self.send_json(400, {"error": 'send {"confirm": "delete"}'})
+                accounts.delete_user(uid)
+                sys.stderr.write("account deleted\n")
+                return self.send_json(200, {"deleted": True}, [("Set-Cookie", gone)])
+            return self.send_json(404, {"error": "not found"})
+        except accounts.AccountError as e:
+            return self.send_json(e.status, {"error": e.message, "code": e.code})
+
     def client(self) -> str:
         # behind tailscale serve / a tunnel, the reader's address is in X-Forwarded-For
         return who_is((self.headers.get("X-Forwarded-For") or self.client_address[0]).split(",")[0].strip())
@@ -779,8 +926,8 @@ class Handler(SimpleHTTPRequestHandler):
         if is_mcp(self.path):   # MCP clients in a browser send their own headers (Mcp-Protocol-Version, Mcp-Method...)
             self.send_header("Access-Control-Allow-Headers", self.headers.get("Access-Control-Request-Headers") or "Content-Type")
             self.send_header("Access-Control-Expose-Headers", "Mcp-Session-Id")
-        else:
-            self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        else:   # Authorization: an API key from a browser program
+            self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
         self.send_header("Access-Control-Max-Age", "600")
         # Chrome asks before a public page (sciencemadereadable.com) calls a private-network address,
         # which is what this machine's name resolves to on devices running Tailscale.
@@ -794,6 +941,8 @@ class Handler(SimpleHTTPRequestHandler):
         u = urllib.parse.urlparse(self.path)
         if is_mcp(u.path):
             return self.mcp_proxy()
+        if u.path.startswith("/api/account/"):
+            return self.account("POST", u)
         if u.path == "/api/jobs":
             return self.new_job()
         if u.path == "/api/event":
@@ -998,6 +1147,47 @@ DATA_LIMITS = {"site": 60, "api": 30, "doc": 30, "tile": 1200}
 TOPIC_COST = 5
 
 
+# API keys (accounts.py). A key that isn't valid is refused, never quietly downgraded to no key: a paying user notices.
+BAD_KEY = ("This API key isn't valid: mistyped, deleted, or its account was deleted. Check your keys at "
+           "https://sciencemadereadable.com/?account, or send no key at all for the free limit (30 a minute).")
+# Paid traffic together may use about half of what the search service can do (measured 2026-10-16: ~11 searches a
+# second one at a time, 16-19 at most): at most 3 paid requests at once; the rest wait their turn, up to 20 s.
+PAID_SLOTS = threading.BoundedSemaphore(3)
+PAID_WAIT_S = 20
+
+
+def api_key(headers, query: str) -> str | None:
+    """The API key sent with a request: `Authorization: Bearer smr_...`, or `key=smr_...` in the address. Other
+    Authorization values are not ours (an app's own login) and are ignored, as before keys existed."""
+    auth = (headers.get("Authorization") or "").strip()
+    if auth[:7].lower() == "bearer " and auth[7:].strip().startswith("smr_"):
+        return auth[7:].strip()
+    m = re.search(r"(?:^|&)key=(smr_[^&]*)", query or "")
+    return urllib.parse.unquote(m.group(1)) if m else None
+
+
+def strip_key(query: str) -> str:
+    return "&".join(p for p in (query or "").split("&") if p and not p.startswith("key=smr_"))
+
+
+def set_cookie(name: str, value: str, path: str, max_age: int) -> str:
+    return f"{name}={value}; Path={path}; Max-Age={max_age}; Secure; HttpOnly; SameSite=Lax"
+
+
+def more_line(acct: dict | None, kind: str) -> str:
+    """After a refusal for the limit: how to get more, once sign-in is open (not on the site's own pages)."""
+    if kind == "site" or not accounts.providers():
+        return ""
+    free, paid = accounts.PLANS["free"]["per_minute"], accounts.PLANS["paid"]["per_minute"]
+    if acct is None:
+        return f" Need more? A free API key allows {free} a minute, the paid plan {paid}: https://sciencemadereadable.com/?account"
+    if acct.get("note"):
+        return f" ({acct['note']}.)"
+    if acct["plan"] == "free":
+        return f" The paid plan allows {paid} a minute: https://sciencemadereadable.com/?account"
+    return ""
+
+
 def who_is(address: str) -> str:
     """One reader, for limits and counts. IPv4: the address. IPv6: its /64, the block a home or a phone is given
     (a device picks new addresses inside it at will, so per address it could dodge every limit)."""
@@ -1056,7 +1246,8 @@ class PublicHandler(Handler):
 
     def allowed(self, method: str) -> bool:
         path = urllib.parse.urlparse(self.path).path
-        return (editions_proxy.applies(path) or (method, path) in PUBLIC or (method == "GET" and path.startswith(("/api/jobs/", "/api/data/", "/api/ask")))
+        return (editions_proxy.applies(path) or (method, path) in PUBLIC or path == "/api/account" or path.startswith("/api/account/")
+                or (method == "GET" and path.startswith(("/api/jobs/", "/api/data/", "/api/ask")))
                 or (method == "POST" and path.startswith("/api/worker/jobs/")))
 
     def do_GET(self):
@@ -1110,6 +1301,7 @@ if __name__ == "__main__":
     threading.Thread(target=save_jobs_forever, daemon=True).start()
     threading.Thread(target=read_supporters_forever, daemon=True).start()
     threading.Thread(target=fieldpay.poll_forever, daemon=True).start()
+    threading.Thread(target=accounts.background_forever, daemon=True).start()
     if a.public_port:
         public = ThreadingHTTPServer(("127.0.0.1", a.public_port), PublicHandler)
         threading.Thread(target=public.serve_forever, daemon=True).start()

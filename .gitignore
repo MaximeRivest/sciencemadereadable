@@ -96,3 +96,8 @@ app/sponsors.json
 app/stripe_read_key
 app/stripe_refund_key
 app/asker_secret
+
+# API accounts (app/accounts.py): the database, sign-in app secrets
+app/accounts.db
+app/accounts.db-*
+app/oauth.json

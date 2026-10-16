@@ -11,6 +11,9 @@ Serves app/web as it is on disk (build with `node tools/build.mjs --watch`, whic
   every page   -> a DEV badge naming the backends, and a reload as soon as app.js / style.css / index.html
                   change on disk (polls /__dev/version; the page's policy allows only our own scripts, so the
                   reloader is a file served from here, never inline)
+  /api/account/* -> the same door, with cookies, Origin and redirects passed through (sign-in, keys, plan).
+                  Signing in with GitHub/Google always lands on the public site (their apps know one address), so
+  /__dev/login   -> signs this browser in as a dev account (provider "dev") to try the account page here.
 Nothing is cached. Bound to 127.0.0.1; dev.sh puts it on the tailnet only (tailscale serve), never public.
 """
 from __future__ import annotations
@@ -26,7 +29,16 @@ import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import accounts
 import editions_proxy
+
+
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *a, **k):   # a sign-in's redirect goes to the browser, not followed here
+        return None
+
+
+OPEN_AS_IS = urllib.request.build_opener(NoRedirect)
 
 WEB = Path(__file__).resolve().parents[1] / "web"
 BACKENDS = {"data": {"prod": "http://127.0.0.1:8810", "dev": "http://127.0.0.1:8811",
@@ -72,7 +84,7 @@ def make_handler(data: str, queue: str, names: tuple[str, str]):
         def send_body(self, code: int, body: bytes, ctype: str, headers: dict | None = None):
             self.send_response(code)
             self.send_header("Content-Type", ctype)
-            for k, v in (headers or {}).items():
+            for k, v in (headers.items() if isinstance(headers, dict) else headers or []):
                 self.send_header(k, v)
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
@@ -80,17 +92,24 @@ def make_handler(data: str, queue: str, names: tuple[str, str]):
 
         def proxy(self, url: str, method: str = "GET", body: bytes | None = None):
             req = urllib.request.Request(url, data=body, method=method)
-            for h in ("Content-Type", "Range"):
+            account = "/api/account" in url
+            for h in ("Content-Type", "Range", "Authorization") + (("Cookie", "Origin") if account else ()):
                 if self.headers.get(h):
                     req.add_header(h, self.headers[h])
+            if account:
+                req.add_header("X-Forwarded-For", self.headers.get("X-Forwarded-For") or self.client_address[0])
+            passed = {}
             try:
-                with urllib.request.urlopen(req, timeout=95) as r:   # a topic map takes up to ~30 s
+                with OPEN_AS_IS.open(req, timeout=95) as r:   # a topic map takes up to ~30 s
                     code, out, ctype = r.status, r.read(), r.headers.get("Content-Type", "application/json")
             except urllib.error.HTTPError as e:
                 code, out, ctype = e.code, e.read(), e.headers.get("Content-Type", "application/json")
+                r = e
             except OSError as e:
-                code, out, ctype = 502, json.dumps({"error": f"dev proxy: {url.split('?')[0]} unreachable ({e})"}).encode(), "application/json"
-            self.send_body(code, out, ctype)
+                code, out, ctype, r = 502, json.dumps({"error": f"dev proxy: {url.split('?')[0]} unreachable ({e})"}).encode(), "application/json", None
+            if account and r is not None:
+                passed = [(k, v) for k, v in r.headers.items() if k.lower() in ("set-cookie", "location")]
+            self.send_body(code, out, ctype, passed)
 
         def route(self, method: str):
             p = self.path
@@ -138,6 +157,12 @@ def make_handler(data: str, queue: str, names: tuple[str, str]):
             path = self.path.split("?")[0]
             if path.startswith("/api/"):
                 return self.route("GET")
+            if path == "/__dev/login":
+                uid = accounts.upsert_user("dev", {"subject": "dev", "email": None, "email_verified": False,
+                                                   "name": "Dev account", "login": "dev"})
+                cookie = (f"{accounts.SESSION_COOKIE}={accounts.new_session(uid)}; Path=/api/account; "
+                          f"Max-Age={accounts.SESSION_S}; Secure; HttpOnly; SameSite=Lax")
+                return self.send_body(302, b"", "text/plain", [("Location", "/?account"), ("Set-Cookie", cookie)])
             if path == "/config.js":
                 return self.send_body(200, b'window.SRL_CONFIG = {"api": ""};\n', "text/javascript")
             if path == "/__dev/reload.js":

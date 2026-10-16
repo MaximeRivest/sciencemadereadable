@@ -46,6 +46,7 @@
     <a href="?reading" id="open-reading">PDF & audio</a>
     <a href="?fields" id="open-fields" title="Maps of whole research fields: made, being made, and asking for one">Field maps</a>
     <a href="?api" id="open-api" title="Use this search from your code or AI agent">API</a>
+    <a href="?account" id="open-account" title="API keys and limits for your programs and AI agents">Account</a>
     <a href="#" id="open-settings">Settings</a>
     <a href="#" id="open-about">About</a>
     <button id="theme" type="button" aria-label="Switch between light and dark" title="Light or dark"><span class="theme-text" aria-hidden="true">Light or dark</span>
@@ -238,6 +239,8 @@ for p in r.json()["results"]:
   <ul class="api-notes">
     <li><b>Be gentle:</b> 30 requests (or MCP tool calls) a minute per address (reading the guide doesn't count). Ask for up to 100 results
       in one search rather than many small ones. Go over and the answer says how many seconds to wait.</li>
+    <li><b>Need more?</b> <a href="?account" id="api-account">Make an account</a> for an API key: 60 requests a minute for
+      your programs wherever they run, free, or 300 a minute with the paid plan. Without a key, nothing changes.</li>
     <li><b>What it covers:</b> English titles and abstracts from OpenAlex, not full texts. New papers arrive with each
       data update, so the very latest may be missing. The <a href="https://api.sciencemadereadable.com/api/data/llms.txt" target="_blank" rel="noopener">guide</a>
       gives today's exact numbers.</li>
@@ -349,6 +352,7 @@ for p in r.json()["results"]:
 </main>
 
 <main id="reading-view" class="view"><div id="reading-desk"></div></main>
+<main id="account-view" class="view"><div id="account-box"></div></main>
 
 <main id="reader-view" class="view">
   <div class="toolbar">
