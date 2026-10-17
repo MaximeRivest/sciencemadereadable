@@ -11,6 +11,7 @@ import type { Hit } from "./paper.ts";
 export interface TopicPaper {
   id: string; title: string; year?: number; type?: string; venue?: string; authors?: string[]; authors_count?: number;
   citations?: number; doi?: string; pmcid?: string; readable?: boolean; in_map?: boolean; why?: string;
+  editions?: number;                         // author pages: the same work printed this many times (listed once)
 }
 export interface Expert { author: string; name: string; h: number; papers_in_group: number; top: TopicPaper; latest?: TopicPaper; why: string }
 /** Someone an author publishes with (author pages, people.ts): n = papers together. */
@@ -433,6 +434,7 @@ function pager(host: HTMLElement, panel: HTMLElement, what: string) {
 }
 
 function why(key: string, p: TopicPaper, names: Map<number, string>): string {
+  if (p.editions) return `${p.editions} editions with this title (reprints, translations, collected works): listed once, the most cited`;
   if (key === "newest") return "";
   if (key === "bridges") {
     const m = /group (\d+)/.exec(p.why ?? "");

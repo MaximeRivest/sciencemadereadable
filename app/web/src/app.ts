@@ -4,7 +4,7 @@ import { lastSearch, looksExact, open, place, prefetch, search, similar, work, P
 import { focus, focusGroup, focusPoint, hot, initMap, mapView, setHere, setResults, setWalk, useContext, type Line, type Spot } from "./atlas.ts";
 import { fetchTopics, moreOf, renderPending, renderTopics, TopicError, type TopicMap, type TopicOptions } from "./topics.ts";
 import { fieldUrl, offer, renderFields, verifyPaid } from "./fields.ts";
-import { authorsOf, fetchAuthor, moreOfAuthor, peopleStrip, renderAuthor, renderPeople } from "./people.ts";
+import { authorUrl, authorsOf, fetchAuthor, moreOfAuthor, peopleStrip, renderAuthor, renderPeople } from "./people.ts";
 import { API } from "./jobs.ts";
 import { Reader } from "./reader.ts";
 import { activeJob, examples, follow, library, now, openable, savedRewrites, status, supportState, type LibraryItem, type Status, type Support } from "./jobs.ts";
@@ -370,7 +370,7 @@ function drawTopicSpots(d: TopicMap, shown: string) {
 // ---------------------------------------------------------------- people (people.ts)
 /** An author's page: their work as a one-screen overview (the topic map's), their studies on the globe. */
 async function openAuthor(id: string, mapOnly = false, kind: "author" | "institution" = "author") {
-  const here = `?${kind}=${encodeURIComponent(id)}`;
+  const here = kind === "author" ? authorUrl(id) : `?${kind}=${encodeURIComponent(id)}`;
   if (mapOnly) {
     const d = await fetchAuthor(id, kind).catch(() => null);
     if (d) { drawTopicSpots(d, here); focus(focusPoint(), topicZoom ?? 3); }
@@ -1059,7 +1059,8 @@ function route() {
       if (!q.get(kind)) continue;
       useContext("results");
       show("explore");
-      if (topicShown !== `?${kind}=${encodeURIComponent(q.get(kind)!)}`) return openAuthor(q.get(kind)!, true, kind);
+      const id = q.get(kind)! + (kind === "author" && q.get("with") ? `,${q.get("with")}` : "");
+      if (topicShown !== (kind === "author" ? authorUrl(id) : `?${kind}=${encodeURIComponent(id)}`)) return openAuthor(id, true, kind);
       return focus(focusPoint(), topicZoom ?? 3);
     }
     if (q.get("work") || q.get("paper")) useContext("walk"); else if (q.get("q")) useContext("results");
@@ -1072,7 +1073,7 @@ function route() {
     opts.readable = false;
     return openTopics(q.get("topics")!, Number(q.get("group")) || null, false, q.get("scope") === "field", q.get("definition") ?? "");
   }
-  if (q.get("author")) return openAuthor(q.get("author")!);
+  if (q.get("author")) return openAuthor(q.get("author")! + (q.get("with") ? `,${q.get("with")}` : ""));
   if (q.get("institution")) return openAuthor(q.get("institution")!, false, "institution");
   if (q.get("people")) return openPeople(q.get("people")!);
   if (q.get("work")) return openWork(q.get("work")!);

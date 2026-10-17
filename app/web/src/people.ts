@@ -17,7 +17,23 @@ export interface Person {
   per_year?: Record<string, number>; positions?: { first: number; second: number; other: number };
   // institutions
   country?: string | null; kind?: string | null; ror?: string | null; authors?: number;
+  cited_years?: [number, number] | null;                       // when the work carrying most citations was done
+  records?: { id: string; name: string; works: number; citations: number }[];   // several records seen together
 }
+/** Another author record with the same name (/authors/{id}/namesakes). */
+export interface Namesake {
+  id: string; name: string; works: number; citations: number; h: number; years: [number, number] | null;
+  topic?: { name: string } | null; institution?: { name: string } | null; top?: { id: string; title: string; year?: number; citations?: number };
+}
+/** An author page's address: one record, or several seen together ("A1,A2,A3": ?author=A1&with=A2,A3). */
+export const authorUrl = (ids: string) => {
+  const [first, ...rest] = ids.split(",");
+  return `?author=${encodeURIComponent(first)}` + (rest.length ? `&with=${rest.map(encodeURIComponent).join(",")}` : "");
+};
+const apiRef = (id: string) => {
+  const [first, ...rest] = id.split(",");
+  return { path: encodeURIComponent(first), with: rest.join(",") };
+};
 export type Kind = "author" | "institution";
 export interface AuthorMap extends TopicMap { kind: Kind; person: Person; level: "fields" | "subfields" }
 const PATH: Record<Kind, string> = { author: "authors", institution: "institutions" };
@@ -31,7 +47,9 @@ export interface AuthorHit {
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
 export async function fetchAuthor(id: string, kind: Kind = "author", signal?: AbortSignal): Promise<AuthorMap> {
-  const r = await fetch(`${API}/api/data/${PATH[kind]}/${encodeURIComponent(id)}`, { signal: signal ?? AbortSignal.timeout(30000) });
+  const a = apiRef(id);
+  const r = await fetch(`${API}/api/data/${PATH[kind]}/${a.path}${a.with ? `?with=${encodeURIComponent(a.with)}` : ""}`,
+                        { signal: signal ?? AbortSignal.timeout(60000) });
   const d = await r.json().catch(() => ({}));
   if (!r.ok) throw new TopicError(r.status, d.detail ?? d.error ?? "");
   return d as AuthorMap;
@@ -42,7 +60,9 @@ export function moreOfAuthor(id: string, kind: Kind = "author"): More {
   return async (at, lens, offset, limit) => {
     const p = new URLSearchParams({ list: lens, offset: String(offset), limit: String(limit) });
     p.set("read", at.g == null ? "" : at.s == null ? `${at.g}` : `${at.g}.${at.s}`);
-    const r = await fetch(`${API}/api/data/${PATH[kind]}/${encodeURIComponent(id)}?${p}`, { signal: AbortSignal.timeout(30000) });
+    const a = apiRef(id);
+    if (a.with) p.set("with", a.with);
+    const r = await fetch(`${API}/api/data/${PATH[kind]}/${a.path}?${p}`, { signal: AbortSignal.timeout(30000) });
     if (!r.ok) throw new TopicError(r.status, "");
     return r.json();
   };
@@ -53,6 +73,14 @@ export async function searchAuthors(q: string, k = 10, signal?: AbortSignal, kin
     const r = await fetch(`${API}/api/data/${PATH[kind]}?q=${encodeURIComponent(q)}&k=${k}`, { signal: signal ?? AbortSignal.timeout(8000) });
     if (!r.ok) return [];
     return ((await r.json()).results ?? []) as AuthorHit[];
+  } catch { return []; }
+}
+
+export async function namesakesOf(id: string): Promise<Namesake[]> {
+  try {
+    const r = await fetch(`${API}/api/data/authors/${encodeURIComponent(id)}/namesakes`, { signal: AbortSignal.timeout(15000) });
+    if (!r.ok) return [];
+    return ((await r.json()).results ?? []) as Namesake[];
   } catch { return []; }
 }
 
@@ -109,9 +137,14 @@ export function renderAuthor(box: HTMLElement, d: AuthorMap, deps: Deps) {
     `<a href="?institution=${esc(i.id)}" data-go title="${esc(`${i.papers} ${i.papers === 1 ? "study" : "studies"} from there` +
       (i.years ? `, ${i.years[0] === i.years[1] ? i.years[0] : `${i.years[0]}–${i.years[1]}`}` : ""))}">${esc(i.name)}</a>` +
     (i.country ? ` <span class="quiet">(${esc(i.country)})</span>` : "")).join(" · ");
+  const yr = (y?: [number, number] | null) => y ? (y[0] === y[1] ? `${y[0]}` : `${y[0]}–${y[1]}`) : "";
+  // a historical figure: when the work that carries their citations was done, rather than first-to-last record
+  // (which runs to this year's reprints)
+  const era = p.cited_years && p.years && (p.cited_years[1] < p.years[1] - 15 || p.cited_years[0] > p.years[0] + 15)
+    ? `most cited work ${yr(p.cited_years)}` : yr(p.years);
   const facts = [plural(p.works, "study", "studies"), p.citations ? `cited ${n(p.citations)} times` : "", p.h ? `h-index ${p.h}` : "",
-    p.years ? (p.years[0] === p.years[1] ? `${p.years[0]}` : `${p.years[0]}–${p.years[1]}`) : ""].filter(Boolean).join(" · ");
-  head.innerHTML = `<h1 class="au-name">${esc(p.name)} <span class="au-facts">${esc(facts)}</span></h1>` +
+    era].filter(Boolean).join(" · ");
+  head.innerHTML = `<h1 class="au-name">${esc(p.name)} <span class="au-facts" title="${esc(p.years ? `Studies listed ${yr(p.years)}` : "")}">${esc(facts)}</span></h1>` +
     `<p class="au-where">${where ? `${where} · ` : ""}${p.topic ? `mostly <b>${esc(p.topic.name)}</b> · ` : ""}` +
     `<span class="au-bars-slot"></span><a href="https://openalex.org/${esc(p.id)}" target="_blank" rel="noopener">OpenAlex ↗</a>` +
     ` · <a href="https://scholar.google.com/scholar?q=${encodeURIComponent(`author:"${p.name}"`)}" target="_blank" rel="noopener">Google Scholar ↗</a></p>`;
@@ -120,6 +153,7 @@ export function renderAuthor(box: HTMLElement, d: AuthorMap, deps: Deps) {
   if (b) slot.replaceWith(b, " · "); else slot.remove();
   for (const a of head.querySelectorAll<HTMLAnchorElement>("a[data-go]"))
     a.onclick = (e) => { e.preventDefault(); deps.go(a.getAttribute("href")!); };
+  head.append(records(p, deps));
 
   const info = document.createElement("div");
   const level = d.level === "subfields" ? "subfields, with their topics inside" : "fields, with their subfields inside";
@@ -127,7 +161,9 @@ export function renderAuthor(box: HTMLElement, d: AuthorMap, deps: Deps) {
     `Each box is one of their ${level}: the label OpenAlex gives each study (its main topic, in a subfield, in a field), ` +
     `sized by how many of their studies carry it. Point at a box to see who they work with there and light those studies ` +
     `on the map; click it for its lists.</p>` +
-    `<p class="quiet">This is one OpenAlex author record. OpenAlex sometimes splits one person into several records, and ` +
+    (p.records ? `<p class="quiet">These are ${p.records.length} OpenAlex author records seen together, as chosen on this page: ` +
+      `that they are one person is a reader's judgement, not checked by us.</p>` : "") +
+    `<p class="quiet">${p.records ? "Each record" : "This is one OpenAlex author record."} OpenAlex sometimes splits one person into several records, and ` +
     `about a quarter of author names on recent papers are tied to no record at all, so some of their work may be missing ` +
     `here. Citation counts are OpenAlex's. Co-authors on papers with more than 100 authors are not counted. The dots on ` +
     `the map are their studies with an English abstract (the ones we can place).</p>` +
@@ -138,6 +174,64 @@ export function renderAuthor(box: HTMLElement, d: AuthorMap, deps: Deps) {
     cloud: (w, k) => peopleCloud(w, k, deps), lists, span, info, act: null, splitFrom: Infinity,
     legend: `<p class="tv-legend">The people they publish with here · bigger: on more of these studies</p>`,
   });
+}
+
+/** Under the name: the records seen together (each can be taken out), and the other records with the same name, to
+ *  choose which to see together. OpenAlex splits one person often, historical figures most of all (reprints,
+ *  letters, collected works each under a new record); nothing here is merged unless the reader asks. */
+function records(p: Person, deps: Deps): HTMLElement {
+  const box = document.createElement("div");
+  box.className = "au-records";
+  const ids = p.id.split(",");
+  if (p.records) {
+    const line = box.appendChild(document.createElement("p"));
+    line.className = "au-together";
+    line.append(`${p.records.length} records seen together: `);
+    p.records.forEach((r, i) => {
+      if (i) line.append(" · ");
+      const keep = ids.filter((x) => x !== r.id).join(",");
+      const a = line.appendChild(document.createElement("a"));
+      a.href = authorUrl(r.id); a.textContent = `${r.id} (${plural(r.works, "study", "studies")})`;
+      a.onclick = (e) => { e.preventDefault(); deps.go(a.getAttribute("href")!); };
+      const x = line.appendChild(document.createElement("button"));
+      x.type = "button"; x.className = "au-x"; x.textContent = "×";
+      x.title = `See the page without ${r.id}`; x.setAttribute("aria-label", `Take ${r.id} out`);
+      x.onclick = () => deps.go(authorUrl(keep));
+    });
+  }
+  const more = box.appendChild(document.createElement("details"));
+  more.className = "au-namesakes";
+  more.hidden = true;
+  namesakesOf(ids[0]).then((list) => {
+    const others = list.filter((x) => !ids.includes(x.id));
+    if (!others.length) return;
+    more.hidden = false;
+    more.innerHTML = `<summary>${others.length === 1 ? "1 other record has" : `${others.length} other records have`} the same name: ` +
+      `the same person, or someone else?</summary>` +
+      `<p class="quiet small">OpenAlex often splits one person into several records, historical figures most of all ` +
+      `(reprints, letters and collected works each under a new one). Tick the ones you recognise by their most cited ` +
+      `work, and see them together. Nothing is merged for anyone else.</p><div class="au-ns-list"></div>` +
+      `<button type="button" class="au-ns-go" disabled>See them together</button>`;
+    const host = more.querySelector<HTMLElement>(".au-ns-list")!, btn = more.querySelector<HTMLButtonElement>(".au-ns-go")!;
+    const ticked = new Set<string>();
+    for (const o of others) {
+      const row = host.appendChild(document.createElement("label"));
+      row.className = "au-ns";
+      const facts = [plural(o.works, "study", "studies"), o.citations ? `cited ${n(o.citations)} times` : "not cited",
+        o.years ? (o.years[0] === o.years[1] ? `${o.years[0]}` : `${o.years[0]}–${o.years[1]}`) : "", o.topic?.name, o.institution?.name]
+        .filter(Boolean).join(" · ");
+      row.innerHTML = `<input type="checkbox"> <span><b>${esc(o.id)}</b> <span class="quiet">${esc(facts)}</span>` +
+        (o.top ? `<br><span class="au-ns-top">Most cited: ${esc(o.top.title)}${o.top.year ? ` (${o.top.year})` : ""}</span>` : "") + `</span>`;
+      const box = row.querySelector("input")!;
+      box.onchange = () => {
+        if (box.checked) ticked.add(o.id); else ticked.delete(o.id);
+        btn.disabled = !ticked.size;
+        btn.textContent = ticked.size ? `See ${ticked.size + ids.length} records together` : "See them together";
+      };
+    }
+    btn.onclick = () => deps.go(authorUrl([...ids, ...ticked].join(",")));
+  });
+  return box;
 }
 
 /** Studies a year, as a row of small bars (the page's policy allows no inline styles: set from here). */
@@ -217,27 +311,44 @@ export async function peopleStrip(host: HTMLElement, q: string, go: (url: string
   if (!looksLikeName(q, 6)) return;
   const words = q.trim().split(/\s+/).length;
   const [people, orgs] = await Promise.all([
-    words <= 4 ? searchAuthors(q, 6, signal) : Promise.resolve([]),
+    words <= 4 ? searchAuthors(q, 12, signal) : Promise.resolve([]),
     searchAuthors(q, 4, signal, "institution"),
   ]);
   if (signal?.aborted) return;
   // one word (a surname alone): only people with some body of work, so a topic word that is also a rare surname
   // stays quiet; organisations: whole-name matches with a body of work
-  const hits = people.filter((a) => a.match === "full" && (words > 1 || a.works >= 10));
+  const all = people.filter((a) => a.match === "full" && (words > 1 || a.works >= 10));
+  // records with one name after the best known one: one line ("and 26 other records named Albert Einstein")
+  const nameKey = (a: AuthorHit) => a.name.normalize("NFKD").toLowerCase().replace(/[^\p{L}]/gu, "");
+  const twins = new Map<string, number>();
+  const hits: AuthorHit[] = [];
+  for (const a of all) {
+    const k = nameKey(a);
+    if (twins.has(k)) twins.set(k, twins.get(k)! + 1); else { twins.set(k, 0); hits.push(a); }
+  }
   const show = hits.slice(0, 3);
   const orgShow = orgs.filter((o) => o.match === "full" && o.works >= 100).slice(0, 2);
   if (!show.length && !orgShow.length) return;
   const strip = document.createElement("section");
   strip.className = "au-strip";
   strip.setAttribute("aria-label", "People and organisations with this name");
-  if (orgShow.length) {
+  const orgs_ = () => {
     strip.insertAdjacentHTML("beforeend", `<h2 class="au-strip-h">Organisations named ${esc(q.trim())}</h2>`);
     for (const o of orgShow) strip.append(authorRow(o, go, "institution"));
-  }
+  };
+  // a search that is exactly someone's name puts the people first ("Albert Einstein" before the college)
+  const exact = show.some((a) => nameKey(a) === q.normalize("NFKD").toLowerCase().replace(/[^\p{L}]/gu, ""));
+  if (orgShow.length && !exact) orgs_();
   if (show.length) {
     strip.insertAdjacentHTML("beforeend", `<h2 class="au-strip-h">People named ${esc(q.trim())}</h2>`);
-    for (const a of show) strip.append(authorRow(a, go));
-    if (hits.length > show.length) {
+    for (const a of show) {
+      const row = authorRow(a, go);
+      const t = twins.get(nameKey(a)) ?? 0;
+      if (t) row.insertAdjacentHTML("beforeend", `<span class="hit-why au-twin">and ${t}${t >= 5 ? "+" : ""} other ${t === 1 ? "record" : "records"} ` +
+        `with this name: the page lets you see them together</span>`);
+      strip.append(row);
+    }
+    if (hits.length > show.length || [...twins.values()].some((x) => x > 0)) {
       const more = strip.appendChild(document.createElement("a"));
       more.className = "au-more";
       more.href = `?people=${encodeURIComponent(q.trim())}`;
@@ -245,6 +356,7 @@ export async function peopleStrip(host: HTMLElement, q: string, go: (url: string
       more.onclick = (e) => { e.preventDefault(); go(more.getAttribute("href")!); };
     }
   }
+  if (orgShow.length && exact) orgs_();
   host.prepend(strip);
 }
 
