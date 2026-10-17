@@ -13,7 +13,7 @@ GET /api/search?q=...&mode=auto|semantic|keyword&year_from=YYYY
                          query uses quotes, AND / OR / NOT, brackets or word*. Answers
                          {"hits": [...], "mode": "semantic"|"keyword", "matches": n}; the page
                          falls back to Europe PMC when this fails. At most 30 searches a minute per
-                         address. The words searched are not counted (stats.py), but appear in the request log, without the address.
+                         address. Searches are counted in stats.py (the words with a daily code, never the address).
 GET /api/check?ids=PMC1,PMC2,...   which search results can be opened: "ok", or why not ("licence",
                          "layout", "no full text"), by the same rules as opening the paper. Kept forever
                          in app/checks.jsonl. Answers as soon as one is known, with all known then;
@@ -35,8 +35,8 @@ POST /mcp                the same search as an MCP server for AI apps (search/sr
                          passed through as is. Tool calls count against the programs' limit (DATA_LIMITS
                          "api"); a call over it is answered as a tool error the model can read (wait N
                          seconds), not an HTTP error that would break the app's connection. GET /mcp in a
-                         browser: how to add it. Logged: the method, the tool and the app's name, never
-                         the search words.
+                         browser: how to add it. Logged: the method, the tool and the app's name; the
+                         usage counts (stats.py) keep the tool calls with their main argument.
 GET /api/now             what is being rewritten right now (titles, progress) and the latest finished.
 GET /api/support         what the GPU costs a day, support of the last 24 h (Stripe, GitHub Sponsors), the
                          Stripe links, today's sponsor.
@@ -682,6 +682,10 @@ class Handler(SimpleHTTPRequestHandler):
             # never uses up what searches and maps may have
             limit, who = MORE_LIMIT, "more:" + self.client()
         wait = rate_wait(who, limit, cost)
+        if kind == "api":
+            stats.record_api("api", route.group(1).split("/")[0] + (":more" if "part=more" in u.query else ""),
+                             main_argument(route.group(1), u.query), program(self.headers.get("User-Agent", "")),
+                             self.client(), keyed=acct is not None, limited=bool(wait))
         if wait:
             body = json.dumps({"error": (f"Too many requests: {limit} a minute for this key" if keyed
                                          else f"Too many requests: {limit} a minute per address")
@@ -762,9 +766,13 @@ class Handler(SimpleHTTPRequestHandler):
             params = m.get("params") if isinstance(m.get("params"), dict) else {}
             meta = params.get("_meta") if isinstance(params.get("_meta"), dict) else {}
             app = (params.get("clientInfo") or meta.get("io.modelcontextprotocol/clientInfo") or {})
-            # counts adoption: which apps connect and which tools they use; never the arguments (the search words)
-            sys.stderr.write(f"mcp {str(m['method'])[:40]} {str(params.get('name', ''))[:40]} "
-                             f"{str(app.get('name', '') if isinstance(app, dict) else '')[:60]}\n")
+            app_name = str(app.get("name", "") if isinstance(app, dict) else "")
+            # counts adoption: which apps connect and which tools they use (stats.py has what they asked for)
+            sys.stderr.write(f"mcp {str(m['method'])[:40]} {str(params.get('name', ''))[:40]} {app_name[:60]}\n")
+            if m["method"] in ("initialize", "tools/call"):   # not the pings, listings and notifications around them
+                args = params.get("arguments") if isinstance(params.get("arguments"), dict) else {}
+                route_name = str(params.get("name", ""))[:40] if m["method"] == "tools/call" else "connect"
+                stats.record_api("mcp", route_name, mcp_argument(args), app_name, self.client(), keyed=bool(key))
             if m["method"] != "tools/call":
                 continue   # handshake, listing tools, reading the guide: free, like the guide itself
             calls += 1
@@ -1082,6 +1090,40 @@ DATA_ROUTES = re.compile(r"^/api/data/(search|search/[^\s?#]{2,6000}|topics|topi
                          r"|v2/(?:map|labels|names)\.json|v2/[dpi]/\d{1,2}/\d{1,6}/\d{1,6}\.bin|v2/t/\d{1,2}/\d{1,6}/\d{1,6}\.json))$")
 ROBOTS_OPEN = "User-agent: *\nAllow: /\n"
 MCP_PATHS = ("/mcp", "/mcp/", "/api/data/mcp")
+
+
+def main_argument(route: str, query: str) -> str:
+    """What a data API request asks about, for the usage log: the words in the path (search/<words>), else the
+    id in the path (works/<id>), else the q, topic or id parameter."""
+    head, _, rest = route.partition("/")
+    if rest:
+        return urllib.parse.unquote_plus(rest)
+    qs = urllib.parse.parse_qs(query)
+    for k in ("q", "topics", "topic", "id", "ids", "name"):
+        if qs.get(k):
+            return qs[k][0]
+    return ""
+
+
+def mcp_argument(args: dict) -> str:
+    """The same for an MCP tool call: its main argument."""
+    for k in ("query", "topic", "q", "paper", "papers", "id", "ids", "name", "question", "claim"):
+        v = args.get(k)
+        if v:
+            return ",".join(map(str, v)) if isinstance(v, list) else str(v)
+    return ""
+
+
+AGENT_NAMES = re.compile(r"(Claude-User|ClaudeBot|ChatGPT-User|GPTBot|OAI-SearchBot|PerplexityBot|Perplexity-User|"
+                         r"Googlebot|bingbot|Bytespider|Applebot|DuckAssistBot|cohere-ai|MistralAI-User)")
+
+
+def program(agent: str) -> str:
+    """Which program sent a request: a known AI fetcher's name, else the first word of its User-Agent."""
+    m = AGENT_NAMES.search(agent)
+    if m:
+        return m.group(1)
+    return agent.split(" ")[0][:40]
 MCP_MAX_BODY = 1_000_000
 # MCP revisions with the initialize handshake; the later ones (2026-07-28 on) stand each request alone
 HANDSHAKE_VERSIONS = ("2024-11-05", "2025-03-26", "2025-06-18", "2025-11-25")

@@ -145,10 +145,12 @@ async function runSearch(q: string) {
   live.textContent = "Searching…";
   box.innerHTML = `<div class="hit-skeleton" aria-hidden="true">${"<div><i></i><i></i><i></i></div>".repeat(5)}</div>`;
   let hits: Hit[];
+  const t0 = performance.now();
   try {
     hits = await search(q, opts);
   } catch {
     if (run === searchRun) {
+      track("error", { where: "search" });
       box.removeAttribute("aria-busy");
       box.innerHTML = `<p class="quiet">The search didn't answer. <a href="#" id="retry">Try again</a>.</p>`;
       live.textContent = "The search didn't answer.";
@@ -174,7 +176,7 @@ async function runSearch(q: string) {
   const readableN = hits.filter((h) => h.readable).length;
   live.textContent = hits.length ? `${hits.length} studies found${readableN ? `, ${readableN} readable in plain words` : ""}.` : "Nothing found.";
   if (!hits.length) {
-    track("search", { n: 0, src: lastSearch.by });
+    track("search", { q, n: 0, src: lastSearch.by, ms: Math.round(performance.now() - t0) });
     if (lastSearch.by === "keyword") how.append("No study contains all these words. Try fewer words, or ", switchTo("meaning", "search by meaning"), ".");
     else how.textContent = opts.since ? "Nothing found in these years. Try “Any year” or other words." : "Nothing found. Try other words.";
     return;
@@ -205,7 +207,7 @@ async function runSearch(q: string) {
 
   const list = box.appendChild(document.createElement("div"));
   for (const h of hits) list.appendChild(row(h));
-  track("search", { n: hits.length, ok: readableN, src: lastSearch.by });
+  track("search", { q, n: hits.length, ok: readableN, src: lastSearch.by, ms: Math.round(performance.now() - t0) });
   restoreScroll();
   if (!opts.readable) {                // the authors this could name, over the studies
     const ctl = new AbortController();
@@ -265,10 +267,12 @@ async function openTopics(q: string, group: number | null, mapOnly = false, fiel
     `<div class="hit-skeleton" aria-hidden="true">${"<div><i></i><i></i><i></i></div>".repeat(4)}</div>`;
   setResults([], null);
   let d;
+  const t0 = performance.now();
   try {
     d = await fetchTopics(q, o);
   } catch (e) {
     if (run !== searchRun) return;
+    track("error", { where: field ? "field-map" : "topic-map", status: e instanceof TopicError ? e.status : 0 });
     box.removeAttribute("aria-busy");
     const err = e instanceof TopicError ? e : null;
     const say = err?.status === 429 ? `Too many maps from here in the last minute. Try again in ${err.retry ?? 60} seconds.`
@@ -294,7 +298,9 @@ async function openTopics(q: string, group: number | null, mapOnly = false, fiel
   }
   if (run !== searchRun) return;
   box.removeAttribute("aria-busy");
+  const seen = { q, group: group ?? undefined, field: field ? 1 : undefined, ms: Math.round(performance.now() - t0) };
   if ("pending" in d) {        // a whole-field map being made: show its progress, ask again in 20 s
+    track("topics", { ...seen, pending: 1 });
     if (!sup) sup = await supportState();   // the price of making it now
     if (run !== searchRun) return;
     renderPending(box, d.pending, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q),
@@ -309,8 +315,8 @@ async function openTopics(q: string, group: number | null, mapOnly = false, fiel
   drawTopicSpots(d, topicsUrl(q, o));
   paidNote = "";
   renderTopics(box, d, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q),
-                         at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt, more: moreOf(q, o) });
-  track("topics", { groups: d.groups.length, cached: d.cached ? 1 : 0, sub: group ? 1 : 0 });
+                         at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt, more: counted(moreOf(q, o)) });
+  track("topics", { ...seen, groups: d.groups.length, cached: d.cached ? 1 : 0, sub: group ? 1 : 0 });
   restoreScroll();
   // A map made just now gets AI-written group names a few seconds later (the search service writes them in the
   // background): fetch it once more and show them, unless the reader has moved on, scrolled, or picked a group.
@@ -324,7 +330,7 @@ async function openTopics(q: string, group: number | null, mapOnly = false, fiel
       if (busy()) return;
       if (!d2 || "pending" in d2 || !d2.groups.some((g) => g.label)) { setTimeout(() => later(waits.slice(1)), waits[0]); return; }
       renderTopics(box, d2, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q),
-                              at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt, more: moreOf(q, o) });
+                              at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt, more: counted(moreOf(q, o)) });
     };
     setTimeout(() => later([10000, 15000, 0]), 8000);    // after ~8 s, ~18 s and ~33 s
   }
@@ -333,9 +339,15 @@ async function openTopics(q: string, group: number | null, mapOnly = false, fiel
 /** The box picked in a topic map's overview stays in the address (replaced, not a new page: Back still leaves the
  *  map), so a shared link or a return opens on it. */
 function rememberAt(at: string) {
+  if (at && at !== new URLSearchParams(location.search).get("at")) track("pick", { at });
   const u = new URL(location.href);
   if (at) u.searchParams.set("at", at); else u.searchParams.delete("at");
   if (u.href !== location.href) history.replaceState(history.state, "", u);
+}
+
+/** A reading list read further, counted (which list, from where). */
+function counted(more: ReturnType<typeof moreOf>): ReturnType<typeof moreOf> {
+  return (at, lens, offset, limit) => { track("more", { list: lens, n: offset }); return more(at, lens, offset, limit); };
 }
 
 function drawTopicSpots(d: TopicMap, shown: string) {
@@ -407,7 +419,7 @@ async function openAuthor(id: string, mapOnly = false, kind: "author" | "institu
   live.textContent = `${d.person.name}: ${d.person.works.toLocaleString()} studies in ${d.groups.length} ${d.level}.`;
   drawTopicSpots(d, here);
   renderAuthor(box, d, { row, go, focusGroup, url: () => here, listUrl: here,
-                         at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt, more: moreOfAuthor(id, kind) });
+                         at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt, more: counted(moreOfAuthor(id, kind)) });
   track(kind, { works: d.person.works, groups: d.groups.length });
   focusTitle(box.querySelector("h1"));
   restoreScroll();

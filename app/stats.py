@@ -1,19 +1,33 @@
-"""Usage counts for the demo, kept on our own server: no cookies, no third party.
+"""Usage of the site and of the API, kept on our own server: no cookies, no third party.
 
 A visitor is a code made each day from their address and browser, with a random key that changes
-every day and is then thrown away: unique visitors can be counted per day, nobody can be followed
-across days, and the address itself is never stored. Search words are not stored (the About page
-promises it), only that a search happened and how many papers it found. Browsers that send
-Do Not Track or Global Privacy Control send nothing (the page checks).
+every day and is then thrown away: visits can be followed within a day (what people look for, where
+they go next, where they give up), nobody can be followed across days, and the address itself is
+never stored. Browsers that send Do Not Track or Global Privacy Control send nothing (the page checks).
+Files older than KEEP_MONTHS are deleted.
 
-Events (app/stats/events-YYYY-MM.jsonl, one JSON per line):
-  view     a page shown: home, results or reader (+ ref: the site the visitor came from, first view)
-  search   n: papers found, ok: how many of them can be opened
-  open     a paper opened (doi), or err: why it couldn't be (licence, layout, missing…)
+Site events (app/stats/events-YYYY-MM.jsonl, one JSON per line):
+  view     a page shown (view: home, results, work, reader, explore, library, fields, api, support, reading,
+           account; u: the page's address, only the parameters in track.ts's list: the search, the topic,
+           the author, the paper...; ref: the site the visitor came from, first view only)
+  hide     the page left or put in the background (view, s: seconds since the page was shown, busy: what was
+           still loading or being written then)
+  search   q: the words, by, n: papers found, ok: how many of them can be opened, ms: how long it took
+  topics   a topic map shown (q, group, field, groups, cached, pending: still being made), pick: a box picked
+           in it (at), more: a reading list read further (list, n: from)
+  author / institution   a person's or organisation's page (works, groups)
+  open     a paper opened (doi), or err: why it couldn't be (licence, layout, missing...)
   read     a saved rewrite shown (doi, model, src: benchmark/demo/browser)
   make     "make it readable" pressed (doi, model)
   done / fail   a rewrite finished in the page (doi, model, s: seconds)
+  error    something the reader was told didn't work (where, status)
   job, job_done, job_failed   recorded by the queue itself (s: writing time, wait: time in line)
+  support, give, thanks_shown, supported, field_pay, field_paid, copy   the support and API pages
+
+API events (app/stats/api-YYYY-MM.jsonl), from server.py, for programs and AI apps (not the site's own calls):
+  k: api (the JSON API) or mcp; r: the route or the MCP method/tool; q: its main argument (the words, the topic,
+  the ids); app: the MCP app or the program's name; v: the daily code of the address; key: 1 when an API key
+  was used (never which); limited: 1 when refused for the rate limit.
 """
 from __future__ import annotations
 
@@ -31,8 +45,15 @@ from pathlib import Path
 DIR = Path(__file__).resolve().parent / "stats"
 DIR.mkdir(exist_ok=True)
 LOCK = threading.Lock()
-TYPES = {"view", "search", "open", "read", "make", "done", "fail", "job", "job_done", "job_failed", "support", "give", "thanks_shown", "supported", "copy"}
-FIELDS = {"view": 12, "ref": 80, "doi": 120, "model": 20, "err": 40, "src": 12, "n": 0, "s": 0, "wait": 0, "w": 0, "ok": 0}
+TYPES = {"view", "hide", "search", "topics", "pick", "more", "author", "institution", "open", "read", "make", "done",
+         "fail", "error", "job", "job_done", "job_failed", "support", "give", "thanks_shown", "supported", "copy",
+         "field_pay", "field_paid"}
+# text fields: their longest length; 0: a number
+FIELDS = {"view": 12, "u": 400, "ref": 80, "q": 300, "by": 12, "doi": 120, "model": 20, "err": 40, "src": 12,
+          "where": 20, "busy": 20, "at": 20, "list": 20, "group": 12, "field": 4,
+          "n": 0, "s": 0, "wait": 0, "w": 0, "ok": 0, "ms": 0, "status": 0, "groups": 0, "works": 0, "cached": 0,
+          "sub": 0, "pending": 0, "eta_h": 0, "amount": 0}
+KEEP_MONTHS = 25   # the longest the French data regulator (CNIL) accepts for audience measurement
 RECENT = collections.defaultdict(collections.deque)   # address → times of its last events (rate limit)
 
 
@@ -44,7 +65,43 @@ def _salt(day: str) -> str:
             old.unlink()
         f.write_text(secrets.token_hex(16))
         f.chmod(0o600)
+        _forget_old(dt.date.fromisoformat(day))
     return f.read_text()
+
+
+def _forget_old(today: dt.date):
+    """Monthly files older than KEEP_MONTHS go (checked once a day, when the key changes)."""
+    first = today.year * 12 + today.month - 1 - KEEP_MONTHS
+    for f in DIR.glob("*-????-??.jsonl"):
+        y, m = f.stem[-7:].split("-")
+        if y.isdigit() and m.isdigit() and int(y) * 12 + int(m) - 1 < first:
+            f.unlink()
+
+
+def visitor(address: str, agent: str) -> str:
+    return hashlib.sha256(f"{_salt(dt.date.today().isoformat())}|{address}|{agent}".encode()).hexdigest()[:10]
+
+
+def _write(name: str, out: dict):
+    with LOCK, (DIR / f"{name}-{dt.date.today().isoformat()[:7]}.jsonl").open("a") as f:
+        f.write(json.dumps(out, ensure_ascii=False) + "\n")
+
+
+def record_api(kind: str, route: str, q: str, app: str, address: str, keyed: bool = False, limited: bool = False):
+    """One request from a program or an AI app (server.py): what it asked for, never who it is."""
+    out = {"at": round(time.time()), "k": kind, "r": route[:40], "v": visitor(address, "")}
+    if q:
+        out["q"] = q[:300]
+    if app:
+        out["app"] = app[:60]
+    if keyed:
+        out["key"] = 1
+    if limited:
+        out["limited"] = 1
+    try:
+        _write("api", out)
+    except OSError:
+        pass
 
 
 def record(e: dict, address: str, agent: str):
@@ -58,9 +115,7 @@ def record(e: dict, address: str, agent: str):
     if len(q) >= 120:          # at most 120 counts a minute from one address
         return
     q.append(now)
-    day = dt.date.today().isoformat()
-    out = {"at": round(now), "t": t,
-           "v": hashlib.sha256(f"{_salt(day)}|{address}|{agent}".encode()).hexdigest()[:10]}
+    out = {"at": round(now), "t": t, "v": visitor(address, agent)}
     for k, n in FIELDS.items():
         v = e.get(k)
         if v is None:
@@ -70,8 +125,7 @@ def record(e: dict, address: str, agent: str):
                 out[k] = round(float(v), 1)
         else:
             out[k] = str(v)[:n]
-    with LOCK, (DIR / f"events-{day[:7]}.jsonl").open("a") as f:
-        f.write(json.dumps(out, ensure_ascii=False) + "\n")
+    _write("events", out)
 
 
 def events(days: int = 30) -> list[dict]:
@@ -154,6 +208,6 @@ def page(cache: Path) -> str:
 <h2>Papers opened most</h2>{table(["paper", "times"], [[esc(title(d)), n] for d, n in papers.most_common(15)]) if papers else '<p class="quiet">None yet.</p>'}
 <h2>Where visitors came from</h2>{table(["site", "visits"], [[esc(r), n] for r, n in refs.most_common(10)]) if refs else '<p class="quiet">Direct visits only so far.</p>'}
 <h2>Papers we couldn't open</h2>{table(["reason", "times"], [[esc(r), n] for r, n in errs.most_common()]) if errs else '<p class="quiet">None.</p>'}
-<p class="quiet small">Counted without cookies: a visitor is an anonymous code that changes every day. Search words are not stored.
+<p class="quiet small">Counted without cookies: a visitor is an anonymous code that changes every day.
 Browsers asking not to be tracked are not counted.</p>
 </main></body></html>"""
