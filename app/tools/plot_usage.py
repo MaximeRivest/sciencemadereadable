@@ -7,6 +7,7 @@ Writes app/stats/usage.png by default (app/stats/ is private and not committed).
 Two things to know when reading the chart:
   * A visitor code changes every midnight, so "visitors" means people seen that hour; the same person
     on two days counts twice in the running total ("visitor-days").
+  * The site's own automatic check (run at every publish) is left out (without_site_checks).
   * Topic maps and author / institution pages are counted from Oct 17, 2026 (before, the server dropped them).
   * The page re-sends "read" every 30 s while a saved rewrite stays open (the GPU-status refresh
     calls showChosen). Raw "read" counts are therefore open-tab time, not reads. Here a read is counted
@@ -38,6 +39,24 @@ for f in sorted(STATS.glob("events-*.jsonl")):
         except ValueError:
             pass
 events.sort(key=lambda e: e["at"])
+
+
+def without_site_checks(events: list[dict]) -> list[dict]:
+    """The site check (tools/check_site.py, run at every publish) browses like a very busy visitor: a 1280-px
+    window (counted as 1300) and 40+ pages in a day. Since Oct 17, 2026 it sends Global Privacy Control and is
+    not counted at all; before, its visitor-days are recognised by that pattern and left out here."""
+    views, wide = collections.Counter(), set()
+    for e in events:
+        key = (dt.date.fromtimestamp(e["at"]), e["v"])
+        if e["t"] == "view":
+            views[key] += 1
+            if e.get("w") == 1300:
+                wide.add(key)
+    checks = {k for k in wide if views[k] >= 40}
+    return [e for e in events if (dt.date.fromtimestamp(e["at"]), e["v"]) not in checks]
+
+
+events = without_site_checks(events)
 if not events:
     sys.exit("no events recorded yet")
 
