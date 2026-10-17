@@ -63,37 +63,53 @@ def desktop(b, errs):
     # the research groups of the same search (a topic map: up to ~30 s the first time, then cached)
     check(pg.evaluate('!!document.querySelector(".to-topics")'), "results offer their research groups")
     pg.click(".to-topics")
-    check(until(pg, 'document.querySelectorAll("#results .tgroup").length >= 3', 100), "the topic map shows research groups")
+    # the topic map on one screen (overview.ts): group boxes, the globe, the word cloud and text under it, reading lists
+    G = '.tov-map > .tov-g:not(.tov-none):not(.tov-probe)'
+    check(until(pg, f'document.querySelectorAll("{G}").length >= 3', 100), "the topic map shows research groups")
     check(pg.evaluate('window.__topicDots().n >= 200 && window.__topicDots().painted'), "the groups' studies are coloured on the globe")
-    check(pg.evaluate('!!document.querySelector(".tov-panel .tg-tabs") && document.querySelectorAll(".tgroup .tg-cloud li").length >= 30'),
-          "the overview opens on the whole topic's reading lists, and the groups have their word clouds")
-    check(pg.evaluate('document.querySelectorAll(".tov-map .tov-s").length') >= 4, "the overview shows the groups' subgroups as boxes")
-    pg.click(".tov-map .tov-s >> nth=0")
-    check(until(pg, '/[?&]at=\\d+\\.\\d+/.test(location.search) && /Subgroup/.test(document.querySelector(".tov-path").textContent)', 5)
-          and pg.evaluate('document.querySelectorAll(".tov-panel .hit").length') >= 1
-          and pg.evaluate('window.__topicDots().faded') > 0,
-          "picking a subgroup shows its reading lists, keeps it in the address and lights it on the map")
-    pg.click(".tov-path button >> nth=0")
-    check(until(pg, '!/[?&]at=/.test(location.search)', 5), "the path goes back to the whole topic")
-    check(pg.evaluate('document.querySelectorAll(".tgroup:not(.tg-whole)")[0].querySelectorAll(".tg-panel .hit").length') >= 3,
-          "a group's first reading list has studies")
-    first = pg.evaluate('document.querySelector(".tgroup:not(.tg-whole) .tg-panel").innerText')
-    pg.click('.tgroup:not(.tg-whole) >> nth=0 >> [role="tab"] >> nth=1')
-    check(pg.evaluate('document.querySelector(".tgroup:not(.tg-whole) .tg-panel").innerText') != first, "a group's tabs switch its reading list")
-    pg.hover(".tgroup:not(.tg-whole) >> nth=1")
-    check(pg.evaluate('window.__topicDots().faded') > 50, "pointing at a group fades the others on the map")
+    check(until(pg, 'document.querySelectorAll(".tv-read .tg-panel .hit").length >= 1 && '
+                    'document.querySelectorAll(".tv-cloud .tg-cloud li").length >= 20', 10),
+          "it opens on the whole topic's reading lists and word cloud")
+    check(pg.evaluate('[...document.querySelectorAll(".tov-s")].every(e => getComputedStyle(e.closest(".tov-inner")).visibility === "hidden")'),
+          "before a group is picked, only the groups show (their subgroups wait)")
+    whole = pg.evaluate('document.querySelector(".tv-text .tv-h").textContent')
+    pg.hover(f"{G} >> nth=1 >> .tov-head")
+    check(until(pg, 'window.__topicDots().faded > 50', 5)
+          and pg.evaluate('document.querySelector(".tv-text .tv-h").textContent') != whole,
+          "pointing at a group lights it on the map and shows what it is about")
     pg.screenshot(path=OUT / "topics.png")
-    if pg.evaluate('!!document.querySelector(".tg-split")'):
-        pg.click(".tg-split >> nth=0")
-        check(until(pg, '/Inside group/.test(document.querySelector(".topics-title")?.textContent || "")', 100),
+    has_subs = pg.evaluate(f'[...document.querySelectorAll("{G}")].findIndex(g => g.querySelector(".tov-s"))')
+    if has_subs >= 0:
+        pg.click(f"{G} >> nth={has_subs} >> .tov-head")
+        check(until(pg, '/[?&]at=\\d+(&|$)/.test(location.search) && !!document.querySelector(".tov-g.z") && '
+                        '[...document.querySelectorAll(".tov-g.z .tov-s")].filter(e => getComputedStyle(e.closest(".tov-inner")).visibility === "visible").length >= 2', 5),
+              "clicking a group zooms into it and shows its subgroups")
+        pg.mouse.move(2, 2)
+        pg.click(".tov-g.z .tov-s >> nth=0")
+        check(until(pg, '/[?&]at=\\d+\\.\\d+/.test(location.search) && document.querySelectorAll(".tov-path .tov-crumb").length === 2', 5)
+              and until(pg, 'document.querySelectorAll(".tv-read .tg-panel .hit, .tv-read .tg-expert").length >= 1', 5)
+              and pg.evaluate('window.__topicDots().faded') > 0,
+              "picking a subgroup shows its reading lists, keeps it in the address and lights it on the map")
+        pg.click(".tov-up")
+        check(until(pg, '!/[?&]at=/.test(location.search) && !document.querySelector(".tov-g.z")', 5), "↑ goes back to the whole topic")
+    pg.click(f"{G} >> nth=0 >> .tov-head")
+    check(until(pg, 'document.querySelectorAll(".tv-read .tg-panel .hit").length >= 1', 5), "a group's first reading list has studies")
+    first = pg.evaluate('document.querySelector(".tv-read .tg-panel").innerText')
+    pg.click('.tv-read [role="tab"] >> nth=1')
+    check(pg.evaluate('document.querySelector(".tv-read .tg-panel").innerText') != first, "a group's tabs switch its reading list")
+    split = pg.evaluate('document.querySelector(".tv-act a")?.textContent || ""')
+    if split.startswith(("Map group", "Split group")):
+        pg.click(".tv-act a")
+        check(until(pg, '/All of group/.test(document.querySelector(".tov-path")?.textContent || "") && '
+                        'document.querySelectorAll(".tov-map > .tov-g:not(.tov-none):not(.tov-probe)").length >= 2', 100),
               "a group splits into smaller groups")
         pg.go_back()
-        check(until(pg, 'document.querySelectorAll("#results .tgroup").length >= 3 && !document.querySelector(".topics-title")', 30),
+        check(until(pg, f'document.querySelectorAll("{G}").length >= 3 && !/All of group/.test(document.querySelector(".tov-path")?.textContent || "")', 30),
               "Back returns to the whole map")
     # a whole-field map (made beforehand by the srl-fields worker; kept across releases)
     pg.goto(BASE + "?topics=habitat%20fragmentation&scope=field")
-    check(until(pg, 'document.querySelectorAll("#results .tgroup").length >= 5', 60)
-          and "whole field" in pg.evaluate('document.querySelector(".search-how").textContent'),
+    check(until(pg, f'document.querySelectorAll("{G}").length >= 5', 60)
+          and "whole field" in pg.evaluate('document.querySelector(".tv-text").textContent').lower(),
           "the whole-field map of habitat fragmentation opens")
     check(0 < pg.evaluate('window.__topicDots().n') <= 4000,
           "the whole field's studies are drawn as a sample on the globe")
@@ -232,7 +248,7 @@ def experience(p, b, errs):
             pg.goto(BASE + q)
             pg.evaluate(f"document.documentElement.dataset.theme = '{theme}'")
             if q.startswith("?topics"):
-                until(pg, 'document.querySelectorAll("#results .tgroup").length > 0', 100)
+                until(pg, 'document.querySelectorAll("#results .tov-map .tov-g").length > 0', 100)
             pg.wait_for_timeout(3000 if q.startswith(("?q", "?work", "?topics")) else 1200)
             bad = [(v["id"], len(v["nodes"])) for v in axe.run(pg).response["violations"] if v["impact"] in ("serious", "critical")]
             check(not bad, f"accessibility, {theme}, {q or 'home'}: no serious problems" + (f" {bad}" if bad else ""))
