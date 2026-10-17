@@ -676,10 +676,15 @@ class Handler(SimpleHTTPRequestHandler):
         cost = TOPIC_COST if topic else 1
         keyed = acct is not None and kind in ("api", "site")   # guide and tiles stay per address, uncounted
         limit = acct["per_minute"] if keyed else DATA_LIMITS[kind]
-        wait = rate_wait(("acct:" + acct["user"]) if keyed else (kind + ":" + self.client()), limit, cost)
+        who = ("acct:" + acct["user"]) if keyed else (kind + ":" + self.client())
+        if not keyed and urllib.parse.parse_qs(u.query).get("part") == ["more"] and route.group(1) == "topics":
+            # a reading list read further (~20 ms for the search service): its own allowance, so turning pages
+            # never uses up what searches and maps may have
+            limit, who = MORE_LIMIT, "more:" + self.client()
+        wait = rate_wait(who, limit, cost)
         if wait:
             body = json.dumps({"error": (f"Too many requests: {limit} a minute for this key" if keyed
-                                         else f"Too many requests: {DATA_LIMITS[kind]} a minute per address")
+                                         else f"Too many requests: {limit} a minute per address")
                                         + (f" (a topic map counts as {TOPIC_COST})" if topic else "") + ". "
                                         f"Try again in {wait} seconds." + more_line(acct, kind),
                                "retry_after": wait}).encode()
@@ -1146,6 +1151,9 @@ DATA_LIMITS = {"site": 60, "api": 30, "doc": 30, "tile": 1200}
 # 2-30 s the first time, cached after): it counts five times, here and as the MCP tool map_topic. Reading a group
 # of a map already made (read=N, read_topic_group) counts once: the search service refuses it when there is no map.
 TOPIC_COST = 5
+# Reading lists read further (/topics read=N&part=more: one stored list, ~20 ms) a minute per address, apart from the
+# limits above; with a key they count against the key as one request each.
+MORE_LIMIT = 120
 
 
 # API keys (accounts.py). A key that isn't valid is refused, never quietly downgraded to no key: a paying user notices.

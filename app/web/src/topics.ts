@@ -319,13 +319,14 @@ export function lists(host: HTMLElement, key: string, lenses: Lenses, unit: stri
 
 /** Where the page has a fixed height (style.css: wide and tall enough), a list shows in pages that fit its space,
  *  with ‹ › underneath, rather than scrolling inside the page; elsewhere it shows whole and the page scrolls.
- *  A list longer than the map gives is read further as it is read: up to BATCH items as soon as it opens, then the
+ *  A list longer than the map gives is read further as it is read: up to BATCH items once it has been open LINGER ms, then the
  *  next BATCH once the page shown comes within AHEAD items of the end (the next page is there before it is asked
  *  for); one column: "Show more" under it. */
 const PAGED = "(min-width: 1101px) and (min-height: 680px)";
 const HEAD = 8;      // items of a list in the map itself (the data API's Options.lens_size)
 const BATCH = 25;
 const AHEAD = 9;
+const LINGER = 1500;  // ms a list stays open before it is read further (skimming groups and tabs asks for nothing)
 type Load = (offset: number, limit: number) => Promise<{ rows: HTMLElement[]; total: number } | null>;
 function pager(host: HTMLElement, panel: HTMLElement, what: string) {
   const bar = host.appendChild(document.createElement("div"));
@@ -342,11 +343,18 @@ function pager(host: HTMLElement, panel: HTMLElement, what: string) {
   showMore.textContent = "Show more";
   showMore.hidden = true;
   let items: HTMLElement[] = [], starts: number[] = [0], page = 0, room = 0;
-  let load: Load | undefined, done = true, busy = false, run = 0;
+  let load: Load | undefined, done = true, busy = false, run = 0, opened = 0, wait = 0;
   const paged = () => matchMedia(PAGED).matches && panel.clientHeight > 0;
   /** The next batch, to a multiple of BATCH (8 -> 25 -> 50 ...). Kept only if the same list is still shown. */
   const fetchMore = async () => {
     if (!load || done || busy) return;
+    const early = LINGER - (performance.now() - opened);
+    if (early > 0) {                                   // just opened: later, if it is still this list
+      clearTimeout(wait);
+      const mine = run;
+      wait = window.setTimeout(() => { if (mine === run && panel.isConnected) void fetchMore(); }, early);
+      return;
+    }
     busy = true;
     const mine = run, limit = (Math.floor(items.length / BATCH) + 1) * BATCH - items.length;
     try {
@@ -396,7 +404,7 @@ function pager(host: HTMLElement, panel: HTMLElement, what: string) {
   };
   prev.onclick = () => show(page - 1);
   next.onclick = () => show(page + 1);
-  showMore.onclick = () => { showMore.disabled = true; void fetchMore().finally(() => { showMore.disabled = false; }); };
+  showMore.onclick = () => { opened = 0; showMore.disabled = true; void fetchMore().finally(() => { showMore.disabled = false; }); };
   const ro = new ResizeObserver(() => {
     if (!panel.isConnected) return ro.disconnect();
     if (panel.clientHeight !== room) cut();
@@ -405,7 +413,7 @@ function pager(host: HTMLElement, panel: HTMLElement, what: string) {
   document.fonts?.ready.then(() => { if (panel.isConnected) cut(); });   // rows change height once the fonts are in
   return {
     set(list: HTMLElement[], more?: Load) {
-      run++; busy = false;
+      run++; busy = false; clearTimeout(wait); opened = performance.now();
       items = list; starts = [0]; page = 0; load = more; done = !more;
       cut();
       if (more) void fetchMore();                     // the first BATCH as soon as the list opens
