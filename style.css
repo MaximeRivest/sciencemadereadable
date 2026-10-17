@@ -1010,3 +1010,19 @@ main.legal li { margin: 4px 0; }
 .au-more { display: inline-block; margin: 2px 0 6px; font-size: 14px; }
 .au-twin { color: var(--accent); }
 body.topics-dash .au-head { margin-bottom: 6px; }
+/* records of one name (people.ts records): seen together, and the others to choose from */
+.au-records { font-size: 13.5px; }
+.au-together { margin: 3px 0 0; color: var(--muted); }
+.au-x { border: 0; background: none; padding: 0 4px; color: var(--faint); font-size: 15px; cursor: pointer; }
+.au-x:hover { color: var(--accent); }
+.au-namesakes { margin: 3px 0 0; }
+.au-namesakes[hidden] { display: none; }
+.au-namesakes summary { cursor: pointer; color: var(--accent); }
+.au-namesakes[open] { position: absolute; z-index: 9; max-width: min(720px, 92vw); max-height: 60vh; overflow-y: auto;
+                      background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 16px 14px;
+                      box-shadow: 0 16px 50px rgba(0, 0, 0, .18); }
+.au-ns-list { display: flex; flex-direction: column; gap: 2px; margin: 6px 0 10px; }
+.au-ns { display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+.au-ns input { margin-top: 3px; }
+.au-ns-top { color: var(--muted); font-style: italic; }
+.au-ns-go { font-size: 14px; padding: 7px 16px; }
