@@ -41,7 +41,7 @@ interface Author { id: string; name: string; position: number; works?: number; h
 interface Org { id: string; name: string; country: string | null; kind: string | null }
 interface Unit { id: number; name: string; about?: string | null; size: number }
 interface InMap { key: string; topic: string; definition: string | null; papers: number; via: "topic" | "cited"; group?: Unit; sub?: Unit }
-interface Side { count: number; years: Record<string, number>; plot: [number, number, string][]; top: Item[]; newest?: Item[] }
+interface Side { count: number; years: Record<string, number>; plot: [number, number, string, string?][]; top: Item[]; newest?: Item[] }
 export interface Context {
   id: string; in_index: boolean; maps: InMap[]; year?: number | null; title?: string; type?: string | null; citations?: number;
   references_listed?: number; authors?: Author[]; authors_count?: number; institutions?: Org[];
@@ -360,7 +360,7 @@ function timeline(box: HTMLElement, d: any, c: Context, deps: Deps) {
     const bars = (ys: Record<string, number>, cls: string) => Object.entries(ys).filter(([k]) => Number(k) >= lo && Number(k) <= hi)
       .map(([k, v]) => `<rect class="${cls}" x="${(x(Number(k)) - bw / 2).toFixed(1)}" y="${base + 6}" width="${bw.toFixed(1)}" ` +
         `height="${Math.max(1, (v / maxOf(ys)) * barH).toFixed(1)}"><title>${n(v)} ${cls === "b-cite" ? `citing studies from ${k}` : `references from ${k}`}</title></rect>`).join("");
-    const dots = (pts: [number, number, string][], cls: string) => pts.map(([yy, k, id]) =>
+    const dots = (pts: [number, number, string, string?][], cls: string) => pts.map(([yy, k, id]) =>
       `<circle class="${cls}" data-id="${id}" cx="${(x(yy) + jitter(id)).toFixed(1)}" cy="${y(k).toFixed(1)}" r="${k >= maxC / 20 ? 4.2 : 3}"/>`).join("");
     const ticks: number[] = [];
     const span = hi - lo, perTick = span * 64 / W;   // a label every ~64 px at least
@@ -388,31 +388,18 @@ function timeline(box: HTMLElement, d: any, c: Context, deps: Deps) {
       </div>`;
     const svg = host.querySelector("svg")!, tip = host.querySelector<HTMLElement>(".st-tip")!;
     const index = new Map<string, { title?: string; year: number; cites: number }>();
-    for (const [yy, k, id] of refs) index.set(id, { year: yy, cites: k });
-    for (const [yy, k, id] of citing) index.set(id, { year: yy, cites: k });
-    // titles for the tooltip: the lists' items carry them; the rest come from the citation index on hover
-    for (const it of [...(c.references?.top ?? []), ...(c.cited_by?.top ?? []), ...(c.cited_by?.newest ?? [])])
-      if (index.has(it.id)) index.get(it.id)!.title = plain(it.title);
-    let lastTip = "";
-    const showTip = async (el: SVGCircleElement) => {
+    for (const [yy, k, id, t] of [...refs, ...citing]) index.set(id, { year: yy, cites: k, title: t ? plain(t) : undefined });
+    const showTip = (el: SVGCircleElement) => {
       const id = el.dataset.id!, info = index.get(id);
       if (!info) return;
-      lastTip = id;
       const r = el.getBoundingClientRect(), wrap = host.querySelector(".st-svg-wrap")!.getBoundingClientRect();
       tip.style.left = `${Math.min(wrap.width - 260, Math.max(0, r.left - wrap.left - 120))}px`;
       tip.style.top = `${r.top - wrap.top - 12}px`;
-      const draw = () => {
-        tip.innerHTML = `<b>${esc(info.title ?? "…")}</b><span>${info.year} · ${info.cites === 1 ? "cited once" : `cited ${n(info.cites)} times`}</span>`;
-        tip.hidden = false;
-      };
-      draw();
-      if (!info.title) {
-        const t = await titleOf(id);
-        if (lastTip === id && t) { info.title = t; draw(); }
-      }
+      tip.innerHTML = `<b>${esc(info.title || "(no title)")}</b><span>${info.year} · ${info.cites === 1 ? "cited once" : `cited ${n(info.cites)} times`}</span>`;
+      tip.hidden = false;
     };
     svg.addEventListener("pointerover", (e) => { const el = e.target as SVGCircleElement; if (el.dataset?.id) { showTip(el); deps.hot(el.dataset.id, true); } });
-    svg.addEventListener("pointerout", (e) => { const el = e.target as SVGCircleElement; if (el.dataset?.id) { tip.hidden = true; lastTip = ""; deps.hot(el.dataset.id, false); } });
+    svg.addEventListener("pointerout", (e) => { const el = e.target as SVGCircleElement; if (el.dataset?.id) { tip.hidden = true; deps.hot(el.dataset.id, false); } });
     svg.addEventListener("click", (e) => { const el = e.target as SVGCircleElement; if (el.dataset?.id) deps.go(`?work=${el.dataset.id}`); });
   };
   const fit = () => {
@@ -424,17 +411,6 @@ function timeline(box: HTMLElement, d: any, c: Context, deps: Deps) {
     const ro = new ResizeObserver(() => { if (!host.isConnected) ro.disconnect(); else fit(); });
     ro.observe(host);
   }
-}
-
-const titles = new Map<string, Promise<string>>();
-function titleOf(id: string): Promise<string> {
-  let p = titles.get(id);
-  if (!p) {
-    p = fetch(`${API}/api/data/works/${id}`, { signal: AbortSignal.timeout(8000) })
-      .then((r) => r.ok ? r.json() : null).then((x) => plain(x?.title)).catch(() => "");
-    titles.set(id, p);
-  }
-  return p;
 }
 
 // ---------------------------------------------------------------- what it builds on, what built on it
