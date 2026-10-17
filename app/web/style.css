@@ -830,6 +830,8 @@ body.topics-dash #results { max-width: none; }
 .tg-pager { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 6px;
             font-size: 13px; color: var(--faint); font-variant-numeric: tabular-nums; }
 .tg-pager[hidden] { display: none; }
+.tg-showmore { display: block; margin: 10px 0 4px; font-size: 14px; padding: 7px 16px; }
+.tg-showmore[hidden] { display: none; }
 .tg-pager button { width: 30px; height: 30px; padding: 0; border-radius: 50%; font: 500 17px/1 var(--sans);
                    background: transparent; color: var(--ink); border: 1px solid var(--line); }
 .tg-pager button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }

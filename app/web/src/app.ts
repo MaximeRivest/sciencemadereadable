@@ -2,7 +2,7 @@ import { MODELS, type ModelInfo } from "./models.ts";
 import type { Keys } from "./pipeline.ts";   // the pipeline itself loads on first use (own-key rewrites)
 import { lastSearch, looksExact, open, place, prefetch, search, similar, work, PaperError, type Hit, type Paper } from "./paper.ts";
 import { focus, focusGroup, focusPoint, hot, initMap, mapView, setHere, setResults, setWalk, useContext, type Line, type Spot } from "./atlas.ts";
-import { fetchTopics, renderPending, renderTopics, TopicError, type TopicMap, type TopicOptions } from "./topics.ts";
+import { fetchTopics, moreOf, renderPending, renderTopics, TopicError, type TopicMap, type TopicOptions } from "./topics.ts";
 import { fieldUrl, offer, renderFields, verifyPaid } from "./fields.ts";
 import { API } from "./jobs.ts";
 import { Reader } from "./reader.ts";
@@ -303,7 +303,7 @@ async function openTopics(q: string, group: number | null, mapOnly = false, fiel
   drawTopicSpots(d, q, o);
   paidNote = "";
   renderTopics(box, d, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q),
-                         at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt });
+                         at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt, more: moreOf(q, o) });
   track("topics", { groups: d.groups.length, cached: d.cached ? 1 : 0, sub: group ? 1 : 0 });
   restoreScroll();
   // A map made just now gets AI-written group names a few seconds later (the search service writes them in the
@@ -318,7 +318,7 @@ async function openTopics(q: string, group: number | null, mapOnly = false, fiel
       if (busy()) return;
       if (!d2 || "pending" in d2 || !d2.groups.some((g) => g.label)) { setTimeout(() => later(waits.slice(1)), waits[0]); return; }
       renderTopics(box, d2, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q),
-                              at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt });
+                              at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt, more: moreOf(q, o) });
     };
     setTimeout(() => later([10000, 15000, 0]), 8000);    // after ~8 s, ~18 s and ~33 s
   }

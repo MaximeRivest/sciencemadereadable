@@ -10,14 +10,15 @@
  * be read, and "↑" goes back up. Layout: squarified treemap (Bruls, Huizing & van Wijk 2000), boxes as close to
  * squares as the sizes allow, biggest first, so sizes compare and names fit; laid out again for the zoomed group.
  */
-import type { CloudWord, Deps, Group, Lenses, Sub, TopicMap } from "./topics.ts";
+import type { CloudWord, Deps, Group, Lenses, More, Sub, TopicMap } from "./topics.ts";
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
 export interface Parts {
   cloud: (w: CloudWord[], k: number, vs: string) => HTMLElement;
   lists: (host: HTMLElement, key: string, l: Lenses, unit: string, names: Map<number, string>, deps: Deps,
-          want: string, onPick: (lens: string) => void) => void;
+          want: string, onPick: (lens: string) => void,
+          further?: (lens: string, offset: number, limit: number) => ReturnType<More>) => void;
   span: (y?: number[] | null) => string;
   info: HTMLElement;                 // what "?" opens: how the map was made, its limits, other ways to see it
   act: HTMLElement | null;           // one link in the bar (map the whole field, back to the whole map...)
@@ -352,7 +353,8 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
       `<span>What to read in <b>${esc(name)}</b></span></h3>`);
     const names = new Map((s ? g!.subgroups! : d.groups).map((x) => [x.id, x.name]));
     if (Object.values(it.lenses ?? {}).some((l) => l.length))
-      parts.lists(read, `o${atStr(sel) || 0}`, it.lenses, unit, names, deps, lens, (k) => { lens = k; });
+      parts.lists(read, `o${atStr(sel) || 0}`, it.lenses, unit, names, deps, lens, (k) => { lens = k; },
+                  deps.more ? (k, offset, limit) => deps.more!({ ...sel }, k, offset, limit) : undefined);
     else read.insertAdjacentHTML("beforeend", `<p class="tg-help">No reading lists for this one.</p>`);
   };
 

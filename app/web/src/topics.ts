@@ -47,13 +47,40 @@ export interface FieldPending {
 
 export const GROUP_COLOURS = 9;   // style.css .g1 ... .g9 (a colour-blind-safe set: Okabe-Ito, Tol)
 
-export async function fetchTopics(q: string, o: TopicOptions, signal?: AbortSignal): Promise<TopicMap | { pending: FieldPending }> {
+/** The data API's address of a map: the same for the map and for reading it further (its cache key). */
+function mapParams(q: string, o: TopicOptions): URLSearchParams {
   const p = new URLSearchParams({ q });
   if (o.field) p.set("scope", "field");
   if (o.field && o.definition) p.set("definition", o.definition);
   if (o.by === "words") p.set("mode", "keyword"); else if (o.by === "meaning") p.set("mode", "semantic");
   if (o.since) p.set("year_from", o.since);
   if (o.group) p.set("group", String(o.group));
+  return p;
+}
+
+/** A list read further: items from `offset` of a reading list of the map's whole (at.g null), a group, or a
+ *  subgroup (the split map of its group). null: not available here (a subgroup inside a group's own map). */
+export type More = (at: { g: number | null; s: number | null }, lens: string, offset: number, limit: number) =>
+  Promise<{ items: TopicPaper[] & Expert[]; total: number } | null>;
+export function moreOf(q: string, o: TopicOptions): More {
+  return async (at, lens, offset, limit) => {
+    const p = mapParams(q, o);
+    let group: number | null = o.group ?? null, read: number;
+    if (at.g == null) read = 0;
+    else if (at.s == null) read = at.g;
+    else if (group == null) { group = at.g; read = at.s; }
+    else return null;
+    if (group != null) p.set("group", String(group));
+    p.set("read", String(read)); p.set("part", "more"); p.set("list", lens);
+    p.set("offset", String(offset)); p.set("limit", String(limit));
+    const r = await fetch(`${API}/api/data/topics?${p}`, { signal: AbortSignal.timeout(30000) });
+    if (!r.ok) throw new TopicError(r.status, "");
+    return r.json();
+  };
+}
+
+export async function fetchTopics(q: string, o: TopicOptions, signal?: AbortSignal): Promise<TopicMap | { pending: FieldPending }> {
+  const p = mapParams(q, o);
   const r = await fetch(`${API}/api/data/topics?${p}`, { signal: signal ?? AbortSignal.timeout(95000) });
   const d = await r.json().catch(() => ({}));
   if (!r.ok) throw new TopicError(r.status, d.detail ?? d.error ?? "", Number(r.headers.get("Retry-After")) || d.retry_after);
@@ -109,6 +136,7 @@ export interface Deps {
   listUrl: string;                           // the plain list of studies for the same search
   offer?: FieldOffer | null;                 // paying to make a whole-field map now (fields.ts)
   paidNote?: string;                         // said once, after coming back from paying
+  more?: More;                               // reading lists read further than the map gives
 }
 
 /** The whole map on one screen (overview.ts); how it was made waits behind its "?". */
@@ -237,7 +265,8 @@ export function cloud(words: CloudWord[], k: number, vs: string, cap = vs === "a
 /** Reading lists as tabs: of a group (key "3"), a subgroup ("3.2") or the whole topic ("0"); `want` opens that
  *  list if the unit has it (the reader's last choice carries over as they move between groups). */
 export function lists(host: HTMLElement, key: string, lenses: Lenses, unit: string, names: Map<number, string>, deps: Deps,
-                      want = "core", onPick: (lens: string) => void = () => {}) {
+                      want = "core", onPick: (lens: string) => void = () => {},
+                      further?: (lens: string, offset: number, limit: number) => ReturnType<More>) {
   const present = LENSES.filter(([k]) => (lenses[k] ?? []).length);
   const tabs = host.appendChild(document.createElement("div"));
   tabs.className = "tg-tabs";
@@ -257,8 +286,13 @@ export function lists(host: HTMLElement, key: string, lenses: Lenses, unit: stri
     panel.setAttribute("aria-labelledby", buttons[i].id);
     help.textContent = say(unit);
     help.title = say(unit);
-    pages.set(k === "experts" ? lenses.experts.map((e) => expert(e, deps, unit))
-      : (lenses[k] ?? []).map((p) => deps.row(asHit(p), why(k, p, names))));
+    const rows = (list: (TopicPaper | Expert)[]) => k === "experts"
+      ? (list as Expert[]).map((e) => expert(e, deps, unit)) : (list as TopicPaper[]).map((p) => deps.row(asHit(p), why(k, p, names)));
+    const first = (lenses[k] ?? []) as (TopicPaper | Expert)[];
+    pages.set(rows(first), further && first.length >= HEAD ? async (offset, limit) => {
+      const r = await further(k, offset, limit);
+      return r ? { rows: rows(r.items), total: r.total } : null;
+    } : undefined);
   };
   const pages = pager(host, panel, `Reading list of this ${unit}`);
   present.forEach(([k, label, say], i) => {
@@ -284,8 +318,15 @@ export function lists(host: HTMLElement, key: string, lenses: Lenses, unit: stri
 }
 
 /** Where the page has a fixed height (style.css: wide and tall enough), a list shows in pages that fit its space,
- *  with ‹ › underneath, rather than scrolling inside the page; elsewhere it shows whole and the page scrolls. */
+ *  with ‹ › underneath, rather than scrolling inside the page; elsewhere it shows whole and the page scrolls.
+ *  A list longer than the map gives is read further as it is read: up to BATCH items as soon as it opens, then the
+ *  next BATCH once the page shown comes within AHEAD items of the end (the next page is there before it is asked
+ *  for); one column: "Show more" under it. */
 const PAGED = "(min-width: 1101px) and (min-height: 680px)";
+const HEAD = 8;      // items of a list in the map itself (the data API's Options.lens_size)
+const BATCH = 25;
+const AHEAD = 9;
+type Load = (offset: number, limit: number) => Promise<{ rows: HTMLElement[]; total: number } | null>;
 function pager(host: HTMLElement, panel: HTMLElement, what: string) {
   const bar = host.appendChild(document.createElement("div"));
   bar.className = "tg-pager";
@@ -295,7 +336,32 @@ function pager(host: HTMLElement, panel: HTMLElement, what: string) {
     `<span class="tg-page" aria-live="polite"></span><button type="button" class="tg-next" aria-label="Next page">›</button>`;
   const prev = bar.querySelector<HTMLButtonElement>(".tg-prev")!, next = bar.querySelector<HTMLButtonElement>(".tg-next")!;
   const label = bar.querySelector<HTMLElement>(".tg-page")!;
+  const showMore = host.appendChild(document.createElement("button"));
+  showMore.type = "button";
+  showMore.className = "tg-showmore";
+  showMore.textContent = "Show more";
+  showMore.hidden = true;
   let items: HTMLElement[] = [], starts: number[] = [0], page = 0, room = 0;
+  let load: Load | undefined, done = true, busy = false, run = 0;
+  const paged = () => matchMedia(PAGED).matches && panel.clientHeight > 0;
+  /** The next batch, to a multiple of BATCH (8 -> 25 -> 50 ...). Kept only if the same list is still shown. */
+  const fetchMore = async () => {
+    if (!load || done || busy) return;
+    busy = true;
+    const mine = run, limit = (Math.floor(items.length / BATCH) + 1) * BATCH - items.length;
+    try {
+      const r = await load(items.length, limit);
+      if (mine !== run) return;
+      if (!r || !r.rows.length) { done = true; return; }
+      items.push(...r.rows);
+      done = items.length >= r.total;
+      cut();
+    } catch {
+      /* the network or the service: tried again at the next page */
+    } finally {
+      if (mine === run) { busy = false; showMore.hidden = done || paged(); }
+    }
+  };
   const show = (p: number) => {
     page = Math.max(0, Math.min(starts.length - 1, p));
     const a = starts[page], b = starts[page + 1] ?? items.length;
@@ -303,37 +369,48 @@ function pager(host: HTMLElement, panel: HTMLElement, what: string) {
     label.textContent = `${b - a > 1 ? `${a + 1}–${b}` : a + 1} of ${items.length}`;
     prev.disabled = page === 0;
     next.disabled = page === starts.length - 1;
+    if (b >= items.length - AHEAD) void fetchMore();
   };
   /** Cut the list into pages: as many rows as fit, one after another (rows differ in height). */
   const cut = () => {
     const first = starts[page] ?? 0;
     room = panel.clientHeight;
-    if (!matchMedia(PAGED).matches || !room) {
+    if (!paged()) {
       starts = [0]; page = 0;
       panel.replaceChildren(...items);
       bar.hidden = true;
+      showMore.hidden = done;
       return;
     }
+    showMore.hidden = true;
     starts = [0];
     panel.replaceChildren();
     items.forEach((el, i) => {
       panel.append(el);
       if (panel.scrollHeight > room + 1 && panel.childElementCount > 1) { starts.push(i); panel.replaceChildren(el); }
     });
-    bar.hidden = starts.length < 2;
+    bar.hidden = starts.length < 2 && done;
     let p = 0;
     while (p + 1 < starts.length && starts[p + 1] <= first) p++;
     show(p);
   };
   prev.onclick = () => show(page - 1);
   next.onclick = () => show(page + 1);
+  showMore.onclick = () => { showMore.disabled = true; void fetchMore().finally(() => { showMore.disabled = false; }); };
   const ro = new ResizeObserver(() => {
     if (!panel.isConnected) return ro.disconnect();
     if (panel.clientHeight !== room) cut();
   });
   ro.observe(panel);
   document.fonts?.ready.then(() => { if (panel.isConnected) cut(); });   // rows change height once the fonts are in
-  return { set(list: HTMLElement[]) { items = list; starts = [0]; page = 0; cut(); } };
+  return {
+    set(list: HTMLElement[], more?: Load) {
+      run++; busy = false;
+      items = list; starts = [0]; page = 0; load = more; done = !more;
+      cut();
+      if (more) void fetchMore();                     // the first BATCH as soon as the list opens
+    },
+  };
 }
 
 function why(key: string, p: TopicPaper, names: Map<number, string>): string {
