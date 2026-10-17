@@ -263,7 +263,16 @@ export async function renderPeople(box: HTMLElement, q: string, go: (url: string
     `with every word of the name, the most published first.` : "No record has every word of the name; these have some of them."} ` +
     `OpenAlex sometimes keeps one person under several records: look at the fields and years to tell them apart.</p>`);
   const list = box.appendChild(document.createElement("div"));
-  for (const a of full) list.append(authorRow(a, go));
+  // the same name, institution and topic twice: very likely one person under two OpenAlex records (said, not merged)
+  const seen = new Map<string, AuthorHit>();
+  for (const a of full) {
+    const row = authorRow(a, go);
+    const key = [a.name.toLowerCase(), a.institution?.id, a.topic?.subfield].join("|");
+    const twin = a.institution && a.topic ? seen.get(key) : undefined;
+    if (twin) row.insertAdjacentHTML("beforeend", `<span class="hit-why au-twin">Same name, institution and field as ${esc(twin.name)} above: probably the same person under two records.</span>`);
+    else seen.set(key, a);
+    list.append(row);
+  }
   if (part.length) {
     if (full.length) box.insertAdjacentHTML("beforeend", `<h2 class="au-strip-h">Part of the name</h2>`);
     const l2 = box.appendChild(document.createElement("div"));
