@@ -1008,4 +1008,5 @@ main.legal li { margin: 4px 0; }
 .au-hit .hit-title { font-size: 17px; }
 .au-hit .hit-why { font-style: normal; }
 .au-more { display: inline-block; margin: 2px 0 6px; font-size: 14px; }
+.au-twin { color: var(--accent); }
 body.topics-dash .au-head { margin-bottom: 6px; }
