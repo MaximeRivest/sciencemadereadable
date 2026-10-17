@@ -53,7 +53,100 @@ FIELDS = [
     "conclusion",
 ]
 NON_BODY = {"metadata", "references", "furniture", "other"}
+# Tables are never rewritten: editions show the original table (or the original
+# page) and drop any table the model writes. Their captions are still rewritten.
+# OCR also turns charts into long number tables, which made the 9B loop.
+NOT_REWRITTEN = NON_BODY | {"table"}
 MODEL = "jev-1.14.0"
+# Once an appendix or supplement starts, nothing after it is rewritten, even when
+# its numbered sections look like methods or results (seen on arXiv: appendix
+# sections G-K were labelled methods/results). Lettered headings ("B.2 Proofs")
+# count only after the reference list, where the main text has ended; digit-
+# numbered sections after the references (Nature-style Methods) are unaffected.
+APPENDIX_HEADING = re.compile(
+    r"^(#{1,6}\s*)?\**\s*(appendix|appendices|supplementary (materials?|information|data|methods|notes|text)|supplemental (materials?|information)|supporting information|online methods appendix)\b",
+    re.I,
+)
+LETTERED_HEADING = re.compile(r"^#{1,6}\s*\**\s*(appendix\s+)?[A-Z](\.\d+)*[.:]?\s+\S")
+REFERENCES_HEADING = re.compile(r"^#{1,6}\s*\**\s*((\d+|[IVX]+)\.?\s*)?(references|bibliography|literature cited|works cited)\b", re.I)
+
+# What the current rewriter can take (prepare_input.py and rewrite.ts). Each
+# rewrite call may write at most 16,000 tokens. Measured on 248 production
+# sections, the 9B's rewrite is 1.19x its input (median), 1.59x at the 99th
+# percentile, so one call takes up to 10,000 tokens of source. Longer sections
+# are rewritten in pieces split at their own subheadings (else between
+# paragraphs); ordinary sections stay whole, exactly as before. The opening call
+# reads the whole paper inside a 65,536-token context.
+REWRITE_CHARS = 160_000
+SECTION_TOKENS = 10_000  # the most one rewrite call takes
+PIECE_TOKENS = 6_000  # aim for pieces about this size when splitting
+OPENING_TOKENS = 3_000
+WHOLE_TOKENS = 45_000
+OPENING_FIELDS = ("title", "abstract", "introduction_first", "conclusion")
+NAMES = {
+    "introduction_rest": "introduction",
+    "methods": "methods",
+    "results": "results",
+    "discussion": "discussion",
+}
+
+
+def _tokens():
+    import tiktoken
+
+    enc = tiktoken.get_encoding("cl100k_base")
+    return lambda t: len(enc.encode(t, disallowed_special=()))
+
+
+def split_section(text, count=None):
+    """A long section as pieces of whole paragraphs, cut before subheadings where
+    possible. Joining the pieces with a blank line gives back the section."""
+    count = count or _tokens()
+    if count(text) <= SECTION_TOKENS:
+        return [text]
+    paragraphs = re.split(r"\n[ \t]*\n", text)
+    pieces, current, size = [], [], 0
+    for paragraph in paragraphs:
+        n = count(paragraph) + 2
+        heading = paragraph.lstrip().startswith("#")
+        if current and (
+            size + n > PIECE_TOKENS or (heading and size >= PIECE_TOKENS / 2)
+        ):
+            pieces.append("\n\n".join(current))
+            current, size = [], 0
+        current.append(paragraph)
+        size += n
+    pieces.append("\n\n".join(current))
+    return pieces
+
+
+def rewrite_size_problem(sections):
+    """None when the main text fits the rewriter, else a plain explanation."""
+    count = _tokens()
+    words = lambda tokens: f"{round(tokens * 0.75, -2):,.0f}"
+    total_chars = sum(len(v) for v in sections.values())
+    whole = sum(count(v) for v in sections.values())
+    if total_chars > REWRITE_CHARS or whole > WHOLE_TOKENS:
+        size = max(total_chars / 6.4, whole * 0.75)
+        return (
+            f"The main text of this paper (without references and appendices) is about {round(size, -2):,.0f} words; "
+            f"the current rewriting limit is about 25,000 words."
+        )
+    for key, name in NAMES.items():
+        for piece in split_section(sections.get(key, ""), count):
+            tokens = count(piece)
+            if tokens > SECTION_TOKENS:
+                return (
+                    f"One passage in the {name} section is about {words(tokens)} words without a paragraph break "
+                    f"(often a very long table); the rewriter handles up to about {words(SECTION_TOKENS)} words at a time."
+                )
+    opening = sum(count(sections.get(k, "")) for k in OPENING_FIELDS)
+    if opening > OPENING_TOKENS:
+        return (
+            f"The title, abstract, first introduction paragraph and conclusion together are about {words(opening)} words; "
+            f"the rewriter currently handles about {words(OPENING_TOKENS)} words for these."
+        )
+    return None
 
 
 def blocks_from(artifact):
@@ -121,7 +214,8 @@ def questions_for(blocks, targets, model):
                 "criteria": criteria,
             }
         i = indices[b["id"]]
-        if i and blocks[i - 1]["page"] != b["page"]:
+        # Only consecutive pages can split a paragraph; skipped pages lie between others.
+        if i and blocks[i - 1]["page"] + 1 == b["page"]:
             prev = blocks[i - 1]["id"]
             questions[f"{b['id']}_boundary"] = {
                 "type": "choice",
@@ -202,6 +296,7 @@ def assemble(blocks, answers, threshold=0.65, overrides=None):
     sections = {k: [] for k in FIELDS}
     ledger, review = [], []
     first_intro = False
+    references_seen = in_appendix = False
     for b in blocks:
         role_answer, section_answer = (
             answers[b["id"] + "_role"],
@@ -220,16 +315,28 @@ def assemble(blocks, answers, threshold=0.65, overrides=None):
                     "Each manual override needs a valid role, section, boundary and review reason."
                 )
             role, section = override["role"], override["section"]
+        line = b["text"].strip().splitlines()[0] if b["text"].strip() else ""
+        heading_like = role == "heading" or line.startswith("#")
+        if heading_like and len(line) < 200 and (
+            APPENDIX_HEADING.match(line)
+            or (references_seen and LETTERED_HEADING.match(line))
+        ):
+            in_appendix = True
+        if role == "references" or (heading_like and REFERENCES_HEADING.match(line)):
+            references_seen = True
         reasons = []
         if not override:
             if role_answer["confidence"] < threshold:
                 reasons.append("uncertain structural role")
-            if role not in NON_BODY and section_answer["confidence"] < threshold:
+            if role not in NOT_REWRITTEN and section_answer["confidence"] < threshold:
                 reasons.append("uncertain section membership")
         if role == "uncertain" or section == "uncertain":
             reasons.append("unresolved classification")
         dest = None
-        if role not in NON_BODY and role != "uncertain":
+        appendix = in_appendix and not override
+        if appendix:
+            reasons = []  # kept separately, never rewritten: nothing to decide
+        elif role not in NOT_REWRITTEN and role != "uncertain":
             if section == "introduction":
                 if role == "paragraph" and not first_intro:
                     dest = "introduction_first"
@@ -253,7 +360,12 @@ def assemble(blocks, answers, threshold=0.65, overrides=None):
         )
         # This speculative question is only about prose. Ignore its answer for
         # tables/captions/etc.; table fragments remain separately preserved.
-        if role != "paragraph" or not ledger or ledger[-1]["role"] != "paragraph":
+        if (
+            appendix
+            or role != "paragraph"
+            or not ledger
+            or ledger[-1]["role"] != "paragraph"
+        ):
             boundary_choice = "separate"
         elif boundary and "boundary" not in (override or {}):
             if boundary["confidence"] < threshold or boundary_choice == "uncertain":
@@ -280,6 +392,7 @@ def assemble(blocks, answers, threshold=0.65, overrides=None):
             "boundary_answer": boundary,
             "boundary": boundary_choice,
             "disposition": "rewrite" if dest else "retained_separately",
+            "appendix": appendix,
             "role_answer": role_answer,
             "section_answer": section_answer,
             "manual_review": override,

@@ -275,6 +275,10 @@ def make_edition(run, out, visual_manifest=None, regenerate_pdf=False, automatic
         "source_pdf_sha256": extraction["signature"]["pdf_sha256"],
         "source_version": extraction.get("source_record", {}).get("version"),
         "source_page_count": extraction["pages"],
+        # Pages after the main text (references, appendices) were not read; they
+        # stay in original.pdf and the combined PDF, not as page pictures.
+        "source_pages_read": extraction.get("read_pages")
+        or list(range(1, extraction["pages"] + 1)),
         "reviewed_blocks": sum(bool(b["manual_review"]) for b in labels["ledger"]),
         "chapters": chapters,
     }
@@ -350,6 +354,16 @@ def make_edition(run, out, visual_manifest=None, regenerate_pdf=False, automatic
         notes.append(
             "Some formulas retain their written notation rather than full mathematical typesetting. The original PDF shows their layout."
         )
+    skipped = [
+        p
+        for p in range(1, edition["source_page_count"] + 1)
+        if p not in read_pages(edition)
+    ]
+    if skipped:
+        notes.append(
+            f"Only the main text was read and rewritten (original pages {page_ranges(read_pages(edition))}). "
+            f"Pages {page_ranges(skipped)} (references, appendices and similar) are unchanged in the original PDF."
+        )
     edition["quality_notes"] = notes
     save(out / "edition.json", edition)
     transcript = (
@@ -367,9 +381,30 @@ def make_edition(run, out, visual_manifest=None, regenerate_pdf=False, automatic
 
     (out / "pages").mkdir(exist_ok=True)
     with pymupdf.open(out / "original.pdf") as source:
-        for i, page in enumerate(source):
-            page.get_pixmap(dpi=200, alpha=False).save(out / "pages" / f"{i + 1}.png")
+        for number in read_pages(edition):
+            source[number - 1].get_pixmap(dpi=200, alpha=False).save(
+                out / "pages" / f"{number}.png"
+            )
     return edition
+
+
+def read_pages(edition):
+    """Original pages that were read; editions made before page sorting read all."""
+    return edition.get("source_pages_read") or list(
+        range(1, edition["source_page_count"] + 1)
+    )
+
+
+def page_ranges(pages):
+    """[1, 2, 3, 5] -> '1–3, 5'."""
+    out, start = [], None
+    for i, p in enumerate(pages):
+        if start is None:
+            start = p
+        if i + 1 == len(pages) or pages[i + 1] != p + 1:
+            out.append(str(start) if start == p else f"{start}–{p}")
+            start = None
+    return ", ".join(out)
 
 
 def quality_notes_html(edition):
@@ -431,7 +466,7 @@ def make_epub(edition, out):
         body = f'<section><h1>{html.escape(c["title"])}</h1><p class="source">Original pages: {links}.</p>{html_for_format(c["html"], "epub")}</section>'
         files[c["id"] + ".xhtml"] = xhtml(c["title"], body)
         toc.append((c["id"] + ".xhtml", c["title"]))
-    for p in range(1, edition["source_page_count"] + 1):
+    for p in read_pages(edition):
         files[f"page-{p}.xhtml"] = xhtml(
             f"Original page {p}",
             f'<h1>Original page {p}</h1><p class="source">Unchanged source page image; enlarge in your reading app to inspect small numbers.</p><img src="pages/{p}.png" alt="Original research paper, page {p}"/>',
@@ -470,7 +505,7 @@ def make_epub(edition, out):
             f'<item id="s{i}" href="{f}" media-type="application/xhtml+xml"/>'
         )
         spine.append(f'<itemref idref="s{i}"/>')
-    for p in range(1, edition["source_page_count"] + 1):
+    for p in read_pages(edition):
         manifest.append(
             f'<item id="p{p}" href="pages/{p}.png" media-type="image/png"/>'
         )
@@ -507,7 +542,7 @@ def make_epub(edition, out):
             if name.endswith(".xhtml"):
                 ET.fromstring(content)
             z.writestr("EPUB/" + name, content, compress_type=zipfile.ZIP_DEFLATED)
-        for p in range(1, edition["source_page_count"] + 1):
+        for p in read_pages(edition):
             z.write(
                 out / "pages" / f"{p}.png",
                 f"EPUB/pages/{p}.png",
@@ -701,23 +736,12 @@ def tts_chunk(text, cache, service, voice, speed):
         tmp.unlink(missing_ok=True)
 
 
-def encode(pcm, target, title):
+def _ffmpeg_mp3(source_args, target, title, stdin=None):
     tmp = target.with_suffix(".tmp.mp3")
-    subprocess.run(
-        [
-            "ffmpeg",
-            "-hide_banner",
-            "-loglevel",
-            "error",
-            "-y",
-            "-f",
-            "s16le",
-            "-ar",
-            "24000",
-            "-ac",
-            "1",
-            "-i",
-            str(pcm),
+    command = (
+        ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y"]
+        + source_args
+        + [
             "-codec:a",
             "libmp3lame",
             "-b:a",
@@ -727,13 +751,27 @@ def encode(pcm, target, title):
             "-metadata",
             "artist=ScienceMadeReadable · Kokoro",
             str(tmp),
-        ],
-        check=True,
+        ]
     )
+    return subprocess.Popen(command, stdin=stdin), tmp
+
+
+def encode(pcm, target, title):
+    process, tmp = _ffmpeg_mp3(
+        ["-f", "s16le", "-ar", "24000", "-ac", "1", "-i", str(pcm)], target, title
+    )
+    if process.wait():
+        raise RuntimeError("ffmpeg could not encode the audio.")
     tmp.replace(target)
 
 
+SPOKEN_CHARS_PER_SECOND = 14  # Kokoro bm_george at speed 1.0 (measured 14.2)
+
+
 def make_audio(edition, run, out, service, voice, speed):
+    """Chapter MP3s are encoded while Kokoro speaks, straight from its cached
+    chunks; the whole-paper MP3 joins the chapter files. No full-length raw audio
+    is written, so a four-hour narration needs about 0.2 GB rather than 1.5 GB."""
     cache = run / "audio-cache"
     cache.mkdir(exist_ok=True)
     audio = out / "audio"
@@ -745,63 +783,94 @@ def make_audio(edition, run, out, service, voice, speed):
             "speech": edition["title"] + ".\n\n" + AUDIO_NOTICE,
         }
     ] + edition["chapters"]
+    limit = float(os.environ.get("SMR_AUDIO_MAX_SECONDS", "14400"))
+    estimate = sum(len(c["speech"]) for c in chapters) / (SPOKEN_CHARS_PER_SECOND * speed)
+    if estimate > limit:
+        raise ValueError(
+            f"The narration would last about {estimate / 3600:.1f} hours; the audio limit is {limit / 3600:.1f} hours. The reading formats remain available."
+        )
     records, tracks = [], []
-    master = cache / "assembled.pcm"
     started = time.monotonic()
-    with master.open("wb") as full:
-        for index, c in enumerate(chapters):
-            part = cache / f"chapter-{index}.pcm"
-            before = full.tell()
-            chunks = split_speech(c["speech"])
-            with part.open("wb") as f:
-                for j, text in enumerate(chunks):
-                    source, record, cached = tts_chunk(
-                        text, cache, service, voice, speed
+    total = 0  # bytes of 24 kHz 16-bit mono written so far
+    for index, c in enumerate(chapters):
+        chunks = split_speech(c["speech"])
+        filename = f"{index:02d}-{c['id']}.mp3"
+        process, tmp = _ffmpeg_mp3(
+            ["-f", "s16le", "-ar", "24000", "-ac", "1", "-i", "pipe:0"],
+            audio / filename,
+            c["title"],
+            stdin=subprocess.PIPE,
+        )
+        written, used = 0, []
+        try:
+            for j, text in enumerate(chunks):
+                source, record, cached = tts_chunk(text, cache, service, voice, speed)
+                used.append(source)
+                records.append(
+                    {
+                        **{k: v for k, v in record.items() if k != "request"},
+                        "cached": cached,
+                        "chapter": c["id"],
+                    }
+                )
+                if (total + written + source.stat().st_size) / 48000 > limit:
+                    raise ValueError(
+                        "Audio exceeds the current duration limit; the reading formats remain available."
                     )
-                    records.append(
-                        {
-                            **{k: v for k, v in record.items() if k != "request"},
-                            "cached": cached,
-                            "chapter": c["id"],
-                        }
-                    )
-                    if (full.tell() + f.tell() + source.stat().st_size) / 48000 > float(
-                        os.environ.get("SMR_AUDIO_MAX_SECONDS", "14400")
-                    ):
-                        raise ValueError(
-                            "Audio exceeds the current duration limit; the reading formats remain available."
-                        )
-                    f.write(source.read_bytes())
-                    f.write(
-                        b"\x00" * 12_000
-                    )  # quarter-second pause between bounded narration chunks
-                    print(
-                        f"Kokoro {c['id']} {j + 1}/{len(chunks)} {'cached' if cached else ''}",
-                        flush=True,
-                    )
-            data = part.read_bytes()
-            full.write(data)
-            full.write(b"\x00" * 48_000)
-            filename = f"{index:02d}-{c['id']}.mp3"
-            encode(part, audio / filename, c["title"])
-            part.unlink()
-            tracks.append(
-                {
-                    "id": c["id"],
-                    "title": c["title"],
-                    "file": "audio/" + filename,
-                    "start_seconds": before / 48_000,
-                    "seconds": len(data) / 48_000,
-                }
-            )
-    encode(master, out / "paper.mp3", edition["title"])
+                data = source.read_bytes() + b"\x00" * 12_000  # quarter-second pause
+                process.stdin.write(data)
+                written += len(data)
+                print(
+                    f"Kokoro {c['id']} {j + 1}/{len(chunks)} {'cached' if cached else ''}",
+                    flush=True,
+                )
+            process.stdin.write(b"\x00" * 48_000)  # one second between chapters
+            process.stdin.close()
+            if process.wait():
+                raise RuntimeError("ffmpeg could not encode the chapter audio.")
+            tmp.replace(audio / filename)
+        except BaseException:
+            if process.poll() is None:
+                process.kill()
+                process.wait()
+            tmp.unlink(missing_ok=True)
+            raise
+        # The chapter is safely encoded; its raw speech is no longer needed.
+        for source in used:
+            source.unlink(missing_ok=True)
+        tracks.append(
+            {
+                "id": c["id"],
+                "title": c["title"],
+                "file": "audio/" + filename,
+                "start_seconds": total / 48_000,
+                "seconds": (written - 12_000) / 48_000,
+            }
+        )
+        total += written + 48_000
+    listing = cache / "chapters.txt"
+    listing.write_text(
+        "".join(f"file '{(audio / t['file'][6:]).resolve()}'\n" for t in tracks)
+    )
+    # Joined without re-encoding (no second quality loss). Each chapter keeps its
+    # encoder padding, so later chapters start up to ~0.05 s late per chapter.
+    tmp = out / "paper.tmp.mp3"
+    subprocess.run(
+        ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-f", "concat",
+         "-safe", "0", "-i", str(listing), "-c", "copy",
+         "-metadata", "title=" + edition["title"],
+         "-metadata", "artist=ScienceMadeReadable · Kokoro", str(tmp)],
+        check=True,
+    )
+    tmp.replace(out / "paper.mp3")
+    listing.unlink()
     result = {
         "edition_id": edition["id"],
         "voice": voice,
         "speed": speed,
         "sample_rate": 24000,
         "tracks": tracks,
-        "seconds": master.stat().st_size / 48_000,
+        "seconds": total / 48_000,
         "build_seconds": time.monotonic() - started,
         "chunks": len(records),
         "new_synthesis_chunks": sum(not r["cached"] for r in records),

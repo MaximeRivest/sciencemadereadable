@@ -21,7 +21,7 @@ def limits():
     resource.setrlimit(resource.RLIMIT_NOFILE, (512, 512))
 
 
-def run(operation, source, output, timeout=300):
+def run(operation, source, output, timeout=300, pages=None):
     bwrap = os.environ.get("SMR_BWRAP") or shutil.which("bwrap")
     if not bwrap:
         raise RuntimeError(
@@ -78,7 +78,7 @@ def run(operation, source, output, timeout=300):
     chromium = os.environ.get("CHROMIUM_BIN")
     if chromium:
         cmd += ["--setenv", "CHROMIUM_BIN", chromium]
-    if operation in {"render", "render-rgb"}:
+    if operation in {"render", "render-rgb", "thumbs"}:
         cmd += [
             "--ro-bind",
             str(Path(source).resolve()),
@@ -106,6 +106,12 @@ def run(operation, source, output, timeout=300):
     # entry point (resolving the final symlink would lose its site-packages).
     python = str(Path(sys.executable).parent.resolve() / Path(sys.executable).name)
     cmd += ["--chdir", "/tmp", python, str(HERE / "pdf_ops.py"), operation]
+    if pages is not None:
+        if operation != "render-rgb" or not pages or any(
+            type(n) is not int or not 1 <= n <= 200 for n in pages
+        ):
+            raise ValueError("Invalid page selection.")
+        cmd.append(",".join(map(str, pages)))
     # Never capture unbounded parser output in the controller's memory, or
     # write a diagnostic through a path supplied by the sandbox (symlink risk).
     with tempfile.TemporaryFile() as diagnostic:
@@ -136,7 +142,7 @@ def run(operation, source, output, timeout=300):
             total += info.st_size
         if (
             count > 1000
-            or total > (400 if operation == "render-rgb" else 300) * 1024 * 1024
+            or total > (400 if operation in {"render-rgb", "thumbs"} else 300) * 1024 * 1024
         ):
             raise ValueError(
                 "This document produced too much export data. Try a shorter paper."

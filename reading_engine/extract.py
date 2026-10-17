@@ -19,15 +19,23 @@ import requests
 
 VERSION = 2
 MAX_BYTES = 25 * 1024 * 1024
-MAX_PAGES = 20
+MAX_PAGES = 200
 
 
 from io_utils import save
 
 
-def render_pdf(data: bytes, run: Path, raw_pixels=False):
-    """Local parser operation. Public uploads call this only in the networkless sandbox."""
-    (run / "original.pdf").write_bytes(data)
+THUMB_LONGEST, THUMB_SHORTEST = 560, 280  # Jev accepts 280-1568 px per side
+
+
+def render_pdf(data: bytes, run: Path, raw_pixels=False, only_pages=None, thumbs=False):
+    """Local parser operation. Public uploads call this only in the networkless sandbox.
+
+    thumbs: small raw-RGB pictures of every page (for page sorting), the page
+    count and the native-text diagnostic. raw_pixels with only_pages: full-size
+    raw RGB of just those pages (OCR happens in batches of a few pages)."""
+    if not (only_pages and raw_pixels):
+        (run / "original.pdf").write_bytes(data)
     with pymupdf.open(stream=data, filetype="pdf") as doc, pymupdf.open() as raster:
         if doc.needs_pass:
             raise ValueError("Unlock the PDF before uploading it.")
@@ -35,15 +43,39 @@ def render_pdf(data: bytes, run: Path, raw_pixels=False):
             raise ValueError(
                 f"Please use a research paper of 1–{MAX_PAGES} pages, not {len(doc)}."
             )
+        for page in doc:
+            w, h = page.rect.width, page.rect.height
+            if not 50 <= w <= 2500 or not 50 <= h <= 2500 or max(w, h) / min(w, h) > 5:
+                raise ValueError(
+                    "This PDF has unusually sized pages; please export a standard-page PDF."
+                )
+        if thumbs:
+            (run / "thumbs").mkdir(exist_ok=True)
+            native, sizes = [], []
+            for i, page in enumerate(doc):
+                native.append({"page": i + 1, "text": page.get_text(sort=True)})
+                w, h = page.rect.width, page.rect.height
+                zoom = max(THUMB_LONGEST / max(w, h), THUMB_SHORTEST / min(w, h))
+                pix = page.get_pixmap(
+                    matrix=pymupdf.Matrix(zoom, zoom), alpha=False, colorspace=pymupdf.csRGB
+                )
+                (run / "thumbs" / f"{i + 1}.rgb").write_bytes(pix.samples)
+                sizes.append({"page": i + 1, "width": pix.width, "height": pix.height})
+            save(run / "thumbs.json", sizes)
+            save(run / "native-diagnostic.json", native)
+            return len(doc)
+        if only_pages is not None:
+            if not only_pages or any(
+                type(n) is not int or not 1 <= n <= len(doc) for n in only_pages
+            ) or len(set(only_pages)) != len(only_pages):
+                raise ValueError("Invalid page selection.")
+        wanted = only_pages or list(range(1, len(doc) + 1))
         native, pixel_pages = [], []
         (run / "pages").mkdir(exist_ok=True)
         if raw_pixels:
             (run / "rgb").mkdir(exist_ok=True)
-        for i, page in enumerate(doc):
-            if not 50 <= page.rect.width <= 2500 or not 50 <= page.rect.height <= 2500:
-                raise ValueError(
-                    "This PDF has unusually sized pages; please export a standard-page PDF."
-                )
+        for number in wanted:
+            i, page = number - 1, doc[number - 1]
             native.append({"page": i + 1, "text": page.get_text(sort=True)})
             zoom = min(
                 400 / 72, math.sqrt(5_000_000 / (page.rect.width * page.rect.height))
@@ -67,7 +99,8 @@ def render_pdf(data: bytes, run: Path, raw_pixels=False):
         else:
             save(run / "pixel-pages.json", pixel_pages)
         pages = len(doc)
-    save(run / "native-diagnostic.json", native)
+    if not only_pages:
+        save(run / "native-diagnostic.json", native)
     return pages
 
 

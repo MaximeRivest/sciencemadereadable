@@ -48,11 +48,23 @@ def main():
             },
         )
         return
-    if operation in {"render", "render-rgb"}:
+    if operation in {"render", "render-rgb", "thumbs"}:
         data = Path("/input.pdf").read_bytes()
         if len(data) > 25 * 1024 * 1024 or not data.startswith(b"%PDF-"):
             raise ValueError("Please upload a PDF under 25 MiB.")
-        pages = render_pdf(data, out, raw_pixels=operation == "render-rgb")
+        only = None
+        if operation == "render-rgb" and len(sys.argv) > 2:
+            # Controller-supplied page numbers, e.g. "3,4,5"; never parser input.
+            if not all(x.isdigit() for x in sys.argv[2].split(",")):
+                raise ValueError("Invalid page selection.")
+            only = [int(x) for x in sys.argv[2].split(",")]
+        pages = render_pdf(
+            data,
+            out,
+            raw_pixels=operation == "render-rgb",
+            only_pages=only,
+            thumbs=operation == "thumbs",
+        )
         save(out / "render.json", {"pages": pages})
         return
     if operation == "export":

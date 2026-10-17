@@ -134,7 +134,7 @@ export function mount(root: HTMLElement, doi = "", model = "our-9b") {
       ${
         doi
           ? `<p class="edition-doi">${esc(doi)}</p><p>Uses the selected rewrite already saved on our server, without rewriting it again.</p><p class="quiet small">Requires a matching archived source PDF within the current 20-page / 25 MiB limit.</p>`
-          : `<label class="edition-drop" for="edition-file"><strong>Choose a PDF</strong><span>English research papers · up to 20 pages and 25 MiB</span><input id="edition-file" type="file" accept="application/pdf,.pdf"></label>
+          : `<label class="edition-drop" for="edition-file"><strong>Choose a PDF</strong><span>English research papers · up to 200 pages and 25 MiB · we rewrite the main text (up to about 25,000 words), not references or appendices</span><input id="edition-file" type="file" accept="application/pdf,.pdf"></label>
          <p>You’ll check the extracted sections before we rewrite it. Unclear sections are flagged, not silently guessed.</p>
          <label class="edition-check"><input id="edition-rights" type="checkbox"> I have permission to upload and process this paper.</label>
          <label class="edition-check"><input id="edition-consent" type="checkbox"> I agree to send its extracted text to TypeSafe for section labelling. Don’t upload confidential material without permission.</label>`

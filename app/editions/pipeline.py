@@ -321,14 +321,31 @@ def flag_fallback_pages(run, labelled, extraction):
     save(run / "labelled.json", labelled)
 
 
+def rewrite_timeout(run):
+    """20 minutes, plus time for long main texts (about 25 tokens a second)."""
+    try:
+        sections = json.loads((run / "sections.json").read_text())
+        chars = sum(len(v) for v in sections.values())
+    except (OSError, ValueError, AttributeError):
+        chars = 0
+    return int(min(3600, max(1200, chars / 4 * 1.3 / 25 + 300)))
+
+
 def pdf_input(run, config):
-    progress(run, "extracting", "Reading PDF pages with Attachments and LightOnOCR")
-    extraction = extract_images(run / "source.pdf", run, ATTACHMENTS)
-    if len(extraction["artifact"]["text"]) > 200000:
-        raise ValueError(
-            "This PDF has too much text for the current reading limit. Try a shorter paper."
-        )
+    from label import rewrite_size_problem
+
     load_typesafe_key()
+    progress(
+        run,
+        "extracting",
+        "Finding the main-text pages, then reading them with LightOnOCR",
+    )
+    extraction = extract_images(run / "source.pdf", run, ATTACHMENTS)
+    # Only main-text pages are read now; this bounds labelling and review work.
+    if len(extraction["artifact"]["text"]) > 400000:
+        raise ValueError(
+            "This PDF has too much text in its main part for the current reading limit."
+        )
     check_document(run, extraction)
     if not (run / "labelled.json").exists():
         progress(run, "classifying", "Identifying research sections with Jev")
@@ -336,6 +353,10 @@ def pdf_input(run, config):
         flag_fallback_pages(run, labelled, extraction)
     else:
         labelled = json.loads((run / "labelled.json").read_text())
+    # Before the person spends time reviewing: will the main text fit the rewriter?
+    problem = rewrite_size_problem(labelled["sections"])
+    if problem:
+        raise ValueError(problem)
     if not config.get("confirmed"):
         progress(run, "review", "Check the extracted sections before rewriting")
         return False
@@ -388,7 +409,8 @@ def pdf_input(run, config):
             ],
             env=env,
             check=True,
-            timeout=1200,
+            # Sections run one after another; allow for the longest papers accepted.
+            timeout=rewrite_timeout(run),
         )
     save(
         run / "comparison.json",
@@ -430,9 +452,17 @@ def verify_exports(out, source_sha=None):
         raise ValueError("Invalid edition identifier.")
     if (
         type(edition.get("source_page_count")) is not int
-        or not 1 <= edition["source_page_count"] <= 20
+        or not 1 <= edition["source_page_count"] <= 200
     ):
         raise ValueError("Invalid source page count.")
+    read = edition.get("source_pages_read")
+    if read is not None and (
+        not isinstance(read, list)
+        or not 1 <= len(read) <= edition["source_page_count"]
+        or any(type(n) is not int or not 1 <= n <= edition["source_page_count"] for n in read)
+        or read != sorted(set(read))
+    ):
+        raise ValueError("Invalid list of read source pages.")
     for key, maximum in [
         ("original_title", 3000),
         ("doi", 300),
@@ -484,7 +514,7 @@ def verify_exports(out, source_sha=None):
                 raise ValueError("Invalid visual identifier.")
             for key in ("page", "part", "parts", "width", "height"):
                 if type(part.get(key)) is not int or not 1 <= part[key] <= (
-                    20000 if key in {"width", "height"} else 20
+                    20000 if key in {"width", "height"} else 200 if key == "page" else 20
                 ):
                     raise ValueError("Invalid visual dimensions or page.")
             if (
@@ -504,14 +534,14 @@ def verify_exports(out, source_sha=None):
             raise ValueError("Invalid chapter identifier or title.")
         seen.add(c["id"])
         if not isinstance(c.get("source_pages"), list) or any(
-            type(n) is not int or not 1 <= n <= 20 for n in c["source_pages"]
+            type(n) is not int or not 1 <= n <= 200 for n in c["source_pages"]
         ):
             raise ValueError("Invalid chapter source pages.")
         if (
             not isinstance(c.get("html"), str)
-            or len(c["html"]) > 220000
+            or len(c["html"]) > 400000
             or not isinstance(c.get("speech"), str)
-            or len(c["speech"]) > 120000
+            or len(c["speech"]) > 250000
         ):
             raise ValueError("Invalid chapter output.")
         soup = BeautifulSoup(c["html"], "html.parser")
@@ -549,7 +579,7 @@ def verify_exports(out, source_sha=None):
                     )
                 ):
                     raise ValueError("Images must be local source assets.")
-    if sum(len(c["speech"]) for c in edition["chapters"]) > 160000:
+    if sum(len(c["speech"]) for c in edition["chapters"]) > 400000:
         raise ValueError("The narration is too long for the current audio limit.")
     for path in out.rglob("*"):
         if path.is_symlink():

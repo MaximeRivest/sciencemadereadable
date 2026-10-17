@@ -11,7 +11,7 @@ case "${1:-status}" in
       -E 'SMR_READING_ORIGINS=http://127.0.0.1:8940,http://localhost:8940,https://lambda.tail69222b.ts.net:18940' \
       -E LD_LIBRARY_PATH=/run/current-system/sw/share/nix-ld/lib \
       -E CREDENTIALS_DIRECTORY=/home/maxime/.config/scholarsreadinglist \
-      -E SMR_AUDIO_MAX_SECONDS=5400 \
+      -E SMR_AUDIO_MAX_SECONDS=14400 \
       -E CHROMIUM_BIN="${CHROMIUM_BIN:?Use a stock headless Chromium, not the household launcher}" \
       "$HERE/.venv/bin/python" -m uvicorn service:create_app --factory --host 127.0.0.1 --port 8826 --no-access-log --no-proxy-headers
     ;;

@@ -69,6 +69,25 @@ def csp_for_html(path):
     )
 
 
+def time_limit(folder):
+    """40 minutes for ordinary papers; long papers get time for each extra page
+    read and for rewriting a longer main text (at most two hours)."""
+    extra = 0
+    try:
+        read = json.loads((folder / "page-sort.json").read_text()).get("read", [])
+        extra += 30 * max(0, min(100, len(read)) - 20)
+    except (OSError, ValueError, AttributeError):
+        pass
+    try:
+        chars = sum(
+            len(v) for v in json.loads((folder / "sections.json").read_text()).values()
+        )
+        extra += max(0, min(160_000, chars) - 60_000) / 4 * 1.3 / 25
+    except (OSError, ValueError, AttributeError, TypeError):
+        pass
+    return int(min(7200, 2400 + extra))
+
+
 class Worker:
     def __init__(self, store):
         self.store, self.stop = store, threading.Event()
@@ -149,12 +168,13 @@ class Worker:
                         ):
                             self.terminate()
                             break
-                        if time.monotonic() - start > 2400:
+                        limit = time_limit(folder)
+                        if time.monotonic() - start > limit:
                             self.terminate()
                             self.store.update(
                                 job["id"],
                                 state="failed",
-                                error="Processing exceeded 40 minutes. Try a shorter paper.",
+                                error=f"Processing exceeded {limit // 60} minutes. Try a shorter paper.",
                                 stage="Stopped at time limit",
                             )
                             break
@@ -341,7 +361,7 @@ def create_app(root=None, start_worker=None, secure_cookies=None):
             "version": 1,
             "release": release,
             "max_bytes": MAX_UPLOAD,
-            "max_pages": 20,
+            "max_pages": 200,
             "retention_hours": 48,
             "formats": ["web", "epub", "pdf", "mp3"],
             "accepting_jobs": os.environ.get("SMR_READING_LAUNCH_GATE") != "1"
@@ -437,7 +457,7 @@ def create_app(root=None, start_worker=None, secure_cookies=None):
         if not isinstance(changes, dict) or len(changes) > 500:
             raise Denied(400, "Invalid review changes.")
         sys.path.insert(0, str(ROOT / "reading_engine"))
-        from label import assemble, ROLES, SECTIONS
+        from label import assemble, rewrite_size_problem, ROLES, SECTIONS
 
         folder = store.jobs / jid
         current = json.loads((folder / "labelled.json").read_text())
@@ -490,8 +510,9 @@ def create_app(root=None, start_worker=None, secure_cookies=None):
                 422,
                 "Some blocks still need a clear label, or a required research section is missing.",
             )
-        if sum(len(x) for x in updated["sections"].values()) > 160000:
-            raise Denied(422, "This paper is too long for the current rewrite limit.")
+        problem = rewrite_size_problem(updated["sections"])
+        if problem:
+            raise Denied(422, problem)
         current.update(updated)
         from io_utils import save
 
@@ -561,7 +582,7 @@ def create_app(root=None, start_worker=None, secure_cookies=None):
     @app.get("/api/editions/jobs/{jid}/pages/{number}")
     def review_page(jid: str, number: int, request: Request):
         owner(request, jid)
-        if not 1 <= number <= 20:
+        if not 1 <= number <= 200:
             raise Denied(404, "Page not found.")
         path = store.jobs / jid / "pages" / f"{number}.png"
         if not path.is_file() or path.is_symlink():

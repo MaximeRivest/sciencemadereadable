@@ -135,25 +135,45 @@ const opening = P.OPENING_SECTIONS.filter((k) => parts[k])
   .map((k) => `## ${k}\n\n${parts[k]}`)
   .join("\n\n");
 for (const k of P.OTHER_SECTIONS.filter((k) => sections[k])) {
-  parts[k] = tag(
-    await call(
-      k,
-      P.studentSection,
+  // Very long sections come in pieces cut at their own subheadings (label.py);
+  // each piece is rewritten with the same trained program, then rejoined.
+  const pieces: { text: string; glossary: string; max_tokens: number }[] =
+    paper.section_pieces?.[k] ?? [
       {
-        section_name: k,
-        original_section: sections[k],
-        rewritten_opening: opening,
-        reference_glossary: paper.glossary[k] ?? "",
-        writer: "opus",
+        text: sections[k],
+        glossary: paper.glossary[k] ?? "",
+        max_tokens: paper.max_tokens[k],
       },
-      paper.max_tokens[k],
-    ),
-    "result",
-  );
-  if (!parts[k]) throw new Error(`Rewriter omitted ${k}`);
+    ];
+  if (pieces.map((p) => p.text).join("\n\n") !== sections[k])
+    throw new Error(`The pieces of ${k} do not rebuild the section`);
+  const done: string[] = [];
+  for (const [i, piece] of pieces.entries()) {
+    const text = tag(
+      await call(
+        pieces.length > 1 ? `${k} (part ${i + 1} of ${pieces.length})` : k,
+        P.studentSection,
+        {
+          section_name: k,
+          original_section: piece.text,
+          rewritten_opening: opening,
+          reference_glossary: piece.glossary,
+          writer: "opus",
+        },
+        piece.max_tokens,
+      ),
+      "result",
+    );
+    if (!text) throw new Error(`Rewriter omitted ${k}`);
+    done.push(text);
+  }
+  parts[k] = done.join("\n\n");
 }
 const out = {
   parts,
+  pieces: Object.fromEntries(
+    Object.entries(paper.section_pieces ?? {}).map(([k, v]: any) => [k, v.length]),
+  ),
   calls,
   modelInfo,
   baseUrl,

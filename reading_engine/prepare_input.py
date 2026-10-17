@@ -18,6 +18,9 @@ import glossary as G
 from inputs import glossary_lines
 import tiktoken
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from label import split_section
+
 OPENING = ["title", "abstract", "introduction_first", "conclusion"]
 OTHER = ["introduction_rest", "methods", "results", "discussion"]
 
@@ -81,6 +84,19 @@ def prepare(run):
                 for s in OTHER
                 if sections.get(s)
             },
+        },
+        # Sections over the rewriter's single-call limit go in pieces (label.py).
+        "section_pieces": {
+            s: [
+                {
+                    "text": piece,
+                    "glossary": glossary_lines(entries, piece),
+                    "max_tokens": min(16000, max(1500, 2 * len(enc.encode(piece)))),
+                }
+                for piece in pieces
+            ]
+            for s in OTHER
+            if sections.get(s) and len(pieces := split_section(sections[s])) > 1
         },
         "glossary_terms": len(entries),
         "max_tokens": {
