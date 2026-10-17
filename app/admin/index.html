@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>Admin · ScienceMadeReadable</title>
+<link rel="stylesheet" href="style.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<header>
+  <h1>ScienceMadeReadable <span>admin</span></h1>
+  <nav id="ranges" aria-label="Period">
+    <button data-range="today">Today</button><button data-range="yesterday">Yesterday</button>
+    <button data-range="7d">7 days</button><button data-range="30d">30 days</button>
+  </nav>
+  <p id="updated" class="muted" aria-live="polite">Loading…</p>
+  <p id="health"></p>
+</header>
+<main>
+  <p id="early" class="note" hidden></p>
+
+  <section class="now">
+    <div class="card">
+      <h2>On the site now <b id="active-n"></b></h2>
+      <p class="muted">Seen in the last 5 minutes. Click a visitor to see their whole visit below.</p>
+      <ul id="active" class="rows"></ul>
+      <h2 class="later">AI apps and programs, last 10 minutes <b id="agents-n"></b></h2>
+      <p id="agent-apps" class="muted"></p>
+    </div>
+    <div class="card">
+      <div class="feed-head"><h2>Live, last hour</h2>
+        <nav id="feed-filter" aria-label="Show"><button data-f="all">All</button><button data-f="site">People</button><button data-f="agent">Agents</button></nav>
+      </div>
+      <ol id="feed" class="feed"></ol>
+    </div>
+  </section>
+
+  <section id="tiles" class="tiles"></section>
+
+  <section class="charts">
+    <div class="card"><h2>Visitors</h2><p class="muted">Orange: their first page came from a link on X.</p><div id="c-people"></div></div>
+    <div class="card"><h2>What they did</h2><div id="c-did"></div></div>
+    <div class="card"><h2>AI apps and programs</h2><p class="muted">Tool calls and API requests (connections and keep-alive pings left out).</p><div id="c-agents"></div></div>
+  </section>
+
+  <h2 class="section">What people look for</h2>
+  <section class="grid">
+    <div class="card"><h3>Searches</h3><p id="speed-search" class="muted"></p><div id="t-searches"></div></div>
+    <div class="card"><h3>Searches that found nothing</h3><p class="muted">What people wanted and didn't get.</p><div id="t-empty"></div></div>
+    <div class="card"><h3>Topic maps</h3><p id="speed-map" class="muted"></p><div id="t-topics"></div></div>
+    <div class="card"><h3>Authors and institutions</h3><div id="t-people"></div></div>
+    <div class="card"><h3>Papers opened</h3><div id="t-papers"></div><h3 class="later">Papers we couldn't open</h3><div id="t-cant"></div></div>
+  </section>
+
+  <h2 class="section">How visits go</h2>
+  <p id="flow-line" class="lead"></p>
+  <section class="grid">
+    <div class="card"><h3>Where they start</h3><div id="t-entries"></div></div>
+    <div class="card"><h3>Last page before leaving</h3><div id="t-exits"></div></div>
+    <div class="card"><h3>After search results, they go to</h3><div id="t-after"></div></div>
+    <div class="card wide"><h3>Most common paths</h3><div id="t-paths"></div></div>
+    <div class="card"><h3>Left while something was still under way</h3><div id="t-busy"></div><h3 class="later">Errors they were shown</h3><div id="t-errors"></div></div>
+    <div class="card"><h3>Where they came from</h3><div id="t-refs"></div><h3 class="later">Device</h3><div id="t-devices"></div></div>
+  </section>
+
+  <h2 class="section">AI apps and programs</h2>
+  <p id="agent-line" class="lead"></p>
+  <section class="grid">
+    <div class="card"><h3>Tools and routes used</h3><div id="t-tools"></div></div>
+    <div class="card"><h3>Apps connecting (MCP)</h3><div id="t-apps"></div><h3 class="later">Programs on the JSON API</h3><div id="t-programs"></div></div>
+    <div class="card wide"><h3>What agents asked</h3><p class="muted">Counted once per address (a daily code) and question.</p><div id="t-queries"></div></div>
+  </section>
+
+  <h2 class="section">Visits</h2>
+  <p class="muted">The 80 latest visits in this period, newest first. Click one to follow it step by step.</p>
+  <ol id="visits" class="visits"></ol>
+
+  <footer class="muted">
+    <p>A visitor is a code that changes every day: the same person on two days is two visitors. The site's own
+      automatic check is left out. Your own browsing counts like anyone's: open
+      <a href="https://sciencemadereadable.com/?dontcount" target="_blank" rel="noopener">sciencemadereadable.com/?dontcount</a>
+      once in each of your browsers to leave it out (<code>?count</code> undoes it).</p>
+    <p>Refreshes every 10 seconds while this tab is visible. <span id="took"></span></p>
+  </footer>
+</main>
+</body>
+</html>

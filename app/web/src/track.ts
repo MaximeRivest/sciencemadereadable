@@ -1,6 +1,6 @@
 /**
- * Usage counts, sent to our own server (stats.py): no cookies, nothing stored in the browser.
- * Browsers asking not to be tracked (Do Not Track, Global Privacy Control) send nothing.
+ * Usage counts, sent to our own server (stats.py): no cookies, nothing stored in the browser (except the
+ * owner's ?dontcount below). Browsers asking not to be tracked (Do Not Track, Global Privacy Control) send nothing.
  * Fire and forget: a count never slows the page or shows an error.
  *
  * Each page shown carries the parts of its address that say what is looked at (the search, the topic,
@@ -9,7 +9,15 @@
  */
 import { API } from "./jobs.ts";
 
-const off = navigator.doNotTrack === "1" || (navigator as any).globalPrivacyControl === true;
+// ?dontcount once in a browser: its visits are never counted (the owner's own browsing); ?count undoes it
+const here = new URLSearchParams(location.search);
+if (here.has("dontcount") || here.has("count")) {
+  try { if (here.has("dontcount")) localStorage.setItem("dontcount", "1"); else localStorage.removeItem("dontcount"); } catch { /* private mode */ }
+  here.delete("dontcount"); here.delete("count");
+  history.replaceState(history.state, "", location.pathname + (here.toString() ? `?${here}` : "") + location.hash);
+}
+const off = navigator.doNotTrack === "1" || (navigator as any).globalPrivacyControl === true ||
+  (() => { try { return localStorage.getItem("dontcount") === "1"; } catch { return false; } })();
 let firstView = true;
 let shownAt = performance.now();
 

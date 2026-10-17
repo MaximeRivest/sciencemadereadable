@@ -22,6 +22,9 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from admin import page_of as page_and_subject, without_site_checks  # noqa: E402
 from urllib.parse import parse_qs
 
 STATS = Path(__file__).resolve().parents[1] / "stats"
@@ -37,20 +40,6 @@ for f in sorted(STATS.glob("events-*.jsonl")):
             events.append(json.loads(line))
         except ValueError:
             pass
-def without_site_checks(events: list[dict]) -> list[dict]:
-    """The site check (tools/check_site.py, run at every publish) browses like a very busy visitor: a 1280-px
-    window (counted as 1300) and 40+ pages in a day. Since Oct 17, 2026 it sends Global Privacy Control and is
-    not counted at all; before, its visitor-days are recognised by that pattern and left out here."""
-    views, wide = collections.Counter(), set()
-    for e in events:
-        key = (dt.date.fromtimestamp(e["at"]), e["v"])
-        if e["t"] == "view":
-            views[key] += 1
-            if e.get("w") == 1300:
-                wide.add(key)
-    checks = {k for k in wide if views[k] >= 40}
-    return [e for e in events if (dt.date.fromtimestamp(e["at"]), e["v"]) not in checks]
-
 
 events = without_site_checks(events)
 for e in events:
@@ -125,24 +114,7 @@ days = sorted(set(daily) | set(daily_x))
 
 # 1b. What people looked for, and how their visits went (events with q and u: from Oct 17, 2026) ---------------
 def page_of(e) -> str:
-    """A page shown, named by what it is: the address says if 'results' was a search, a topic map or a person."""
-    view, u = e.get("view", "?"), parse_qs(e.get("u", ""))
-    if view == "results":
-        if "topics" in u:
-            return "topic map (whole field)" if u.get("scope") == ["field"] else "topic map"
-        for k, name in (("author", "author page"), ("institution", "institution page"), ("people", "people search")):
-            if k in u:
-                return name
-        return "search results"
-    if view == "explore":
-        if "work" in u:
-            return "citation walk on the map"
-        if "topics" in u or "author" in u or "institution" in u:
-            return "a topic or person on the map"
-        return "map of science"
-    return {"api": "API / agents page", "work": "a paper's page", "home": "home", "library": "library of rewrites",
-            "reader": "reading a rewrite", "fields": "field maps", "reading": "PDF reading desk", "account": "account",
-            "support": "support page"}.get(view, view)
+    return page_and_subject(e)[0]
 
 
 ACTIONS = {"search", "topics", "pick", "more", "open", "read", "make", "copy", "support", "give", "author", "institution"}

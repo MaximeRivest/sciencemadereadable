@@ -138,6 +138,7 @@ if JOBS_FILE.exists():
     except (ValueError, KeyError):
         pass   # address → times it asked for a rewrite (last minute)
 import stats   # noqa: E402  (app/stats.py)
+import admin   # noqa: E402  (app/admin.py: the live dashboard's numbers)
 import fieldpay   # noqa: E402  (app/fieldpay.py: paying to make a whole-field map now)
 ENC = tiktoken.get_encoding("o200k_base")
 OPENING = ["title", "abstract", "introduction_first", "conclusion"]
@@ -531,19 +532,8 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_json(200, {x.stem: json.loads(x.read_text()) for x in f.glob("*.json") if x.stem != "paper"}
                            if f.exists() else {})
             return
-        if u.path == "/stats":
-            # tailnet people only: Tailscale adds who is asking; requests from the internet (Funnel) don't carry it
-            if not self.headers.get("Tailscale-User-Login") or self.headers.get("Tailscale-Funnel-Request"):
-                self.send_response(404)
-                self.end_headers()
-                return
-            body = stats.page(CACHE).encode()
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-            return
+        if u.path in ("/stats", "/admin") or u.path.startswith("/admin/"):
+            return self.admin(u)
         if u.path == "/api/now":
             with JOBS_LOCK:
                 live = [{"doi": j["doi"], "model": j["model"], "status": j["status"],
@@ -616,6 +606,43 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json(200, {"id": j["id"]} if j else {})
         super().do_GET()
 
+    def admin(self, u):
+        """The live admin dashboard (admin.py, admin/): tailnet people only. Tailscale adds who is asking;
+        requests from the internet (Funnel) don't carry it, and the public door has no such route."""
+        if not self.headers.get("Tailscale-User-Login") or self.headers.get("Tailscale-Funnel-Request") \
+                or isinstance(self, PublicHandler):
+            return self.send_json(404, {"error": "not found"})
+        if u.path in ("/stats", "/admin"):
+            self.send_response(302)
+            self.send_header("Location", "/admin/")
+            self.send_header("Content-Length", "0")
+            return self.end_headers()
+        if u.path == "/admin/data":
+            with JOBS_LOCK:
+                running = sum(1 for j in JOBS.values() if j["status"] == "running")
+                queued = len(QUEUE)
+            health = {"worker": worker_online(), "models": models_online(), "running": running, "queued": queued,
+                      "search": search_up()}
+            rng = (urllib.parse.parse_qs(u.query).get("range") or ["today"])[0]
+            body = json.dumps(admin.data(rng, health), ensure_ascii=False).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            return self.wfile.write(body)
+        files = {"/admin/": ("index.html", "text/html"), "/admin/app.js": ("app.js", "text/javascript"),
+                 "/admin/style.css": ("style.css", "text/css")}
+        if u.path not in files:
+            return self.send_json(404, {"error": "not found"})
+        name, ctype = files[u.path]
+        body = (HERE / "admin" / name).read_bytes()
+        self.send_response(200)
+        self.send_header("Content-Type", ctype + "; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def body_json(self, limit=4_000_000):
         return json.loads(self.rfile.read(min(int(self.headers.get("Content-Length") or 0), limit)) or b"{}")
 
@@ -683,7 +710,8 @@ class Handler(SimpleHTTPRequestHandler):
             limit, who = MORE_LIMIT, "more:" + self.client()
         wait = rate_wait(who, limit, cost)
         if kind == "api":
-            stats.record_api("api", route.group(1).split("/")[0] + (":more" if "part=more" in u.query else ""),
+            stats.record_api("api", "ask" if self.path.startswith("/api/ask") else
+                             route.group(1).split("/")[0] + (":more" if "part=more" in u.query else ""),
                              main_argument(route.group(1), u.query), program(self.headers.get("User-Agent", "")),
                              self.client(), keyed=acct is not None, limited=bool(wait))
         if wait:
@@ -1085,11 +1113,27 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 SEARCH_API = os.environ.get("SRL_SEARCH_API", "http://127.0.0.1:8810")
+admin.SEARCH_API = SEARCH_API   # paper titles for the dashboard
 DATA_ROUTES = re.compile(r"^/api/data/(search|search/[^\s?#]{2,6000}|topics|topics/[^\s?#]{2,6000}|fields|fields/queue|fields/suggest|walk|map/place|map/regions|map/counts|llms\.txt|docs|openapi\.json|similar/[\w./:%-]{2,300}|works/[\w./:%-]{2,300}|authors|authors/[\w./:%-]{2,300}|institutions|institutions/[\w./:%-]{2,300}"
                          r"|map/tiles/[\w-]{1,40}/(?:index\.json|\d{1,2}/\d{1,6}/\d{1,6}\.(?:pts|ids)"
                          r"|v2/(?:map|labels|names)\.json|v2/[dpi]/\d{1,2}/\d{1,6}/\d{1,6}\.bin|v2/t/\d{1,2}/\d{1,6}/\d{1,6}\.json))$")
 ROBOTS_OPEN = "User-agent: *\nAllow: /\n"
 MCP_PATHS = ("/mcp", "/mcp/", "/api/data/mcp")
+
+
+_SEARCH_UP = {"at": 0.0, "ok": None}
+
+
+def search_up() -> bool:
+    """Whether the search service answers (asked at most every 30 s), for the admin dashboard."""
+    if time.time() - _SEARCH_UP["at"] > 30:
+        try:
+            with urllib.request.urlopen(SEARCH_API + "/llms.txt", timeout=3) as r:
+                _SEARCH_UP["ok"] = r.status == 200
+        except Exception:   # noqa: BLE001
+            _SEARCH_UP["ok"] = False
+        _SEARCH_UP["at"] = time.time()
+    return bool(_SEARCH_UP["ok"])
 
 
 def main_argument(route: str, query: str) -> str:
@@ -1123,6 +1167,8 @@ def program(agent: str) -> str:
     m = AGENT_NAMES.search(agent)
     if m:
         return m.group(1)
+    if agent.startswith("Mozilla/"):
+        return "a browser"
     return agent.split(" ")[0][:40]
 MCP_MAX_BODY = 1_000_000
 # MCP revisions with the initialize handshake; the later ones (2026-07-28 on) stand each request alone

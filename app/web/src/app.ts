@@ -425,7 +425,7 @@ async function openAuthor(id: string, mapOnly = false, kind: "author" | "institu
   drawTopicSpots(d, here);
   renderAuthor(box, d, { row, go, focusGroup, url: () => here, listUrl: here,
                          at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt, more: counted(moreOfAuthor(id, kind)) });
-  track(kind, { works: d.person.works, groups: d.groups.length });
+  track(kind, { id, name: d.person.name, works: d.person.works, groups: d.groups.length });
   focusTitle(box.querySelector("h1"));
   restoreScroll();
 }
@@ -536,7 +536,7 @@ async function openWork(ref: string) {
   }
   if (run !== workRun) return;
   document.title = `${d.title} · ScienceMadeReadable`;
-  track("open", { doi: d.doi ?? d.id, src: "work" });
+  track("open", { doi: d.doi ?? d.id, src: "work", title: d.title });
   remember({ kind: "work", label: d.title, url: `?work=${encodeURIComponent(d.id)}` });
   const deps = studyDeps(run);
   renderStudy(box, d, deps);
@@ -735,7 +735,7 @@ async function openPaper(id: string) {
     return;
   }
   document.title = `${paper.title} · ScienceMadeReadable`;
-  track("open", { doi: paper.doi });
+  track("open", { doi: paper.doi, title: paper.title });
   remember({ kind: "work", label: `${paper.title} (in plain words)`, url: location.search });
   setHere(null);
   setWalk([], []);

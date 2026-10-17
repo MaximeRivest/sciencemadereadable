@@ -21,6 +21,9 @@ import json
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from admin import without_site_checks  # noqa: E402
+
 import matplotlib
 
 matplotlib.use("Agg")
@@ -40,20 +43,6 @@ for f in sorted(STATS.glob("events-*.jsonl")):
             pass
 events.sort(key=lambda e: e["at"])
 
-
-def without_site_checks(events: list[dict]) -> list[dict]:
-    """The site check (tools/check_site.py, run at every publish) browses like a very busy visitor: a 1280-px
-    window (counted as 1300) and 40+ pages in a day. Since Oct 17, 2026 it sends Global Privacy Control and is
-    not counted at all; before, its visitor-days are recognised by that pattern and left out here."""
-    views, wide = collections.Counter(), set()
-    for e in events:
-        key = (dt.date.fromtimestamp(e["at"]), e["v"])
-        if e["t"] == "view":
-            views[key] += 1
-            if e.get("w") == 1300:
-                wide.add(key)
-    checks = {k for k in wide if views[k] >= 40}
-    return [e for e in events if (dt.date.fromtimestamp(e["at"]), e["v"]) not in checks]
 
 
 events = without_site_checks(events)
