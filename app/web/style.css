@@ -516,6 +516,10 @@ body:not([data-view="work"]) .you-are-here { display: none; }
 .trail a[data-kind="author"], .trail a[data-kind="institution"] { font-style: italic; }
 .trail-here { color: var(--faint); }
 .st { margin-top: 18px; }
+.st-hello { margin: 0 0 8px; padding: 12px 16px; border-radius: 14px; background: var(--accent-soft); color: var(--ink);
+  font-size: 14.5px; line-height: 1.55; }
+.st-hello button { margin-left: 6px; padding: 2px 12px; font-size: 13.5px; border-color: color-mix(in oklab, var(--accent) 35%, transparent);
+  background: none; color: var(--accent); }
 .st-kicker { margin: 0; font: 13.5px/1.5 var(--sans); color: var(--faint); }
 .st-type { font-weight: 600; font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; }
 .st-type[title]:not([title=""]) { cursor: help; }

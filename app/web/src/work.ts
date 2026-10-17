@@ -153,9 +153,23 @@ export function renderStudy(box: HTMLElement, d: any, deps: Deps) {
     </article>
     <p class="you-are-here">You are here, on the map of science: blue, what it builds on; gold, what cites it.<br>Click the map to look around.</p>`;
   wire(box, deps);
-  renderTrail(box.querySelector(".trail")!, deps.go, `?work=${encodeURIComponent(d.id)}`);
+  const trail = box.querySelector<HTMLElement>(".trail")!;
+  renderTrail(trail, deps.go, `?work=${encodeURIComponent(d.id)}`);
+  if (trail.hidden) welcome(trail);       // the first page of a visit (often a shared link): say what this page is
   facts(box, d, null);
   topicsFallback(box, d, deps);      // keywords right away; replaced by the field maps holding it once known
+}
+
+/** Once, for someone who arrives here first: what this page is and that everything on it leads somewhere. */
+function welcome(at: HTMLElement) {
+  try { if (localStorage.getItem("smr:hello-study")) return; } catch { return; }
+  const p = document.createElement("p");
+  p.className = "st-hello";
+  p.innerHTML = `<b>New here?</b> This page is about one scientific study: who did it, what they found, where it fits in ` +
+    `its field, and which studies it builds on and inspired. Every name, place, topic and title leads on: follow ` +
+    `whatever catches your eye. <button type="button" aria-label="Got it, hide this">Got it</button>`;
+  p.querySelector("button")!.onclick = () => { try { localStorage.setItem("smr:hello-study", "1"); } catch { /* fine */ } p.remove(); };
+  at.after(p);
 }
 
 /** Everything the data API knows around the study (authors, organisations, citations, field maps). */
