@@ -723,7 +723,7 @@ body.topics-mode #readable-only { display: none; }
    screens: one column, the globe a small button as on the results page. */
 body.topics-mode #results-view .search-opts, body.topics-mode #results-view .search-tips { display: none; }
 body.topics-dash #results { max-width: none; }
-.tv { --tv-s: clamp(280px, min(31vw, 100dvh - 430px), 450px); display: flex; flex-direction: column; gap: 18px; }
+.tv { --tv-s: clamp(280px, min(31vw, 100dvh - 450px), 450px); display: flex; flex-direction: column; gap: 18px; }
 .tv-left { position: relative; display: flex; flex-direction: column; min-width: 0; }
 .tv-globe { display: none; }
 .tv-bar { display: flex; align-items: center; gap: 12px; min-height: 34px; margin-bottom: 6px; font-size: 13.5px; }
@@ -788,12 +788,18 @@ body.topics-dash #results { max-width: none; }
 .tov-head.tov-fill[aria-pressed="true"], .tov-s[aria-pressed="true"] { background: color-mix(in srgb, var(--g) 40%, var(--paper)); }
 .tov-g.z .tov-head[aria-pressed="true"] { background: color-mix(in srgb, var(--g) 45%, var(--paper)); }
 
-.tv-about { min-width: 0; }
+/* under the globe: the cloud's row, then the text's (heights set by overview.ts: the longest text of the map) */
+.tv-cloud { min-width: 0; min-height: var(--tv-cloud, auto); display: flex; flex-direction: column; justify-content: center; }
+.tv-cloud .tg-cloud { margin: 0 auto 6px; }
+.tv-text { min-width: 0; height: var(--tv-text, auto); display: flex; flex-direction: column; justify-content: flex-end;
+           overflow: hidden; }
 .tv-h { font: 600 20px/1.3 var(--serif); margin: 0; display: flex; gap: 10px; align-items: baseline; }
-.tv-about .tg-meta { margin: 2px 0 6px; }
-.tv-about .tg-about { font-size: 15px; }
-.tv-about .tg-cloud { margin: 10px 0 6px; }
+.tv-h .tg-chip { align-self: center; }
+.tv-text .tg-meta { margin: 2px 0 0; font-size: 13px; }
+.tv-text .tg-about { font-size: 15px; margin: 0 0 10px; }
+.tv-text .tg-about.cut { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
 .tv-legend { font-size: 12px; color: var(--faint); margin: 0; text-align: center; }
+.tv-probe { position: absolute; left: -9999px; top: 0; visibility: hidden; pointer-events: none; }
 .tv-read { min-width: 0; display: flex; flex-direction: column; }
 .tv-read-h { display: flex; gap: 8px; align-items: center; font: 400 14px/1.3 var(--sans); color: var(--muted); margin: 0 0 8px;
              min-width: 0; }
@@ -806,13 +812,15 @@ body.topics-dash #results { max-width: none; }
   body.topics-dash[data-view="results"] #map { --s: var(--tv-s, 400px); left: var(--tv-x, calc(100vw - 480px)); top: var(--tv-y, 90px); }
   body.topics-dash footer { display: none; }
   body.topics-dash #results-view { padding-top: 4px; }
-  .tv { display: grid; grid-template-columns: minmax(0, 1fr) var(--tv-s); grid-template-rows: var(--tv-s) minmax(0, 1fr);
-        grid-template-areas: "left globe" "read about"; gap: 34px 32px; height: calc(100dvh - var(--tv-top, 90px) - 14px);
-        min-height: 560px; }
+  .tv { display: grid; grid-template-columns: minmax(0, 1fr) var(--tv-s);
+        grid-template-rows: var(--tv-s) minmax(0, 1fr) var(--tv-text, auto);
+        grid-template-areas: "left globe" "read cloud" "read text"; gap: 14px 32px;
+        height: calc(100dvh - var(--tv-top, 90px) - 14px); min-height: 560px; }
   .tv-left { grid-area: left; }
   .tv-globe { display: block; grid-area: globe; }
-  .tv-about { grid-area: about; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
-  .tv-read { grid-area: read; min-height: 0; }
+  .tv-cloud { grid-area: cloud; min-height: 0; margin-top: 22px; overflow: hidden; }
+  .tv-text { grid-area: text; }
+  .tv-read { grid-area: read; min-height: 0; margin-top: 22px; }
   .tov-map { flex: 1; min-height: 0; aspect-ratio: auto; }
   .tv-read .tg-panel { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin-top: 4px;
                        padding-right: 6px; border-top: 1px solid var(--line); }

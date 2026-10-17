@@ -2,7 +2,8 @@
  * A topic map on one screen. Top left, the field as boxes: each research group a box sized by its studies, its
  * subgroups the boxes inside it (the data API makes them with the map). Top right, the map of science (the page's
  * own globe, placed over an empty slot here). Under the globe, what the box pointed at (or picked) is about: its
- * name, description and word cloud; under the boxes, the picked one's reading lists.
+ * word cloud, then its description, name and size at the bottom, in rows of fixed size; under the boxes, the
+ * picked one's reading lists.
  *
  * Pointing at a box previews it (the globe lights its studies, the panel under the globe shows its words); clicking
  * keeps it, and a group with subgroups zooms in: its box grows to fill the space while its subgroups spread out to
@@ -100,13 +101,14 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
     `<div class="tv-info" id="tv-info" role="region" aria-label="About this map" hidden></div>` +
     `<div class="tov-map" role="group"></div></div>` +
     `<div class="tv-globe" aria-hidden="true"></div>` +
-    `<section class="tv-about" aria-label="What it is about"></section>` +
+    `<section class="tv-cloud" aria-label="Its words"></section>` +
+    `<section class="tv-text" aria-label="What it is about" aria-live="polite"></section>` +
     `<section class="tv-read" aria-label="Reading lists"></section>`;
   const $ = <T extends HTMLElement>(s: string) => tv.querySelector<T>(s)!;
-  const path = $(".tov-path"), tm = $(".tov-map"), aboutBox = $(".tv-about"), read = $(".tv-read");
+  const path = $(".tov-path"), tm = $(".tov-map"), cloudRow = $(".tv-cloud"), textRow = $(".tv-text"), read = $(".tv-read");
   const slot = $(".tv-globe"), q = $<HTMLButtonElement>(".tv-q"), info = $("#tv-info");
   info.append(parts.info);
-  if (parts.act) $(".tv-act").append(parts.act);
+  const actBox = $(".tv-act");
   const anySubs = d.groups.some((g) => g.subgroups?.length);
   tm.setAttribute("aria-label", `The groups of ${whole.toLowerCase()}${anySubs ? " and their subgroups" : ""}, sized by their studies`);
 
@@ -217,7 +219,10 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
     if (shown && same(a, shown)) return;
     shown = a;
     deps.focusGroup(a.g, a.s);
-    aboutBox.replaceChildren(aboutOf(a));
+    cloudRow.replaceChildren(cloudOf(a));
+    textRow.replaceChildren(textOf(a));
+    fitCloud();
+    fitText();
   };
   tm.onpointerleave = () => preview(null);
   tm.addEventListener("focusout", (e) => { if (!tm.contains(e.relatedTarget as Node)) preview(null); });
@@ -257,6 +262,14 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
     } else step(whole, null);
     if (g) step(`${g.id} · ${g.name}`, s ? { g: g.id, s: null } : null, "tov-crumb");
     if (s) step(`${g!.id}.${s.id} · ${s.name}`, null, "tov-crumb");
+    actBox.replaceChildren();
+    if (g && !s && !d.parent && g.size >= parts.splitFrom) {   // the picked group, on a map of its own
+      const l = actBox.appendChild(document.createElement("a"));
+      l.href = deps.url({ group: g.id });
+      l.textContent = g.subgroups?.length ? `Map group ${g.id} on its own →` : `Split group ${g.id} →`;
+      l.title = g.subgroups?.length ? `Group ${g.id} as a map of its own, grouped again` : `Group ${g.id}, split into smaller groups`;
+      l.onclick = (e) => { e.preventDefault(); deps.go(l.getAttribute("href")!); };
+    } else if (parts.act) actBox.append(parts.act);
     readingLists();
   };
 
@@ -276,40 +289,102 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
     else read.insertAdjacentHTML("beforeend", `<p class="tg-help">No reading lists for this one.</p>`);
   };
 
-  /** Under the globe: a unit's name, size, description and word cloud (made once each, kept). */
-  const made = new Map<string, HTMLElement>();
-  const aboutOf = (a: At): HTMLElement => {
-    const key = atStr(a);
-    const had = made.get(key);
-    if (had) return had;
+  /** Under the globe, two rows with sizes of their own, so pointing from box to box changes what they hold and
+   *  never where anything sits: the unit's word cloud in the middle, centred between the globe and the text; its
+   *  description, then its name and size at the very bottom. */
+  const unitOf = (a: At) => {
     const g = a.g == null ? null : d.groups.find((x) => x.id === a.g)!;
     const s = g && a.s != null ? g.subgroups!.find((x) => x.id === a.s)! : null;
-    const it = s ?? g ?? d.overall ?? { size: d.coverage.papers, years: null, cloud: undefined };
+    return { g, s, it: s ?? g ?? d.overall ?? { size: d.coverage.papers, years: null, cloud: undefined } };
+  };
+  const buildText = (a: At): HTMLElement => {
+    const { g, s, it } = unitOf(a);
     const div = document.createElement("div");
+    div.className = "tv-text-in";
     const title = s ? s.name : g ? g.name : d.question[0].toUpperCase() + d.question.slice(1);
     const where = s ? `Subgroup ${g!.id}.${s.id}` : g ? `Group ${g.id}` : d.parent ? `Group ${d.parent.group}, grouped again` :
       d.mode === "field" ? "The whole field" : "The closest studies";
-    const subs = !s && g ? g.subgroups?.length ?? 0 : 0;
-    const meta = [where, `${it.size.toLocaleString()} studies`, parts.span(it.years),
-      subs ? `${subs} subgroups` : "", !g ? `${d.groups.length} groups` : ""].filter(Boolean).join(" · ");
-    div.innerHTML = `<h3 class="tv-h">${g ? `<span class="tg-chip ${colour(g.id)}" aria-hidden="true"></span>` : ""}${esc(title)}</h3>` +
-      `<p class="tg-meta">${esc(meta)}</p>` +
-      ((s ?? g)?.label?.about ? `<p class="tg-about">${esc((s ?? g)!.label!.about!)}</p>` : "");
-    const vs = s ? `the rest of group ${g!.id}` : g ? "the other groups" : "all of science";
-    if (it.cloud?.length) {
-      div.append(parts.cloud(it.cloud, 30, vs));
-      div.insertAdjacentHTML("beforeend", `<p class="tv-legend"><span class="cl-up">blue</span>: used more than in ${vs} · ` +
-        `<span class="cl-down">red</span>: less · bigger: in more of its studies</p>`);
-    }
-    if (g && !s && !d.parent && g.size >= parts.splitFrom) {
-      const l = div.appendChild(document.createElement("a"));
-      l.className = "tg-split";
-      l.href = deps.url({ group: g.id });
-      l.textContent = subs ? `Map group ${g.id} on its own →` : `Split group ${g.id} into smaller ones →`;
-      l.onclick = (e) => { e.preventDefault(); deps.go(l.getAttribute("href")!); };
-    }
-    made.set(key, div);
+    const meta = [where, `${it.size.toLocaleString()} studies`, parts.span(it.years)].filter(Boolean).join(" · ");
+    // the whole field: the definition it was made from (in the address), if any
+    const about = g ? (s ?? g).label?.about : d.mode === "field" && !d.parent ? new URLSearchParams(location.search).get("definition") : null;
+    div.innerHTML = (about ? `<p class="tg-about" title="${esc(about)}">${esc(about)}</p>` : "") +
+      `<h3 class="tv-h">${g ? `<span class="tg-chip ${colour(g.id)}" aria-hidden="true"></span>` : ""}<span>${esc(title)}</span></h3>` +
+      `<p class="tg-meta">${esc(meta)}</p>`;
     return div;
+  };
+  const buildCloud = (a: At): HTMLElement => {
+    const { g, s, it } = unitOf(a);
+    const div = document.createElement("div");
+    div.className = "tv-cloud-in";
+    if (!it.cloud?.length) return div;
+    const vs = s ? `the rest of group ${g!.id}` : g ? "the other groups" : "all of science";
+    div.append(parts.cloud(it.cloud, 30, vs));
+    div.insertAdjacentHTML("beforeend", `<p class="tv-legend"><span class="cl-up">blue</span>: used more than in ${vs} · ` +
+      `<span class="cl-down">red</span>: less · bigger: in more of its studies</p>`);
+    return div;
+  };
+  const kept = new Map<string, [HTMLElement, HTMLElement]>();     // made once each
+  const keptOf = (a: At) => {
+    let k = kept.get(atStr(a));
+    if (!k) kept.set(atStr(a), k = [buildCloud(a), buildText(a)]);
+    return k;
+  };
+  const cloudOf = (a: At) => keptOf(a)[0], textOf = (a: At) => keptOf(a)[1];
+  const units: At[] = [{ g: null, s: null }, ...d.groups.flatMap((g) =>
+    [{ g: g.id, s: null }, ...(g.subgroups ?? []).map((x) => ({ g: g.id, s: x.id }))])];
+
+  /** The rows' sizes: the text row as tall as most texts of this map need at this width (a longer description is
+   *  cut to the lines that fit, whole in its tooltip); the cloud row the rest of the column (one column: as tall as
+   *  the tallest cloud). Measured off screen, at each change of width. */
+  let measuredAt = 0;
+  const measure = () => {
+    const w = textRow.clientWidth;
+    if (!w || w === measuredAt) return;
+    measuredAt = w;
+    const probe = tv.appendChild(document.createElement("div"));
+    probe.className = "tv-probe";
+    probe.style.width = `${w}px`;
+    const texts: number[] = [];
+    let cloudH = 0;
+    const wide = getComputedStyle(tv).display === "grid";
+    for (const a of units) {
+      const t = probe.appendChild(buildText(a));
+      texts.push(t.offsetHeight);
+      t.remove();
+      if (!wide) { const c = probe.appendChild(buildCloud(a)); cloudH = Math.max(cloudH, c.offsetHeight); c.remove(); }
+    }
+    probe.remove();
+    // wide: room for 85% of the texts whole (a few long ones would leave a gap under every other), as long as the
+    // cloud keeps ~120 px (row gaps and margin: ~50 px); one column: all of them
+    texts.sort((x, y) => x - y);
+    const need = texts[wide ? Math.floor(0.85 * (texts.length - 1)) : texts.length - 1] ?? 0;
+    const cap = wide ? Math.max(150, Math.min(300, tv.clientHeight - slot.offsetHeight - 50 - 120)) : 1e9;
+    tv.style.setProperty("--tv-text", `${Math.ceil(Math.min(need, cap))}px`);
+    tv.style.setProperty("--tv-cloud", wide ? "auto" : `${Math.ceil(cloudH)}px`);
+  };
+  /** A cloud too big for its row shrinks as a whole (fewer lines once smaller, so a few tries). */
+  const fitCloud = () => {
+    const box = cloudRow.firstElementChild as HTMLElement | null;
+    if (!box) return;
+    box.style.zoom = "1";
+    const room = cloudRow.clientHeight, tall = () => box.getBoundingClientRect().height;   // zoomed size (offsetHeight isn't)
+    for (let z = 1, i = 0; room && tall() > room && i < 8; i++) {
+      z *= Math.max(0.6, Math.min(0.97, Math.sqrt(room / tall())));
+      box.style.zoom = String(z);
+    }
+  };
+  /** A description too long for the text row keeps the whole lines that fit. */
+  const fitText = () => {
+    const box = textRow.firstElementChild as HTMLElement | null;
+    const p = box?.querySelector<HTMLElement>(".tg-about");
+    if (!box || !p) return;
+    p.style.removeProperty("-webkit-line-clamp");
+    p.classList.remove("cut");
+    const over = box.offsetHeight - textRow.clientHeight;
+    if (over <= 1) return;
+    const line = parseFloat(getComputedStyle(p).lineHeight) || 22;
+    p.classList.add("cut");
+    p.style.setProperty("-webkit-line-clamp", String(Math.max(1, Math.floor((p.offsetHeight - over) / line))));
   };
 
   // ------------------------------------------------------------------ "?"
@@ -334,8 +409,11 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
     if (r.width) for (const [k, v] of [["--tv-x", r.left], ["--tv-y", r.top], ["--tv-s", r.width]] as const)
       document.body.style.setProperty(k, `${Math.round(v)}px`);
   };
-  const ro = new ResizeObserver(() => { if (!tv.isConnected) return stop?.(); fit(); layout(false); });
-  ro.observe(tm); ro.observe(slot);
+  const ro = new ResizeObserver(() => {
+    if (!tv.isConnected) return stop?.();
+    fit(); layout(false); measure(); fitCloud(); fitText();
+  });
+  ro.observe(tm); ro.observe(slot); ro.observe(textRow); ro.observe(cloudRow);
   addEventListener("resize", fit);
   stop = () => {
     ro.disconnect(); removeEventListener("resize", fit); document.removeEventListener("pointerdown", outside);
@@ -345,5 +423,6 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
   fit();
   layout(false);
   draw();
+  measure();
   show(sel);
 }
