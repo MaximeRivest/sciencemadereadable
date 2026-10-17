@@ -500,6 +500,130 @@ body:not([data-view="explore"]) #explore-ui { display: none; }
 body:not([data-view="work"]) .you-are-here { display: none; }
 @media (max-width: 1100px) { .you-are-here { display: none !important; } }
 
+/* ---------------------------------------------------------------- a study's page (work.ts)
+   One calm reading column. The head says what the study is at a glance; then its place in science and in time; the
+   lists and the walk are the details. Blue = what it builds on, gold = what cites it, everywhere (map, timeline,
+   tabs); text versions of both colours are darker so they read at 4.5:1. */
+:root { --k-ref: #6a8fd8; --k-cite: var(--gold); --k-ref-text: #3b5fae; --k-cite-text: #8a5a0e; }
+:root[data-theme="dark"] { --k-ref-text: #9db6ef; --k-cite-text: #f2b45e; }
+.trail { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--faint); margin: 0 0 6px; }
+.trail-label { font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-size: 11px; }
+.trail ol { display: flex; flex-wrap: wrap; gap: 2px 0; list-style: none; margin: 0; padding: 0; }
+.trail li { display: inline; }
+.trail li + li::before { content: "›"; margin: 0 8px; color: var(--line); color: color-mix(in oklab, var(--faint) 60%, transparent); }
+.trail a { color: var(--muted); text-decoration: none; border-bottom: 1px dotted color-mix(in oklab, var(--muted) 50%, transparent); }
+.trail a:hover { color: var(--ink); }
+.trail a[data-kind="author"], .trail a[data-kind="institution"] { font-style: italic; }
+.trail-here { color: var(--faint); }
+.st { margin-top: 18px; }
+.st-hello { margin: 0 0 8px; padding: 12px 16px; border-radius: 14px; background: var(--accent-soft); color: var(--ink);
+  font-size: 14.5px; line-height: 1.55; }
+.st-hello button { margin-left: 6px; padding: 2px 12px; font-size: 13.5px; border-color: color-mix(in oklab, var(--accent) 35%, transparent);
+  background: none; color: var(--accent); }
+.st-kicker { margin: 0; font: 13.5px/1.5 var(--sans); color: var(--faint); }
+.st-type { font-weight: 600; font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; }
+.st-type[title]:not([title=""]) { cursor: help; }
+.st-venue { font: italic 15px/1.4 var(--serif); color: var(--muted); }
+#work .st h1, #work h1.walk-title { font: 500 clamp(28px, 3.6vw, 38px)/1.2 var(--serif); margin: 10px 0 16px; letter-spacing: -.005em;
+  text-wrap: balance; }
+#work h1.walk-title { font-size: clamp(22px, 2.6vw, 28px); }
+#work h1.walk-title a { color: inherit; text-decoration-color: var(--line); text-underline-offset: 5px; }
+.st-authors { font-size: 15.5px; line-height: 1.7; color: var(--ink); }
+.st-au { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); white-space: nowrap; }
+a.st-au:hover { color: var(--accent); border-color: currentColor; }
+.st-authors sup, .st-orgs sup { font-size: 10.5px; color: var(--faint); margin-left: 1px; font-feature-settings: "tnum"; }
+.st-orgs { margin-top: 8px; font-size: 13.5px; line-height: 1.75; color: var(--muted); }
+.st-orgs a { color: var(--muted); text-decoration: none; border-bottom: 1px dotted var(--line); }
+.st-orgs a:hover { color: var(--accent); border-color: currentColor; }
+.st-orgs sup { margin: 0 2px 0 0; }
+.st-cc, .st-sep { color: var(--faint); }
+.st-lists .st-h { margin-top: 0; }
+.st-from { font-weight: 600; color: var(--faint); margin-right: 2px; }
+.st-more { border: 0; background: none; padding: 0; color: var(--accent); font-size: inherit; text-decoration: underline;
+  text-underline-offset: 3px; text-decoration-color: color-mix(in oklab, var(--accent) 40%, transparent); }
+.st-act { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 10px; margin-top: 22px; }
+.st-act .btn, .st-walk .btn { display: inline-block; border-radius: 999px; padding: 10px 20px; font-weight: 600; font-size: 15px;
+  text-decoration: none; background: var(--accent); color: var(--on-accent); border: 1px solid var(--accent); }
+.st-act .btn:hover { filter: brightness(1.08); }
+.st-act .btn.ghost, .st-walk .btn.ghost { background: none; color: var(--accent); border-color: var(--line); font-weight: 500; }
+.st-act .btn.ghost:hover, .st-walk .btn.ghost:hover { border-color: var(--accent); }
+.st-note { flex-basis: 100%; font-size: 13.5px; color: var(--faint); margin-top: 2px; }
+.st .w-retracted { margin: 16px 0 0; }
+/* at a glance: a few numbers, each explained when pointed at */
+.st-facts { display: flex; flex-wrap: wrap; gap: 10px; margin: 28px 0 0; padding: 0; }
+.st-facts:empty { display: none; }
+.st-fact { flex: 1 1 110px; min-width: 0; padding: 12px 14px 11px; border: 1px solid var(--line); border-radius: 14px;
+  background: var(--card); cursor: help; }
+.st-fact b { display: block; font: 500 24px/1.1 var(--serif); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.st-fact > span { display: block; font-size: 12.5px; color: var(--faint); margin-top: 3px; }
+.st-fact-word { display: block; font: 500 16px/1.25 var(--serif); white-space: normal; padding-top: 4px; }
+.st-fact b:has(.st-fact-word) { white-space: normal; }
+/* the abstract: a comfortable measure */
+.st-label { font: 600 12.5px/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); margin: 40px 0 0; }
+.st-abs-text { font: 18.5px/1.7 var(--serif); margin-top: 14px; max-width: 66ch; hyphens: auto; }
+.st-abs-note { font-size: 13px; color: var(--faint); margin: 10px 0 0; }
+/* section heads: a title and one plain sentence of what it shows */
+.st-h { font: 500 25px/1.25 var(--serif); margin: 52px 0 6px; }
+.st-sub { color: var(--muted); font-size: 14.5px; line-height: 1.55; margin: 0 0 14px; max-width: 64ch; }
+.st-sub2 { margin-top: 18px; }
+.st-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.st-chip { display: inline-block; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--card);
+  color: var(--ink); text-decoration: none; font-size: 14px; transition: border-color .15s, background .15s; }
+.st-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+/* where it belongs: the field map's group, as a card that opens it */
+.st-map { display: block; padding: 16px 18px; border: 1px solid var(--line); border-radius: 16px; background: var(--card);
+  color: var(--ink); text-decoration: none; margin-bottom: 10px; transition: border-color .15s, transform .15s var(--ease), box-shadow .15s; }
+.st-map:hover { border-color: var(--accent); box-shadow: 0 8px 28px rgba(40, 60, 40, .08); transform: translateY(-1px); }
+.st-map-lead { display: block; font-size: 14px; color: var(--muted); }
+.st-map-lead b { color: var(--ink); font-weight: 600; }
+.st-map-path { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin-top: 6px; font: 17px/1.35 var(--serif); color: var(--muted); }
+.st-map-path .here { color: var(--ink); font-size: 19px; }
+.st-map-sep { color: var(--faint); }
+.st-map-about { display: block; margin-top: 8px; font-size: 14.5px; line-height: 1.55; color: var(--muted); }
+.st-map-go { display: block; margin-top: 10px; font-size: 14px; font-weight: 600; color: var(--accent); }
+.st-more-maps summary { cursor: pointer; color: var(--accent); font-size: 14px; margin: 4px 0 10px; }
+/* its place in time */
+.st-svg-wrap { position: relative; }
+.st-svg { width: 100%; height: auto; display: block; overflow: visible; }
+.st-svg .axis { stroke: var(--line); stroke-width: 1; }
+.st-svg .tick { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4; opacity: .8; }
+.st-svg .tick-t { font: 11px var(--sans); fill: var(--faint); text-anchor: middle; }
+.st-svg .now-line { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 3 3; opacity: .35; }
+.st-svg .d-ref, .st-svg .d-cite { cursor: pointer; stroke: var(--paper); stroke-width: 1; opacity: .78; transition: opacity .15s, r .15s; }
+.st-svg .d-ref { fill: var(--k-ref); } .st-svg .d-cite { fill: var(--k-cite); }
+.st-svg .d-ref:hover, .st-svg .d-cite:hover { opacity: 1; r: 6.5; stroke: var(--ink); }
+.st-svg .b-ref { fill: var(--k-ref); opacity: .55; } .st-svg .b-cite { fill: var(--k-cite); opacity: .6; }
+.st-svg .d-self { fill: var(--paper); stroke: var(--ink); stroke-width: 3; }
+.st-svg .self-t { font: 600 12px var(--sans); fill: var(--ink); }
+.k-ref-t { color: var(--k-ref-text); font-weight: 600; } .k-cite-t { color: var(--k-cite-text); font-weight: 600; }
+.st-tip { position: absolute; z-index: 5; width: 260px; transform: translateY(-100%); padding: 9px 12px; border-radius: 10px;
+  background: var(--card); border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(0, 0, 0, .12); pointer-events: none; font-size: 13px; }
+.st-tip b { display: block; font: 500 14.5px/1.3 var(--serif); color: var(--ink); }
+.st-tip span { display: block; color: var(--faint); margin-top: 3px; }
+/* the lists */
+.st-lists { margin-top: 52px; }
+.st-tabs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; }
+.st-tabs [data-dir] { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; padding: 8px 16px; color: var(--muted); }
+.st-tabs [data-dir] b { color: inherit; font-weight: 600; font-feature-settings: "tnum"; }
+.st-tabs [data-dir][aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.st-tabs [data-dir]:disabled { opacity: .45; cursor: default; }
+.st-tabs .lg { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.lg.k-cite { background: var(--k-cite); }
+.st-tabs select { margin-left: auto; font-size: 14px; }
+.st-list .hit { padding: 13px 0; }
+.st-list .hit-title, .st-walk .hit-title { font-size: 17px; }
+.st-list .more { border: 0; background: none; color: var(--accent); padding: 12px 0; font-size: 14.5px; }
+.hit.seen .hit-title { color: var(--muted); }
+.badge-seen { font-size: 11px; border-radius: 999px; padding: 0 7px; color: var(--faint); border: 1px solid var(--line); }
+.st-walk .st-walk-list { margin-bottom: 14px; }
+.st-links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13.5px; }
+@media (max-width: 700px) {
+  .st-fact { flex-basis: 40%; }
+  .st-tabs select { margin-left: 0; }
+  .st-act .btn { flex: 1 1 auto; text-align: center; }
+  .st-h { margin-top: 40px; }
+}
+
 @media (prefers-reduced-motion: reduce) { #map, .map-img, #globe { transition: none !important; } .qmark { animation: none; } }
 /* beside text the map is a control: above the (wide, transparent) content boxes, so it can be clicked */
 body[data-view="results"] #map, body[data-view="work"] #map, body[data-view="reader"] #map, body[data-view="library"] #map, body[data-view="api"] #map, body[data-view="support"] #map { z-index: 6; }
@@ -802,6 +926,31 @@ body.topics-dash #results { max-width: none; }
 /* under the globe: the cloud's row, then the text's (heights set by overview.ts: the longest text of the map) */
 .tv-cloud { min-width: 0; min-height: var(--tv-cloud, auto); display: flex; flex-direction: column; justify-content: center; }
 .tv-cloud .tg-cloud { margin: 0 auto 6px; }
+/* a cloud's words open their card (words.ts): they look like words, and say they can be clicked when pointed at */
+.tg-word { all: unset; cursor: pointer; color: inherit; font: inherit; border-radius: 4px; padding: 0 1px;
+  transition: background .12s, color .12s; }
+.tg-word:hover { background: var(--accent-soft); color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px;
+  text-underline-offset: 3px; }
+.tg-word:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+dialog.wcard { width: min(560px, calc(100vw - 32px)); max-height: min(80vh, 720px); padding: 0; border: 1px solid var(--line);
+  border-radius: 18px; background: var(--paper); color: var(--ink); box-shadow: 0 30px 80px rgba(0, 0, 0, .25); }
+dialog.wcard::backdrop { background: rgba(20, 18, 14, .35); backdrop-filter: blur(2px); }
+.wcard-in { position: relative; padding: 22px 24px 20px; display: flex; flex-direction: column; max-height: min(80vh, 720px); }
+.wcard-list { overflow: auto; min-height: 0; flex: 1 1 auto; margin: 0 -24px; padding: 0 24px; }
+.wcard-x { position: absolute; right: 12px; top: 10px; border: 0; background: none; font-size: 24px; line-height: 1; padding: 6px 10px; color: var(--muted); }
+.wcard-kicker { margin: 0 32px 0 0; font-size: 13.5px; color: var(--faint); }
+.wcard-word { font: 500 30px/1.2 var(--serif); margin: 6px 0 6px; }
+.wcard-fact { margin: 0 0 14px; color: var(--muted); font-size: 15px; }
+.wcard-note { font-size: 13.5px; color: var(--faint); margin: 0 0 6px; }
+.wcard-list ol { list-style: none; margin: 0; padding: 0; }
+.wcard-list li a { display: block; padding: 9px 0; border-bottom: 1px solid var(--line); text-decoration: none; }
+.wcard-t { display: block; font: 16px/1.35 var(--serif); color: var(--ink); }
+.wcard-list li a:hover .wcard-t { color: var(--accent); }
+.wcard-m { display: block; font-size: 12.5px; color: var(--faint); margin-top: 2px; }
+.wcard-go { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.wcard-go .btn { display: inline-block; border-radius: 999px; padding: 9px 16px; font-weight: 600; font-size: 14px; text-decoration: none;
+  background: var(--accent); color: var(--on-accent); border: 1px solid var(--accent); }
+.wcard-go .btn.ghost { background: none; color: var(--accent); border-color: var(--line); font-weight: 500; }
 .tv-text { min-width: 0; height: var(--tv-text, auto); display: flex; flex-direction: column; justify-content: flex-end;
            overflow: hidden; text-align: right; }
 .tv-h { font: 600 20px/1.3 var(--serif); margin: 0; display: flex; gap: 10px; align-items: baseline; }
