@@ -5,6 +5,7 @@
  */
 import { API } from "./jobs.ts";
 import { fieldsMade, fieldUrl, inTime, offerHtml, type FieldOffer } from "./fields.ts";
+import { fetchWord, openWord, type WordAnswer } from "./words.ts";
 import { renderOverview } from "./overview.ts";
 import type { Hit } from "./paper.ts";
 
@@ -82,6 +83,22 @@ export function moreOf(q: string, o: TopicOptions): More {
   };
 }
 
+/** A word of a unit's cloud: the unit's studies that use it (data API part=word), addressed like `moreOf`. */
+export type WordFn = (at: { g: number | null; s: number | null }, word: string) => Promise<WordAnswer | null>;
+export function wordOf(q: string, o: TopicOptions): WordFn {
+  return async (at, word) => {
+    const p = mapParams(q, o);
+    let group: number | null = o.group ?? null, read: number;
+    if (at.g == null) read = 0;
+    else if (at.s == null) read = at.g;
+    else if (group == null) { group = at.g; read = at.s; }
+    else return null;
+    if (group != null) p.set("group", String(group));
+    p.set("read", String(read)); p.set("part", "word"); p.set("word", word); p.set("limit", "8");
+    return fetchWord(p);
+  };
+}
+
 export async function fetchTopics(q: string, o: TopicOptions, signal?: AbortSignal): Promise<TopicMap | { pending: FieldPending }> {
   const p = mapParams(q, o);
   const r = await fetch(`${API}/api/data/topics?${p}`, { signal: signal ?? AbortSignal.timeout(95000) });
@@ -147,6 +164,7 @@ export interface Deps {
   offer?: FieldOffer | null;                 // paying to make a whole-field map now (fields.ts)
   paidNote?: string;                         // said once, after coming back from paying
   more?: More;                               // reading lists read further than the map gives
+  word?: WordFn;                             // a word of a cloud, clicked: the studies that use it
 }
 
 /** The whole map on one screen (overview.ts); how it was made waits behind its "?". */
@@ -210,6 +228,21 @@ export function renderTopics(box: HTMLElement, d: TopicMap, deps: Deps) {
   if (opts) searchOpts(opts, d, deps);
   wire(info);
   renderOverview(box, d, deps, { cloud, lists, span, info, act, splitFrom: d.mode === "field" ? 300 : 60 });
+  if (deps.word) {
+    const word = deps.word;
+    box.addEventListener("click", (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLButtonElement>(".tg-word");
+      const host = b?.closest<HTMLElement>("[data-at]");
+      if (!b || !host) return;
+      const [g, s] = (host.dataset.at ?? "").split(".").map((x) => x === "" || x == null ? null : Number(x));
+      const at = { g: g ?? null, s: s ?? null };
+      const g0 = at.g == null ? null : d.groups.find((x) => x.id === at.g);
+      const s0 = g0 && at.s != null ? g0.subgroups?.find((x) => x.id === at.s) : null;
+      const unit = s0 ? `“${s0.name}”` : g0 ? `“${g0.name}”` : d.mode === "field" ? "the whole field" : "these studies";
+      openWord({ word: b.textContent ?? "", share: Number(b.dataset.share), lift: Number(b.dataset.lift), vs: b.dataset.vs ?? "",
+                 unit, topic: d.parent?.name ?? d.question, fetch: () => word(at, b.textContent ?? "") }, deps.go);
+    });
+  }
 }
 
 function link(href: string, text: string, deps: Deps): HTMLAnchorElement {
@@ -259,7 +292,9 @@ export function cloud(words: CloudWord[], k: number, vs: string, cap = vs === "a
   for (const x of order) {
     const t = hi > lo ? Math.sqrt((x.share - lo) / (hi - lo)) : 1;
     const li = ul.appendChild(document.createElement("li"));
-    li.textContent = x.t;
+    const b = li.appendChild(document.createElement("button"));   // a word opens its card (words.ts)
+    b.type = "button"; b.className = "tg-word"; b.textContent = x.t;
+    b.dataset.share = String(x.share); b.dataset.lift = String(x.lift); b.dataset.vs = vs;
     li.style.fontSize = `${(12.5 + (big - 12.5) * t).toFixed(1)}px`;
     const l = Math.log(Math.max(x.lift, 1e-6));
     if (Math.abs(l) >= Math.log(1.25)) {             // grey (the text's own muted colour) within 1.25x either way

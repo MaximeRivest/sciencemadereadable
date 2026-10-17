@@ -2,7 +2,7 @@ import { MODELS, type ModelInfo } from "./models.ts";
 import type { Keys } from "./pipeline.ts";   // the pipeline itself loads on first use (own-key rewrites)
 import { lastSearch, looksExact, open, place, prefetch, search, similar, work, PaperError, type Hit, type Paper } from "./paper.ts";
 import { focus, focusGroup, focusPoint, hot, initMap, mapView, setHere, setResults, setWalk, useContext, type Line, type Spot } from "./atlas.ts";
-import { fetchTopics, moreOf, renderPending, renderTopics, TopicError, type TopicMap, type TopicOptions } from "./topics.ts";
+import { fetchTopics, moreOf, renderPending, renderTopics, TopicError, wordOf, type TopicMap, type TopicOptions } from "./topics.ts";
 import { fieldUrl, offer, renderFields, verifyPaid } from "./fields.ts";
 import { authorUrl, authorsOf, fetchAuthor, moreOfAuthor, peopleStrip, renderAuthor, renderPeople } from "./people.ts";
 import { API } from "./jobs.ts";
@@ -10,6 +10,8 @@ import { Reader } from "./reader.ts";
 import { activeJob, examples, follow, library, now, openable, savedRewrites, status, supportState, type LibraryItem, type Status, type Support } from "./jobs.ts";
 import { ProgressPanel } from "./progress.ts";
 import { track } from "./track.ts";
+import { fetchContext, fillContext, renderStudy, type Deps as StudyDeps } from "./work.ts";
+import { remember, renderTrail, seen as openedBefore } from "./trail.ts";
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
@@ -136,6 +138,7 @@ async function runSearch(q: string) {
   drawOpts(q);
   show("results");
   document.title = `${q} · ScienceMadeReadable`;
+  remember({ kind: "search", label: q, url: searchUrl(q) });
   // phones: the keyboard goes away so the results can be seen
   if (matchMedia("(pointer: coarse)").matches) (document.activeElement as HTMLElement | null)?.blur();
   const run = ++searchRun;   // a newer search makes this one's late answers moot
@@ -312,10 +315,11 @@ async function openTopics(q: string, group: number | null, mapOnly = false, fiel
     return;
   }
   live.textContent = `${d.groups.length} research groups.`;
+  remember({ kind: "topic", label: q, url: location.search.replace(/&at=[^&]*/, "") });
   drawTopicSpots(d, topicsUrl(q, o));
   paidNote = "";
   renderTopics(box, d, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q),
-                         at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt, more: counted(moreOf(q, o)) });
+                         at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt, more: counted(moreOf(q, o)), word: wordOf(q, o) });
   track("topics", { ...seen, groups: d.groups.length, cached: d.cached ? 1 : 0, sub: group ? 1 : 0 });
   restoreScroll();
   // A map made just now gets AI-written group names a few seconds later (the search service writes them in the
@@ -330,7 +334,7 @@ async function openTopics(q: string, group: number | null, mapOnly = false, fiel
       if (busy()) return;
       if (!d2 || "pending" in d2 || !d2.groups.some((g) => g.label)) { setTimeout(() => later(waits.slice(1)), waits[0]); return; }
       renderTopics(box, d2, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q),
-                              at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt, more: counted(moreOf(q, o)) });
+                              at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt, more: counted(moreOf(q, o)), word: wordOf(q, o) });
     };
     setTimeout(() => later([10000, 15000, 0]), 8000);    // after ~8 s, ~18 s and ~33 s
   }
@@ -416,6 +420,7 @@ async function openAuthor(id: string, mapOnly = false, kind: "author" | "institu
   if (run !== searchRun) return;
   box.removeAttribute("aria-busy");
   document.title = `${d.person.name} · ScienceMadeReadable`;
+  remember({ kind, label: d.person.name, url: location.search });
   live.textContent = `${d.person.name}: ${d.person.works.toLocaleString()} studies in ${d.groups.length} ${d.level}.`;
   drawTopicSpots(d, here);
   renderAuthor(box, d, { row, go, focusGroup, url: () => here, listUrl: here,
@@ -479,8 +484,12 @@ function row(h: Hit, why?: string): HTMLAnchorElement {
     (h.readable ? `<span class="badge-ok" title="Opens rewritten in plain words">Readable</span>` : "");
   const meta = [firstAuthors(h.authors), h.journal, h.year,
     h.citations ? cited(h.citations) : ""].filter(Boolean).join(" · ");
+  // studies already opened in this tab are marked wherever they are listed (trail.ts)
+  const was = h.id ? openedBefore(h.id) : false;
+  if (was) a.classList.add("seen");
   a.innerHTML = `<span class="hit-title">${esc(h.title)}</span>` +
-    `<span class="hit-meta">${esc(meta)}${badges ? ` ${badges}` : ""}</span>` +
+    `<span class="hit-meta">${esc(meta)}${badges ? ` ${badges}` : ""}` +
+    `${was ? ` <span class="badge-seen" title="You opened it earlier">seen</span>` : ""}</span>` +
     (h.abstract ? `<span class="hit-snippet">${esc(h.abstract)}</span>` : "") +
     (why ? `<span class="hit-why">${esc(why)}</span>` : "");
   a.onclick = (e) => { e.preventDefault(); go(a.getAttribute("href")!); };
@@ -498,8 +507,9 @@ function row(h: Hit, why?: string): HTMLAnchorElement {
   return a;
 }
 
-// ---------------------------------------------------------------- a study we can't rewrite (or not yet)
+// ---------------------------------------------------------------- a study's page (work.ts)
 let workRun = 0;
+const studyDeps = (run: number): StudyDeps => ({ go, row, hot, setWalk, walk: fetchWalk, current: () => run === workRun });
 async function openWork(ref: string) {
   show("work");
   const run = ++workRun;
@@ -507,95 +517,72 @@ async function openWork(ref: string) {
   box.innerHTML = `<div class="page-skeleton" aria-hidden="true"><i class="h"></i><i class="h short"></i><i></i><i></i><i class="short"></i></div>
     <p class="sr-only" role="status">Opening the study…</p>`;
   setHere(null);
+  setWalk([], []);
+  const ctx = fetchContext(ref);      // asked at once, beside the record: authors, citations, field maps
   let d: any;
   try {
     d = await work(ref);
   } catch (e: any) {
     // Not in our details (no English abstract in OpenAlex: some publishers withhold them). The citation index
-    // still knows it: a short page from the walk, and the walk itself.
-    try {
-      const w = await fetchWalk(ref), n = w.nodes[w.focus];
-      d = { id: n.id, title: plain(n.title) || "(no title)", year: n.year, type: n.type, citations: n.cited_by,
-            authorsLine: "", venue: n.subfield || n.topic || "", openalex: `https://openalex.org/${n.id}`,
-            abstract: "", smr: false, partial: true };
-    } catch {
-      if (run === workRun) box.innerHTML = `<p class="quiet center">${esc(e?.message ?? "We couldn't open this study.")}</p>`;
+    // still knows it: a short page from there.
+    const c = await ctx.catch(() => null);
+    if (run !== workRun) return;
+    if (!c?.in_index) {
+      box.innerHTML = `<p class="quiet center">${esc(e?.message ?? "We couldn't open this study.")}</p>`;
       return;
     }
+    d = { id: c.id, title: plain(c.title) || "(no title)", year: c.year, type: c.type, citations: c.citations,
+          authorsLine: "", openalex: `https://openalex.org/${c.id}`, abstract: "", smr: false, partial: true };
   }
   if (run !== workRun) return;
   document.title = `${d.title} · ScienceMadeReadable`;
   track("open", { doi: d.doi ?? d.id, src: "work" });
-  const original = d.doi ? `https://doi.org/${d.doi}` : d.url || d.openalex;
-  const readable = Boolean(d.smr);
-  const scholar = `https://scholar.google.com/scholar?q=${encodeURIComponent(d.title)}`;
-  const cta = d.partial
-    ? `<b>We only know this study through citations.</b> OpenAlex has no abstract for it in English, so we can't
-       search it by meaning or rewrite it. Its citation walk is below.<br>
-       <a class="btn" href="${esc(d.openalex)}" target="_blank" rel="noopener">See it on OpenAlex ↗</a>
-       <a class="btn ghost" href="${esc(scholar)}" target="_blank" rel="noopener">Find it on Google Scholar ↗</a>`
-    : readable
-    ? `<b>This study can be read in plain words.</b> Every finding kept, nothing dumbed down.<br>
-       <a class="btn" href="?paper=${encodeURIComponent(d.doi || d.pmcid)}" data-go>Read it in plain words</a>
-       <a class="btn ghost" href="${esc(original)}" target="_blank" rel="noopener">The original ↗</a>`
-    : `<b>We can't rewrite this one.</b> ${d.pmc_oa ? "Its licence doesn't allow an adapted copy." : "Its full text isn't openly available to us."}
-       Here is what we know about it.<br>
-       <a class="btn" href="${esc(original)}" target="_blank" rel="noopener">Read the original ↗</a>
-       ${d.pdf_url ? `<a class="btn ghost" href="${esc(d.pdf_url)}" target="_blank" rel="noopener">PDF ↗</a>` : ""}`;
-  const retracted = d.is_retracted === true || d.is_retracted === 1 || d.is_retracted === "1";
-  const where = [d.venue, d.year, d.type && d.type !== "article" ? d.type.replace("-", " ") : "",
-                 d.citations ? cited(d.citations) : ""].filter(Boolean).join(" · ");
-  box.innerHTML = `
-    <button class="back" type="button" id="w-back">← Back</button>
-    <h1>${esc(d.title)}</h1>
-    <div class="w-by">${esc(d.authorsLine)}</div>
-    <div class="w-where">${esc(where)}</div>
-    ${retracted ? `<p class="w-retracted" role="note"><b>This study was retracted.</b> The journal withdrew it, so its
-      results should not be relied on.</p>` : ""}
-    <div class="w-cta">${cta}</div>
-    ${d.abstract ? `<p class="w-abs-head">Abstract</p><div class="w-abs">${esc(d.abstract)}</div>` : ""}
-    <div class="w-links">
-      ${d.doi ? `<a href="https://doi.org/${esc(d.doi)}" target="_blank" rel="noopener">DOI ↗</a>` : ""}
-      <a href="${esc(d.openalex)}" target="_blank" rel="noopener">OpenAlex ↗</a>
-      ${d.pmcid ? `<a href="https://pmc.ncbi.nlm.nih.gov/articles/${esc(d.pmcid)}/" target="_blank" rel="noopener">PubMed Central ↗</a>` : ""}
-      ${d.license ? `<span class="quiet">Licence: ${esc(d.license)}</span>` : ""}
-    </div>
-    <section class="walk" id="walk"><h2>Its citation walk</h2><p class="loading-line">Following its citations…</p></section>
-    <div class="w-related" id="w-related"></div>
-    <p class="you-are-here">You are here, on the map of science.<br>Click the map to look around.</p>`;
-  $("#w-back").onclick = () => history.length > 1 ? history.back() : go("");
+  remember({ kind: "work", label: d.title, url: `?work=${encodeURIComponent(d.id)}` });
+  const deps = studyDeps(run);
+  renderStudy(box, d, deps);
   focusTitle(box.querySelector("h1"));
-  authorsOf(d.id).then((people) => {     // names as links to the authors' pages, where OpenAlex knows the person
-    if (run !== workRun || !people.length) return;
-    const by = box.querySelector<HTMLElement>(".w-by");
-    const fold = (x: string) => x.normalize("NFKD").toLowerCase().replace(/[^\p{L}]/gu, "");
-    if (!by) return;
-    const known = new Map(people.map((p) => [fold(p.name), p.id]));
-    const names: string[] = (d.authors as string | undefined)?.split(" | ").filter(Boolean) ?? [];
-    if (!names.length) return;
-    const link = (nm: string) => { const id = known.get(fold(nm)); return id ? `<a href="?author=${esc(id)}" data-go>${esc(nm)}</a>` : esc(nm); };
-    const shown = names.slice(0, 8), rest = names.slice(8);
-    by.innerHTML = shown.map(link).join(", ") +
-      (rest.length ? `, <button type="button" class="w-more-authors">and ${rest.length} more</button><span hidden>, ${rest.map(link).join(", ")}</span>` : "");
-    by.querySelector<HTMLButtonElement>(".w-more-authors")?.addEventListener("click", (e) => {
-      const b = e.currentTarget as HTMLButtonElement;
-      (b.nextElementSibling as HTMLElement).hidden = false;
-      b.remove();
-    });
-    for (const a of by.querySelectorAll<HTMLAnchorElement>("a[data-go]")) a.onclick = (e) => { e.preventDefault(); go(a.getAttribute("href")!); };
-  });
-  for (const a of box.querySelectorAll<HTMLAnchorElement>("a[data-go]")) a.onclick = (e) => { e.preventDefault(); go(a.getAttribute("href")!); };
+  restoreScroll();
+  place([d.id]).then((pos) => { if (run === workRun && pos[d.id]) setHere(pos[d.id]); });
+  try {
+    const c = await ctx;
+    if (run === workRun) fillContext(box, d, c, deps);
+  } catch {
+    if (run !== workRun) return;
+    // no citation data (a paper added since the snapshot): the studies closest in meaning instead
+    const rel = await similar(d.id, 6);
+    if (run !== workRun || !rel.length) return;
+    const r = box.querySelector<HTMLElement>(".st-lists")!;
+    r.hidden = false;
+    r.innerHTML = `<h2 class="st-h">Closest in meaning</h2><p class="st-sub">We have no citation data for this study yet ` +
+      `(it is newer than our copy of the citation network). These are the studies closest to it in meaning.</p>`;
+    for (const h of rel) r.appendChild(row(h));
+  }
+}
+
+/** The citation walk on its own page: its conversation, what it builds on, and what to read next; on the map too. */
+async function openWalk(ref: string) {
+  show("work");
+  const run = ++workRun;
+  const box = $("#work");
+  setHere(null);
   setWalk([], []);
-  const pos = await place([d.id]);
-  if (run === workRun && pos[d.id]) setHere(pos[d.id]);
-  const ok = await showWalk(d.id, () => run === workRun);
-  if (ok || run !== workRun) return;
-  // no walk (no references we know): the studies closest in meaning instead
-  const rel = await similar(d.id, 6);
-  if (run !== workRun || !rel.length) return;
-  const r = $("#w-related");
-  r.innerHTML = `<p class="w-abs-head">Closest in meaning</p>`;
-  for (const h of rel) r.appendChild(row(h));
+  box.innerHTML = `<nav class="trail" aria-label="Your path"></nav>
+    <p class="st-kicker"><span class="st-type">Citation walk</span></p><h1 class="walk-title">…</h1>
+    <section class="walk" id="walk"><p class="loading-line">Following its citations…</p></section>
+    <p class="you-are-here">The walk on the map of science: blue, what it builds on; gold, its conversation; green, what to read next.<br>Click the map to look around.</p>`;
+  const h1 = box.querySelector<HTMLElement>("h1")!;
+  work(ref).then((d) => {
+    if (run !== workRun) return;
+    h1.innerHTML = `From <a href="?work=${encodeURIComponent(d.id)}">${esc(d.title)}</a>`;
+    h1.querySelector("a")!.onclick = (e) => { e.preventDefault(); go(`?work=${encodeURIComponent(d.id)}`); };
+    document.title = `Citation walk: ${d.title} · ScienceMadeReadable`;
+    remember({ kind: "work", label: `Walk from: ${d.title}`, url: location.search });
+  }).catch(() => { if (run === workRun) h1.textContent = "From one study"; });
+  renderTrail(box.querySelector(".trail")!, go);
+  focusTitle(h1);
+  const ok = await showWalk(ref, () => run === workRun);
+  if (!ok && run === workRun) box.querySelector("#walk")?.insertAdjacentHTML("afterbegin",
+    `<p class="quiet">We can't walk from this study: none of its references are in our data.</p>`);
 }
 
 // ---------------------------------------------------------------- the citation walk
@@ -673,7 +660,7 @@ async function showWalk(ref: string, current: () => boolean): Promise<boolean> {
     return g;
   };
   const of = (n: number | undefined) => n ? `cited by ${n} of the ${k} ·` : "";
-  box.innerHTML = `<h2>Its citation walk</h2>
+  box.innerHTML = `<h2>Its conversation</h2>
     <p class="walk-intro">${k} studies cite much of the same work as this one: its conversation. Here is what they build on,
       and what they lead to. Open any of them to keep walking.</p>
     <div class="walk-actions"><button type="button" id="walk-map">See the walk on the map</button></div>`;
@@ -749,6 +736,7 @@ async function openPaper(id: string) {
   }
   document.title = `${paper.title} · ScienceMadeReadable`;
   track("open", { doi: paper.doi });
+  remember({ kind: "work", label: `${paper.title} (in plain words)`, url: location.search });
   setHere(null);
   setWalk([], []);
   place([paper.doi]).then((pos) => { if (paper && pos[paper.doi]) setHere(pos[paper.doi]); });
@@ -758,8 +746,8 @@ async function openPaper(id: string) {
   $("#credit").innerHTML = `Original: <a href="${esc(paper.url)}" target="_blank" rel="noopener">${esc(paper.title)}</a>, ` +
     `${esc(paper.authors)} (${esc(paper.journal)}, ${esc(paper.year)}), CC BY. The rewrite is an adaptation: the language was ` +
     `simplified by a language model and not checked by a person, so it may contain mistakes.` +
-    `<p class="walk-link"><a href="?work=${encodeURIComponent(paper.doi)}" id="to-walk">Its citation walk: what it builds on, ` +
-    `and what to read next →</a></p>`;
+    `<p class="walk-link"><a href="?work=${encodeURIComponent(paper.doi)}" id="to-walk">About this study: who wrote it, what ` +
+    `it builds on, what cites it, and what to read next →</a></p>`;
   ($("#to-walk") as HTMLAnchorElement).onclick = (e) => { e.preventDefault(); go(`?work=${encodeURIComponent(paper!.doi)}`); };
   saved = await savedRewrites(paper.doi);
   for (const m of MODELS) {
@@ -1075,8 +1063,8 @@ function route() {
       if (topicShown !== (kind === "author" ? authorUrl(id) : `?${kind}=${encodeURIComponent(id)}`)) return openAuthor(id, true, kind);
       return focus(focusPoint(), topicZoom ?? 3);
     }
-    if (q.get("work") || q.get("paper")) useContext("walk"); else if (q.get("q")) useContext("results");
-    return openExplore(q.get("work"));
+    if (q.get("work") || q.get("walk") || q.get("paper")) useContext("walk"); else if (q.get("q")) useContext("results");
+    return openExplore(q.get("work") || q.get("walk"));
   }
   if (q.get("topics")) {
     const by = q.get("by");
@@ -1089,6 +1077,7 @@ function route() {
   if (q.get("institution")) return openAuthor(q.get("institution")!, false, "institution");
   if (q.get("people")) return openPeople(q.get("people")!);
   if (q.get("work")) return openWork(q.get("work")!);
+  if (q.get("walk")) return openWalk(q.get("walk")!);
   if (q.get("paper")) return openPaper(q.get("paper")!);
   if (q.get("q")) {
     const by = q.get("by");

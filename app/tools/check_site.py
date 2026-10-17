@@ -118,17 +118,35 @@ def desktop(b, errs):
           "the whole-field map of habitat fragmentation opens")
     check(0 < pg.evaluate('window.__topicDots().n') <= 4000,
           "the whole field's studies are drawn as a sample on the globe")
+    # a word of the cloud opens its card: the group's studies that use it, and ways on (words.ts)
+    pg.click(".tv-cloud .tg-word")
+    check(until(pg, 'document.querySelectorAll("dialog.wcard[open] .wcard-list li").length >= 1', 30),
+          "a word of the cloud lists the studies that use it")
+    pg.keyboard.press("Escape")
+    check(until(pg, '!document.querySelector("dialog.wcard[open]")', 5), "Esc closes the word's card")
     pg.goto(BASE + '?q=%22gut%20microbiome%22%20autism')
     check(until(pg, 'document.querySelectorAll("#results .hit").length >= 5')
           and "contain these words" in pg.evaluate('document.querySelector(".search-how").textContent'), "exact-word search")
-    pg.goto(BASE + "?work=10.1371/journal.pone.0322636")
-    check(until(pg, 'document.querySelectorAll(".walk-group").length >= 2'), "a study's page shows its citation walk")
+    # a study's page (work.ts): authors linked, its field map's group, its timeline and lists, a taste of the walk
+    pg.goto(BASE + "?work=10.1126/science.aan8048")
+    check(until(pg, 'document.querySelectorAll(".st-authors a.st-au").length >= 5 && document.querySelectorAll(".st-orgs a").length >= 3', 30),
+          "a study's page links its authors and organisations")
+    check(until(pg, 'document.querySelectorAll(".st-map").length >= 1 && document.querySelectorAll(".st-svg circle").length >= 50', 20),
+          "it shows where it belongs (a field map's group) and its life in citations")
+    check(until(pg, 'document.querySelectorAll(".st-list .hit").length >= 10', 15), "it lists the studies citing it")
+    pg.click('.st-tabs [data-dir="references"]')
+    check(until(pg, 'document.querySelector(\'.st-tabs [data-dir="references"]\').getAttribute("aria-pressed") === "true" && '
+                'document.querySelectorAll(".st-list .hit").length >= 5', 15), "and what it builds on")
+    pg.evaluate('document.querySelector(".st-walk").scrollIntoView()')
+    check(until(pg, 'document.querySelectorAll(".st-walk .hit").length >= 1', 30), "a taste of its citation walk")
+    pg.goto(BASE + "?walk=10.1371/journal.pone.0322636")
+    check(until(pg, 'document.querySelectorAll(".walk-group").length >= 2'), "the citation walk has its own page")
     check(pg.evaluate('document.querySelectorAll("#links line").length') > 0, "the walk is drawn on the map")
     pg.screenshot(path=OUT / "walk.png")
     href = pg.evaluate('document.querySelector(".walk-group .hit").getAttribute("href")')
     pg.click(f'.walk-group .hit[href="{href}"]')
-    check(until(pg, f'location.search.includes({href[1:]!r}.split("=")[1]) && !!document.querySelector("#work h1")'),
-          "one step of the walk opens the next study")
+    check(until(pg, f'location.search.includes({href[1:]!r}.split("=")[1]) && !!document.querySelector("#work .st h1")'),
+          "one step of the walk opens the next study's page")
     pg.go_back()
     check(until(pg, 'document.querySelectorAll(".walk-group").length >= 2', 15), "back returns to the walk")
     pg.click("#walk-map")

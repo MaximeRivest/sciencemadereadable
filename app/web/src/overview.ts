@@ -394,6 +394,7 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
     const { g, s, it } = unitOf(a);
     const div = document.createElement("div");
     div.className = "tv-cloud-in";
+    div.dataset.at = atStr(a);          // which unit a clicked word belongs to (topics.ts)
     if (!it.cloud?.length) return div;
     const vs = s ? `the rest of group ${g!.id}` : g ? "the other groups" : "all of science";
     div.append(parts.cloud(it.cloud, 30, vs));
