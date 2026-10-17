@@ -32,7 +32,7 @@ export interface Group {
 /** The whole map read as one group (maps made before 2026-10-15 have none). */
 export interface Overall { size: number; years?: number[] | null; cloud?: CloudWord[]; lenses: Lenses }
 export interface TopicMap {
-  question: string; mode: string; groups: Group[]; overall?: Overall; cached?: boolean; parent?: { group: number; name: string; size: number };
+  question: string; mode: string; groups: Group[]; overall?: Overall; cached?: boolean; papers_shown?: { shown: number; of: number }; parent?: { group: number; name: string; size: number };
   papers: { id: string[]; group: number[]; sub?: number[]; between: boolean[]; x: (number | null)[]; y: (number | null)[] };
   coverage: { papers: number; with_references: number; in_groups: number; other: number; references_thin: boolean;
               without_text_vector?: number };
@@ -134,6 +134,8 @@ export function renderTopics(box: HTMLElement, d: TopicMap, deps: Deps) {
       `or cited by many of the field's own studies (which brings in classics without an abstract). Checked once against ` +
       `19 published reviews of habitat fragmentation, this way found about 9 in 10 of the studies they cite. Big groups ` +
       `are split into smaller ones.</p>` +
+      (d.papers_shown ? `<p class="quiet small">To keep the page fast, the dots are a random sample of its studies; the ` +
+        `counts, groups and reading lists cover all ${d.papers_shown.of.toLocaleString()}.</p>` : "") +
       (d.field?.credit ? `<p class="quiet small">Made sooner thanks to ${esc(d.field.credit)}.</p>` : "") +
       `<p class="quiet small"><a href="?fields" data-go>All whole-field maps</a></p>`;
   } else {
@@ -142,7 +144,7 @@ export function renderTopics(box: HTMLElement, d: TopicMap, deps: Deps) {
       `Each group's name is made of the words that set it apart (chosen automatically), and its reading lists come from ` +
       `what its own studies cite: what matters to <em>that</em> group.</p>` +
       `<p class="quiet small"><a href="?fields&ask=${encodeURIComponent(d.question)}" data-go>Map the whole field instead</a>: every ` +
-      `study on this topic, often tens of thousands, not just the closest 1,000. The first time takes about half an hour; then ` +
+      `study on this topic, from thousands to millions, not just the closest 1,000. The first time takes from half an hour to a few hours; then ` +
       `it opens at once for everyone.</p><p class="quiet small" id="field-near"></p>`;
     fieldsMade(d.question, 1).then(([m]) => {
       const el = head.querySelector("#field-near");

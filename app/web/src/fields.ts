@@ -33,9 +33,10 @@ export async function fieldsMade(q = "", limit = 200): Promise<FieldMade[]> {
   try { const r = await fetch(`${API}/api/data/fields?${p}`); return r.ok ? (await r.json()).maps : []; } catch { return []; }
 }
 export interface Suggestion { topic: string; definition?: string | null; note?: string }
-export async function suggestTopics(q: string, definition: string): Promise<Suggestion[] | null> {
+export async function suggestTopics(q: string, definition: string, narrower = false): Promise<Suggestion[] | null> {
   const p = new URLSearchParams({ q });
   if (definition) p.set("definition", definition);
+  if (narrower) p.set("narrower", "true");
   try {
     const r = await fetch(`${API}/api/data/fields/suggest?${p}`, { signal: AbortSignal.timeout(45000) });
     return r.ok ? (await r.json()).suggestions : null;
@@ -96,7 +97,7 @@ export async function renderFields(box: HTMLElement, go: (url: string) => void, 
   const url = (m: { topic: string; definition?: string | null }) => fieldUrl(m.topic, m.definition);
   const shown = q ? all.filter((m) => (m.score ?? 0) >= 0.5).slice(0, 30) : all;   // holds half the closest studies
   let h = `<h1 class="lib-title">Whole-field maps</h1>` +
-    `<p class="quiet lib-sub">Every study on a topic, often tens of thousands, sorted into research groups, each with ` +
+    `<p class="quiet lib-sub">Every study on a topic, from thousands to millions, sorted into research groups and subgroups, each with ` +
     `its reading lists. Each map is made once, then it's open to everyone.</p>` +
     `<form id="fm-find" class="fm-find" role="search"><input id="fm-q" type="search" value="${esc(q)}" ` +
     `placeholder="Find a map already made" aria-label="Find a map already made"></form>`;
@@ -120,8 +121,10 @@ export async function renderFields(box: HTMLElement, go: (url: string) => void, 
     `<input id="fm-def" maxlength="600" placeholder="What it covers, in a sentence (optional; helps when the words are ambiguous)" aria-label="What it covers">` +
     `<button class="primary-btn" type="submit">Ask for it</button></form><div id="fm-suggest" aria-live="polite"></div>` +
     `<h2 class="fm-h">How the line works</h2>` +
-    `<p class="quiet">Maps are made one at a time, in about 15 minutes each. The free line goes in the order asked, about ` +
-    `${qu?.free_per_day ?? 40} maps a day (each takes 15–25 minutes on our graphics card), at most two waiting per reader. ` +
+    `<p class="quiet">Maps are made one at a time: 15–30 minutes for most topics, an hour or more for fields of hundreds of ` +
+    `thousands of studies, a few hours for the biggest (a few million). The free line goes in the order asked, about ` +
+    `${qu?.free_per_day ?? 40} maps a day, at most two waiting per reader; a very big field waits until the smaller maps ` +
+    `asked before it are made. ` +
     `A map can be paid for to go first. Topics in the line are public, as their maps will be.</p>`;
   box.innerHTML = h;
   for (const a of box.querySelectorAll<HTMLAnchorElement>("a[data-go]"))
@@ -145,14 +148,17 @@ export async function renderFields(box: HTMLElement, go: (url: string) => void, 
   }
 }
 
-/** Before a map is asked for: five clearer versions of the topic, written by an AI; or the person's own words. */
-async function offer(el: HTMLElement, topic: string, definition: string, go: (url: string) => void) {
-  el.innerHTML = `<p class="checking">Finding clearer ways to name this topic…</p>`;
-  const list = await suggestTopics(topic, definition);
+/** Before a map is asked for: five clearer versions of the topic, written by an AI; or the person's own words.
+ *  narrower: the topic was refused as too broad, so only parts of it (and not the topic itself again). */
+export async function offer(el: HTMLElement, topic: string, definition: string, go: (url: string) => void, narrower = false) {
+  el.innerHTML = `<p class="checking">${narrower ? "Finding narrower topics inside it…" : "Finding clearer ways to name this topic…"}</p>`;
+  const list = await suggestTopics(topic, definition, narrower);
   const own = { topic, definition: definition || null, note: "exactly what you typed" };
-  const options = [...(list ?? []), own];
-  el.innerHTML = (list ? `<p class="fm-pick">Which one do you mean? A clear name and scope make a much better map.</p>`
-      : `<p class="quiet small">Suggestions aren't available right now; you can still ask with your own words.</p>`) +
+  const options = narrower ? (list ?? []) : [...(list ?? []), own];
+  el.innerHTML = (list ? `<p class="fm-pick">${narrower ? "Pick a part of it to map:"
+        : "Which one do you mean? A clear name and scope make a much better map."}</p>`
+      : `<p class="quiet small">${narrower ? "Suggestions aren't available right now: try a narrower topic of your own."
+        : "Suggestions aren't available right now; you can still ask with your own words."}</p>`) +
     `<ul class="fm-options">` + options.map((o, i) =>
       `<li><button type="button" class="fm-option" data-i="${i}"><b>${esc(o.topic)}</b>` +
       (o.note ? ` <span class="fm-note">${esc(o.note)}</span>` : "") +

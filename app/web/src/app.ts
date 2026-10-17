@@ -3,7 +3,7 @@ import type { Keys } from "./pipeline.ts";   // the pipeline itself loads on fir
 import { lastSearch, looksExact, open, place, prefetch, search, similar, work, PaperError, type Hit, type Paper } from "./paper.ts";
 import { focus, focusGroup, focusPoint, hot, initMap, mapView, setHere, setResults, setWalk, useContext, type Line, type Spot } from "./atlas.ts";
 import { fetchTopics, renderPending, renderTopics, TopicError, type TopicMap, type TopicOptions } from "./topics.ts";
-import { fieldUrl, renderFields, verifyPaid } from "./fields.ts";
+import { fieldUrl, offer, renderFields, verifyPaid } from "./fields.ts";
 import { API } from "./jobs.ts";
 import { Reader } from "./reader.ts";
 import { activeJob, examples, follow, library, now, openable, savedRewrites, status, supportState, type LibraryItem, type Status, type Support } from "./jobs.ts";
@@ -269,6 +269,17 @@ async function openTopics(q: string, group: number | null, mapOnly = false, fiel
       : err?.status === 503 ? "Many maps are being made right now. Try again in a minute."
       : err?.status === 404 && err.detail ? err.detail
       : "The map didn't come back.";
+    if (err?.status === 422 && o.field) {   // a whole-field map that cannot be made (too broad): why, and parts of it
+      box.innerHTML = `<h2 class="topics-title">This topic is too big for one map</h2><p>${esc(err.detail)}</p>` +
+        `<div id="narrower" aria-live="polite"></div>` +
+        `<p class="quiet"><a href="${esc(topicsUrl(q, { ...o, field: false }))}" id="closest">The map of the 1,000 closest studies</a> · ` +
+        `<a href="${esc(searchUrl(q))}" id="as-list">The studies as a list</a></p>`;
+      live.textContent = err.detail;
+      for (const a of box.querySelectorAll<HTMLAnchorElement>("#closest, #as-list"))
+        a.onclick = (ev) => { ev.preventDefault(); go(a.getAttribute("href")!); };
+      offer($("#narrower") as HTMLElement, q, o.definition ?? "", go, true);
+      return;
+    }
     box.innerHTML = `<p class="quiet">${esc(say)} <a href="#" id="retry">Try again</a> · <a href="${esc(searchUrl(q))}" id="as-list">See the studies as a list</a></p>`;
     live.textContent = say;
     ($("#retry") as HTMLAnchorElement).onclick = (ev) => { ev.preventDefault(); openTopics(q, group); };
