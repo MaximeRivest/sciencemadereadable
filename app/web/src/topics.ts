@@ -93,7 +93,7 @@ const LENSES: [key: string, label: string, help: (u: string) => string][] = [
   ["start_here", "Overviews", (u) => `Recent studies that cite most of this ${u}'s key works: often reviews that tie it together.`],
   ["rising", "Rising", (u) => `Works from the last five years already cited by many of this ${u}'s studies.`],
   ["distinctive", "Only here", () => "Works cited mostly by this group, not by the others: what sets it apart."],
-  ["foundations", "Foundations from outside", (u) => `What this ${u}'s studies cite most that is not itself part of the field: methods, tools and classics from neighbouring fields.`],
+  ["foundations", "From outside", (u) => `What this ${u}'s studies cite most that is not itself part of the field: methods, tools and classics from neighbouring fields.`],
   ["experts", "Experts", (u) => `The authors whose works this ${u} cites most (an h-index counted inside the ${u}: first authors get full credit, last authors half, others less).`],
   ["bridges", "Bridges", () => "Studies of this group with many links to another group."],
   ["newest", "Newest", (u) => `The latest studies in this ${u}.`],
@@ -248,7 +248,6 @@ export function lists(host: HTMLElement, key: string, lenses: Lenses, unit: stri
   const panel = host.appendChild(document.createElement("div"));
   panel.className = "tg-panel";
   panel.setAttribute("role", "tabpanel");
-  panel.tabIndex = 0;                                  // it scrolls on its own: reachable by keyboard
   panel.id = `tgp-${key}`;
   const buttons: HTMLButtonElement[] = [];
   const pick = (i: number, focus = false) => {
@@ -257,11 +256,11 @@ export function lists(host: HTMLElement, key: string, lenses: Lenses, unit: stri
     const [k, , say] = present[i];
     panel.setAttribute("aria-labelledby", buttons[i].id);
     help.textContent = say(unit);
-    panel.replaceChildren();
-    panel.scrollTop = 0;
-    if (k === "experts") for (const e of lenses.experts) panel.appendChild(expert(e, deps, unit));
-    else for (const p of lenses[k] ?? []) panel.appendChild(deps.row(asHit(p), why(k, p, names)));
+    help.title = say(unit);
+    pages.set(k === "experts" ? lenses.experts.map((e) => expert(e, deps, unit))
+      : (lenses[k] ?? []).map((p) => deps.row(asHit(p), why(k, p, names))));
   };
+  const pages = pager(host, panel, `Reading list of this ${unit}`);
   present.forEach(([k, label, say], i) => {
     const b = tabs.appendChild(document.createElement("button"));
     b.type = "button";
@@ -282,6 +281,59 @@ export function lists(host: HTMLElement, key: string, lenses: Lenses, unit: stri
     buttons.push(b);
   });
   if (present.length) pick(Math.max(0, present.findIndex(([k]) => k === want)));
+}
+
+/** Where the page has a fixed height (style.css: wide and tall enough), a list shows in pages that fit its space,
+ *  with ‹ › underneath, rather than scrolling inside the page; elsewhere it shows whole and the page scrolls. */
+const PAGED = "(min-width: 1101px) and (min-height: 680px)";
+function pager(host: HTMLElement, panel: HTMLElement, what: string) {
+  const bar = host.appendChild(document.createElement("div"));
+  bar.className = "tg-pager";
+  bar.setAttribute("role", "group");
+  bar.setAttribute("aria-label", `Pages of the ${what.toLowerCase()}`);
+  bar.innerHTML = `<button type="button" class="tg-prev" aria-label="Previous page">‹</button>` +
+    `<span class="tg-page" aria-live="polite"></span><button type="button" class="tg-next" aria-label="Next page">›</button>`;
+  const prev = bar.querySelector<HTMLButtonElement>(".tg-prev")!, next = bar.querySelector<HTMLButtonElement>(".tg-next")!;
+  const label = bar.querySelector<HTMLElement>(".tg-page")!;
+  let items: HTMLElement[] = [], starts: number[] = [0], page = 0, room = 0;
+  const show = (p: number) => {
+    page = Math.max(0, Math.min(starts.length - 1, p));
+    const a = starts[page], b = starts[page + 1] ?? items.length;
+    panel.replaceChildren(...items.slice(a, b));
+    label.textContent = `${b - a > 1 ? `${a + 1}–${b}` : a + 1} of ${items.length}`;
+    prev.disabled = page === 0;
+    next.disabled = page === starts.length - 1;
+  };
+  /** Cut the list into pages: as many rows as fit, one after another (rows differ in height). */
+  const cut = () => {
+    const first = starts[page] ?? 0;
+    room = panel.clientHeight;
+    if (!matchMedia(PAGED).matches || !room) {
+      starts = [0]; page = 0;
+      panel.replaceChildren(...items);
+      bar.hidden = true;
+      return;
+    }
+    starts = [0];
+    panel.replaceChildren();
+    items.forEach((el, i) => {
+      panel.append(el);
+      if (panel.scrollHeight > room + 1 && panel.childElementCount > 1) { starts.push(i); panel.replaceChildren(el); }
+    });
+    bar.hidden = starts.length < 2;
+    let p = 0;
+    while (p + 1 < starts.length && starts[p + 1] <= first) p++;
+    show(p);
+  };
+  prev.onclick = () => show(page - 1);
+  next.onclick = () => show(page + 1);
+  const ro = new ResizeObserver(() => {
+    if (!panel.isConnected) return ro.disconnect();
+    if (panel.clientHeight !== room) cut();
+  });
+  ro.observe(panel);
+  document.fonts?.ready.then(() => { if (panel.isConnected) cut(); });   // rows change height once the fonts are in
+  return { set(list: HTMLElement[]) { items = list; starts = [0]; page = 0; cut(); } };
 }
 
 function why(key: string, p: TopicPaper, names: Map<number, string>): string {

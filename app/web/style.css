@@ -792,8 +792,10 @@ body.topics-dash #results { max-width: none; }
 .tv-cloud { min-width: 0; min-height: var(--tv-cloud, auto); display: flex; flex-direction: column; justify-content: center; }
 .tv-cloud .tg-cloud { margin: 0 auto 6px; }
 .tv-text { min-width: 0; height: var(--tv-text, auto); display: flex; flex-direction: column; justify-content: flex-end;
-           overflow: hidden; }
+           overflow: hidden; text-align: right; }
 .tv-h { font: 600 20px/1.3 var(--serif); margin: 0; display: flex; gap: 10px; align-items: baseline; }
+.tv-text .tv-h { display: block; }
+.tv-text .tv-h .tg-chip { margin-right: 9px; vertical-align: 1px; }
 .tv-h .tg-chip { align-self: center; }
 .tv-text .tg-meta { margin: 2px 0 0; font-size: 13px; }
 .tv-text .tg-about { font-size: 15px; margin: 0 0 10px; }
@@ -805,8 +807,23 @@ body.topics-dash #results { max-width: none; }
              min-width: 0; }
 .tv-read-h > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tv-read-h b { color: var(--ink); font-weight: 600; }
-.tv-read .tg-help { margin: 8px 0 0; font-size: 13px; }
-.tv-read .tg-panel:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 2px; }
+.tv-read .tg-help { margin: 8px 0 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* compact rows, so a page holds several: the title on up to two lines, the rest on one line each */
+.tv-read .tg-tabs { gap: 4px; }
+.tv-read .tg-tabs button { font-size: 12.5px; padding: 3px 9px; min-height: 28px; }
+.tv-read .hit, .tv-read .tg-expert { padding: 9px 0; }
+.tv-read .tg-panel .hit-title { font-size: 16px; line-height: 1.3; display: -webkit-box; -webkit-box-orient: vertical;
+                                -webkit-line-clamp: 2; overflow: hidden; }
+.tv-read .hit-meta { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; margin-top: 3px; }
+.tv-read .hit-why { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; margin-top: 2px; }
+.tg-pager { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 6px;
+            font-size: 13px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.tg-pager[hidden] { display: none; }
+.tg-pager button { width: 30px; height: 30px; padding: 0; border-radius: 50%; font: 500 17px/1 var(--sans);
+                   background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.tg-pager button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.tg-pager button:disabled { opacity: .35; cursor: default; }
+@media (pointer: coarse) { .tg-pager button { width: 42px; height: 42px; } }
 
 @media (min-width: 1101px) and (min-height: 680px) {
   body.topics-dash[data-view="results"] #map { --s: var(--tv-s, 400px); left: var(--tv-x, calc(100vw - 480px)); top: var(--tv-y, 90px); }
@@ -822,8 +839,7 @@ body.topics-dash #results { max-width: none; }
   .tv-text { grid-area: text; }
   .tv-read { grid-area: read; min-height: 0; margin-top: 22px; }
   .tov-map { flex: 1; min-height: 0; aspect-ratio: auto; }
-  .tv-read .tg-panel { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin-top: 4px;
-                       padding-right: 6px; border-top: 1px solid var(--line); }
+  .tv-read .tg-panel { flex: 1; min-height: 0; overflow: hidden; margin-top: 4px; border-top: 1px solid var(--line); }
 }
 @media (pointer: coarse) { .tov-path button { padding: 10px 4px; } }
 .tg-chip { width: 12px; height: 12px; border-radius: 50%; background: var(--g); display: inline-block; flex: none; align-self: center; }
