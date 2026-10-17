@@ -108,3 +108,11 @@ code { font-size: 12px; }
   .charts, .grid { grid-template-columns: 1fr; }
   main { padding: 12px; }
 }
+
+/* signed out (the public address): only the sign-in */
+body.locked main, body.locked nav, body.locked #health { display: none; }
+.signin { max-width: 420px; margin: 60px auto; padding: 24px; text-align: center; background: var(--card);
+          border: 1px solid var(--line); border-radius: 14px; }
+.signin h2 { margin-bottom: 16px; }
+.button { display: block; margin: 8px 0; padding: 10px; border-radius: 9px; background: var(--fg); color: var(--bg);
+          text-decoration: none; font-weight: 600; }

@@ -318,3 +318,25 @@ def test_paid_traffic_waits_its_turn(door, monkeypatch):
     assert call(base, "/api/data/works/W1")[0] == 200   # the free door is not held up by paid traffic
     server.PAID_SLOTS.release()
     assert call(base, "/api/data/works/W1", headers={"Authorization": f"Bearer {k}"})[0] == 200
+
+
+def test_admin_dashboard_only_for_the_admin_account(door, monkeypatch):
+    base, fake = door
+    monkeypatch.setattr(server.admin, "data", lambda rng, health: {"range": rng, "secret": 1})
+    st, d, h = call(base, "/api/account/admin/data")                       # signed out
+    assert st == 401 and "secret" not in d and ["GitHub", "/api/account/login/github?to=admin"] in d["signin"]
+    assert "Access-Control-Allow-Origin" not in h and "frame-ancestors 'none'" in h["Content-Security-Policy"]
+    me = sign_in(base, fake)                                                 # ada@example.org: not an admin
+    st, d, _ = call(base, "/api/account/admin/data", cookie=me)
+    assert st == 403 and "secret" not in d
+    monkeypatch.setattr(accounts, "ADMINS", {"ada@example.org"})
+    st, d, h = call(base, "/api/account/admin/data?range=7d", cookie=me, headers={"Origin": SITE})
+    assert st == 200 and d == {"range": "7d", "secret": 1}
+    assert "Access-Control-Allow-Origin" not in h                           # not even the site's pages may read it
+    st, page, _ = call(base, "/api/account/admin/")
+    assert st == 200 and "app.js" in page
+    st, _, _ = call(base, "/admin/data", cookie=me)                          # the tailnet address stays closed here
+    assert st == 404
+    # signing in from the dashboard comes back to it
+    st, _, h = call(base, "/api/account/login/github?to=admin")
+    assert cookies(h)[accounts.LOGIN_COOKIE].endswith(".admin")

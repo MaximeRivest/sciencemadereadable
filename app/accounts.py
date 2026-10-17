@@ -50,7 +50,10 @@ SITE = os.environ.get("SMR_SITE", "https://sciencemadereadable.com")
 API_BASE = os.environ.get("SMR_ACCOUNT_API", "https://api.sciencemadereadable.com")
 DEV_SITE = "https://lambda.tail69222b.ts.net:18940"   # app/tools/dev.sh: tailnet only
 # where a signed-in reader may be sent back to, and the pages allowed to call the account routes with the cookie
-RETURN_TO = {"site": SITE, "dev": DEV_SITE}
+ADMIN_PAGE = f"{API_BASE}/api/account/admin"         # the usage dashboard (server.py, admin.py)
+RETURN_TO = {"site": SITE, "dev": DEV_SITE, "admin": ADMIN_PAGE}
+# who may see the usage dashboard: an account with one of these emails, verified by GitHub or Google
+ADMINS = {e.lower() for e in os.environ.get("SMR_ADMINS", "mrive052@gmail.com").split()}
 ORIGINS = {SITE, "https://www.sciencemadereadable.com", DEV_SITE}
 ORIGINS |= {o for o in os.environ.get("SMR_EXTRA_ORIGINS", "").split() if o}   # tests on another address
 
@@ -308,6 +311,13 @@ def session_user(token: str | None) -> str | None:
         return None
     row = q1("SELECT user_id FROM sessions WHERE hash=? AND expires > ?", (fingerprint(token), time.time()))
     return row["user_id"] if row else None
+
+
+def is_admin(uid: str | None) -> bool:
+    if not uid or not ADMINS:
+        return False
+    return any((r["email"] or "").lower() in ADMINS for r in
+               q("SELECT email FROM identities WHERE user_id=? AND email_verified=1", (uid,)))
 
 
 def end_session(token: str | None) -> None:

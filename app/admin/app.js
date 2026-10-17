@@ -216,7 +216,8 @@ async function load() {
   if (loading) return;
   loading = true;
   try {
-    const r = await fetch(`data?range=${range}`, { cache: "no-store" });
+    const r = await fetch(`data?range=${range}`, { cache: "no-store", credentials: "same-origin" });
+    if (r.status === 401 || r.status === 403) return signIn(await r.json());
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     D = await r.json();
     render();
@@ -227,6 +228,15 @@ async function load() {
   } finally {
     loading = false;
   }
+}
+
+/** Not signed in with the admin account (the public address): say so, and offer the sign-ins. */
+function signIn(d) {
+  document.body.classList.add("locked");
+  $("#updated").textContent = "";
+  $("#signin").hidden = false;
+  $("#signin").innerHTML = `<h2>${esc(d.error)}</h2>` + (d.signin || []).map(([label, href]) =>
+    `<a class="button" href="${esc(href)}">Sign in with ${esc(label)}</a>`).join("");
 }
 
 $("#ranges").addEventListener("click", (e) => {

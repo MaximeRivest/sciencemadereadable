@@ -15,7 +15,7 @@ api = sys.argv[1].rstrip("/") if len(sys.argv) > 1 else ""
 
 shutil.rmtree(SITE, ignore_errors=True)
 (SITE / "examples").mkdir(parents=True)
-for f in ("index.html", "style.css", "app.js", "theme.js", "terms.html", "privacy.html"):
+for f in ("index.html", "style.css", "app.js", "theme.js", "terms.html", "privacy.html", "admin.html"):
     shutil.copy(DEMO / "web" / f, SITE / f)
 shutil.copytree(DEMO / "web" / "map", SITE / "map")   # the map of science (images, field labels)
 shutil.copytree(DEMO / "web" / "chunks", SITE / "chunks", ignore=shutil.ignore_patterns("*.map"))   # code loaded on demand (content-hashed names)

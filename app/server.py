@@ -478,7 +478,8 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def end_headers(self):
-        api = self.path.startswith("/api/") or is_mcp(self.path)
+        # the admin dashboard is a page like the site's (its security headers), not an API other pages may call
+        api = (self.path.startswith("/api/") and not self.path.startswith("/api/account/admin")) or is_mcp(self.path)
         if api and self.path.startswith("/api/account"):
             # the account routes carry a cookie: only the site's own pages may read their answers
             if self.headers.get("Origin") in accounts.ORIGINS:
@@ -551,6 +552,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json(200, library())
         if u.path.startswith("/api/data/"):
             return self.data_proxy(u)
+        if u.path == "/api/account/admin" or u.path.startswith("/api/account/admin/"):
+            return self.admin(u)
         if u.path == "/api/account" or u.path.startswith("/api/account/"):
             return self.account("GET", u)
         if u.path == "/api/ask" or u.path.startswith("/api/ask/"):
@@ -607,17 +610,31 @@ class Handler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def admin(self, u):
-        """The live admin dashboard (admin.py, admin/): tailnet people only. Tailscale adds who is asking;
-        requests from the internet (Funnel) don't carry it, and the public door has no such route."""
-        if not self.headers.get("Tailscale-User-Login") or self.headers.get("Tailscale-Funnel-Request") \
-                or isinstance(self, PublicHandler):
+        """The live admin dashboard (admin.py, admin/), at two addresses:
+          /admin/ on the tailnet: Tailscale adds who is asking; requests from the internet (Funnel) don't carry it,
+                  and the public door has no such route;
+          /api/account/admin/ through the public door: for an account whose verified email is in accounts.ADMINS,
+                  signed in with the site's cookie (sent only to /api/account). The page and its script hold no
+                  data; without that account, data answers 401 (sign in) or 403 (another account)."""
+        public = u.path.startswith("/api/account/admin")
+        base = "/api/account/admin/" if public else "/admin/"
+        if not public and (not self.headers.get("Tailscale-User-Login") or self.headers.get("Tailscale-Funnel-Request")
+                           or isinstance(self, PublicHandler)):
             return self.send_json(404, {"error": "not found"})
-        if u.path in ("/stats", "/admin"):
+        if u.path in ("/stats", "/admin", "/api/account/admin"):
             self.send_response(302)
-            self.send_header("Location", "/admin/")
+            self.send_header("Location", base)
             self.send_header("Content-Length", "0")
             return self.end_headers()
-        if u.path == "/admin/data":
+        if u.path == base + "data" and public:
+            if rate_wait("admin:" + self.client(), 30):
+                return self.send_json(429, {"error": "Too many requests. Wait a minute."})
+            uid = accounts.session_user(self.cookie(accounts.SESSION_COOKIE))
+            if not accounts.is_admin(uid):
+                return self.send_json(403 if uid else 401, {
+                    "error": "This account can't see this page." if uid else "Sign in to see this page.",
+                    "signin": [[p["label"], f"/api/account/login/{p['id']}?to=admin"] for p in accounts.providers()]})
+        if u.path == base + "data":
             with JOBS_LOCK:
                 running = sum(1 for j in JOBS.values() if j["status"] == "running")
                 queued = len(QUEUE)
@@ -631,11 +648,11 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_header("Cache-Control", "no-store")
             self.end_headers()
             return self.wfile.write(body)
-        files = {"/admin/": ("index.html", "text/html"), "/admin/app.js": ("app.js", "text/javascript"),
-                 "/admin/style.css": ("style.css", "text/css")}
-        if u.path not in files:
+        files = {"": ("index.html", "text/html"), "app.js": ("app.js", "text/javascript"),
+                 "style.css": ("style.css", "text/css")}
+        if u.path[len(base):] not in files:
             return self.send_json(404, {"error": "not found"})
-        name, ctype = files[u.path]
+        name, ctype = files[u.path[len(base):]]
         body = (HERE / "admin" / name).read_bytes()
         self.send_response(200)
         self.send_header("Content-Type", ctype + "; charset=utf-8")
