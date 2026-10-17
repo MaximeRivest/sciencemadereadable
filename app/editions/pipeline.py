@@ -421,6 +421,15 @@ def pdf_input(run, config):
             "license": "Private upload — distribution permission not established",
         },
     )
+    if not (run / "caption-anchors.json").exists():
+        from caption_labels import choose_anchors
+
+        progress(run, "exporting", "Matching the original figures to the rewritten captions")
+        try:
+            choose_anchors(run)
+        except (requests.RequestException, RuntimeError, ValueError, KeyError) as e:
+            # Figures then use the punctuated-caption rule alone, as before.
+            print("Caption matching skipped:", type(e).__name__, str(e)[:200], flush=True)
     return True
 
 

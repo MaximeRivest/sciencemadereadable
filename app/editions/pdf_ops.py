@@ -84,6 +84,7 @@ def main():
             "rewrite.json",
             "extraction.json",
             "comparison.json",
+            "caption-anchors.json",
         ):
             src = Path("/job") / name
             if src.exists():

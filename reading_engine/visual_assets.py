@@ -56,6 +56,21 @@ def caption_candidates(pdf):
 
 
 def find_anchor(soup, visual):
+    if visual.get("anchor_key"):
+        # Chosen with Jev's caption labels (caption_labels.py): the paragraph
+        # whose start matches the rewritten caption, punctuated or not.
+        from caption_labels import key
+
+        matches = [
+            n
+            for n in soup.find_all(["p", "h2", "h3", "h4"])
+            if key(n.get_text(" ", strip=True)) == visual["anchor_key"]
+        ]
+        if len(matches) != 1:
+            raise ValueError(
+                f"{visual['id']}: expected one caption anchor, found {len(matches)}; inspect placement."
+            )
+        return matches[0]
     number = re.escape(visual["label"].split()[-1])
     kind = r"(?:Figure|Fig\.?)" if visual["label"].startswith("Figure") else "Table"
     pattern = re.compile(r"^" + kind + r"\s*" + number + r"[.:|](?:\s|$)", re.I)
@@ -99,6 +114,12 @@ def validate_manifest(manifest, pdf, rewrite_id, chapters):
                     "Source labels must be unique numbered figures/tables."
                 )
             labels.add(label)
+            if visual.get("anchor_key") is not None and (
+                not isinstance(visual["anchor_key"], str)
+                or not 1 <= len(visual["anchor_key"]) <= 80
+                or not re.fullmatch(r"[a-z0-9 ]+", visual["anchor_key"])
+            ):
+                raise ValueError(f"Invalid caption anchor for {vid}")
             if not visual.get("caption") or visual.get("anchor_prefix") != label + ".":
                 raise ValueError(
                     f"Caption and exact numbered anchor required for {vid}"

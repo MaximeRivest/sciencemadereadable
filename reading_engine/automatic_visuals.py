@@ -10,6 +10,7 @@ import re
 from bs4 import BeautifulSoup
 import pymupdf
 from visual_assets import caption_candidates, TABLE_PLACEHOLDER, normalized, find_anchor
+from caption_labels import LABEL, label_of
 
 
 def native_continuations(doc, page_number):
@@ -42,6 +43,28 @@ def manifest_for(run, chapters, rewrite_id):
     labelled = json.loads((Path(run) / "labelled.json").read_text())
     ledger = labelled.get("ledger", [])
     candidates = caption_candidates(pdf)
+    chosen = Path(run) / "caption-anchors.json"
+    chosen = json.loads(chosen.read_text()) if chosen.exists() else {}
+    anchors = chosen.get("anchors", {})
+    # Captions without a full stop ("Fig. 3 Distance…") are not native candidates;
+    # accept them where Jev labelled the block a caption, with the native line's
+    # position when the PDF has one (for cropping), else the whole page.
+    with pymupdf.open(pdf) as doc:
+        for label, caption in chosen.get("source_captions", {}).items():
+            if any(c["label"] == label for c in candidates):
+                continue
+            entry = {"label": label, "page": caption["page"], "text": re.sub(r"^[#*\s]+", "", caption["text"])[:400], "bbox": None}
+            for block in doc[caption["page"] - 1].get_text("dict")["blocks"]:
+                for line in block.get("lines", []):
+                    text = "".join(sp["text"] for sp in line["spans"]).strip()
+                    if label_of(text)[0] == label and not entry["bbox"]:
+                        match = LABEL.match(text)
+                        entry.update(
+                            text=text,
+                            bbox=list(line["bbox"]),
+                            source_label=text[: match.end()].strip(),
+                        )
+            candidates.append(entry)
     # Scanned pages have no native text. Keep OCR's page provenance, but use a
     # whole-page panel rather than pretending OCR supplied a reliable crop.
     for b in ledger:
@@ -72,19 +95,25 @@ def manifest_for(run, chapters, rewrite_id):
                 try:
                     hit = find_anchor(
                         soup,
-                        {"id": label, "label": label, "anchor_prefix": label + "."},
+                        {
+                            "id": label,
+                            "label": label,
+                            "anchor_prefix": label + ".",
+                            "anchor_key": anchors.get(label, {}).get("key"),
+                        },
                     )
                 except ValueError:
                     continue
                 chapter, anchor = c, hit
                 break
+            chapter_matched = chapter is not None
             if chapter is None:
                 # Preserve availability without inventing a position in the prose.
                 destination = next(
                     (
                         b.get("destination")
                         for b in ledger
-                        if re.match(r"^[#*\s]*" + re.escape(label) + r"\.", b["text"])
+                        if label_of(b["text"])[0] == label and b.get("role") == "caption"
                     ),
                     None,
                 )
@@ -97,7 +126,26 @@ def manifest_for(run, chapters, rewrite_id):
                     label
                     + ". Original source visual; shown here because its caption could not be matched confidently to the rewrite."
                 )
-                soup.append(anchor)
+                # After the paragraph that first mentions it ("… (Fig. 4)."), as
+                # in print; at the end of the section when nothing mentions it.
+                kind, figure_number = label.split()
+                mention = re.compile(
+                    (r"\b(?:Figures?|Figs?\.?)" if kind == "Figure" else r"\bTables?")
+                    + r"\s*" + figure_number + r"(?![\d.]\d)\b",
+                    re.I,
+                )
+                first = next(
+                    (
+                        n
+                        for n in soup.find_all("p")
+                        if mention.search(n.get_text(" ", strip=True))
+                    ),
+                    None,
+                )
+                if first is not None:
+                    first.insert_after(anchor)
+                else:
+                    soup.append(anchor)
                 chapter["html"] = soup.decode(formatter="minimal")
             before = after = 0
             cursor = anchor.find_previous_sibling()
@@ -145,12 +193,12 @@ def manifest_for(run, chapters, rewrite_id):
                 matches = [
                     i
                     for i, b in enumerate(ledger)
-                    if re.match(r"^[#*\s]*" + re.escape(label) + r"\.", b["text"])
+                    if label_of(b["text"])[0] == label and b.get("role") == "caption"
                 ]
                 if matches:
                     for b in ledger[matches[0] + 1 :]:
-                        if b["role"] == "heading" or re.match(
-                            r"^[#*\s]*(Table|Figure)\s+\d+\.", b["text"]
+                        if b["role"] == "heading" or (
+                            b["role"] == "caption" and label_of(b["text"])[0]
                         ):
                             break
                         if b["role"] == "table" and b["page"] not in pages:
@@ -176,6 +224,11 @@ def manifest_for(run, chapters, rewrite_id):
                     "caption": candidate["text"],
                     "chapter": chapter["id"],
                     "anchor_prefix": label + ".",
+                    **(
+                        {"anchor_key": anchors[label]["key"]}
+                        if label in anchors and chapter_matched
+                        else {}
+                    ),
                     "placeholders_before": before,
                     "placeholders_after": after,
                     "parts": parts,
