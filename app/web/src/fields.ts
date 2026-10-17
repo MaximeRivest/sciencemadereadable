@@ -21,6 +21,7 @@ export interface FieldQueue {
 export interface FieldMade {
   key: string; topic: string; definition?: string | null; papers?: number; groups?: number; made?: string;
   credit?: string | null; score?: number;
+  checked?: { by?: string; judged: number; on_topic: number; found?: number };
 }
 export interface FieldOffer { url: string; amount: number; currency: string; mode?: string }
 
@@ -88,7 +89,9 @@ function made(m: FieldMade, url: (m: FieldMade) => string): string {
   return `<li><a href="${esc(url(m))}" data-go class="fm-topic">${esc(m.topic)}</a>` +
     (m.definition ? ` <span class="quiet small">(${esc(m.definition.length > 90 ? m.definition.slice(0, 88) + "…" : m.definition)})</span>` : "") +
     `<div class="quiet small">${m.papers ? `${m.papers.toLocaleString()} studies in ${m.groups} groups · ` : ""}${esc(when)}` +
-    (m.credit ? ` · made sooner thanks to ${esc(m.credit)}` : "") + `</div></li>`;
+    (m.credit ? ` · made sooner thanks to ${esc(m.credit)}` : "") +
+    (m.checked ? ` · <span title="A larger AI (${esc(m.checked.by ?? "")}) judged ${m.checked.judged} of its studies picked at random">` +
+      `checked: ${Math.round(100 * m.checked.on_topic / Math.max(1, m.checked.judged))}% on topic</span>` : "") + `</div></li>`;
 }
 
 /** The ?fields page: the line, the maps already made (searchable), and asking for a new one. */
@@ -97,7 +100,7 @@ export async function renderFields(box: HTMLElement, go: (url: string) => void, 
   const url = (m: { topic: string; definition?: string | null }) => fieldUrl(m.topic, m.definition);
   const shown = q ? all.filter((m) => (m.score ?? 0) >= 0.5).slice(0, 30) : all;   // holds half the closest studies
   let h = `<h1 class="lib-title">Whole-field maps</h1>` +
-    `<p class="quiet lib-sub">Every study on a topic, from thousands to millions, sorted into research groups and subgroups, each with ` +
+    `<p class="quiet lib-sub">Every study on a topic, from thousands to a million, sorted into research groups and subgroups, each with ` +
     `its reading lists. Each map is made once, then it's open to everyone.</p>` +
     `<form id="fm-find" class="fm-find" role="search"><input id="fm-q" type="search" value="${esc(q)}" ` +
     `placeholder="Find a map already made" aria-label="Find a map already made"></form>`;
@@ -122,9 +125,11 @@ export async function renderFields(box: HTMLElement, go: (url: string) => void, 
     `<button class="primary-btn" type="submit">Ask for it</button></form><div id="fm-suggest" aria-live="polite"></div>` +
     `<h2 class="fm-h">How the line works</h2>` +
     `<p class="quiet">Maps are made one at a time: 15–30 minutes for most topics, an hour or more for fields of hundreds of ` +
-    `thousands of studies, a few hours for the biggest (a few million). The free line goes in the order asked, about ` +
+    `thousands of studies, up to about two hours for the biggest (up to a million studies). The free line goes in the order asked, about ` +
     `${qu?.free_per_day ?? 40} maps a day, at most two waiting per reader; a very big field waits until the smaller maps ` +
     `asked before it are made. ` +
+    `“Checked: 91% on topic” means a larger AI read 100 of the map's studies picked at random and found 91 of them ` +
+    `about the topic: broad or loosely worded topics score lower. ` +
     `A map can be paid for to go first. Topics in the line are public, as their maps will be.</p>`;
   box.innerHTML = h;
   for (const a of box.querySelectorAll<HTMLAnchorElement>("a[data-go]"))

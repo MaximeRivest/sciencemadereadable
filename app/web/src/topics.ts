@@ -144,7 +144,7 @@ export function renderTopics(box: HTMLElement, d: TopicMap, deps: Deps) {
       `Each group's name is made of the words that set it apart (chosen automatically), and its reading lists come from ` +
       `what its own studies cite: what matters to <em>that</em> group.</p>` +
       `<p class="quiet small"><a href="?fields&ask=${encodeURIComponent(d.question)}" data-go>Map the whole field instead</a>: every ` +
-      `study on this topic, from thousands to millions, not just the closest 1,000. The first time takes from half an hour to a few hours; then ` +
+      `study on this topic, from thousands to a million, not just the closest 1,000. The first time takes from half an hour to two hours; then ` +
       `it opens at once for everyone.</p><p class="quiet small" id="field-near"></p>`;
     fieldsMade(d.question, 1).then(([m]) => {
       const el = head.querySelector("#field-near");
