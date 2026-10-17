@@ -4,6 +4,7 @@ import { lastSearch, looksExact, open, place, prefetch, search, similar, work, P
 import { focus, focusGroup, focusPoint, hot, initMap, mapView, setHere, setResults, setWalk, useContext, type Line, type Spot } from "./atlas.ts";
 import { fetchTopics, moreOf, renderPending, renderTopics, TopicError, type TopicMap, type TopicOptions } from "./topics.ts";
 import { fieldUrl, offer, renderFields, verifyPaid } from "./fields.ts";
+import { authorsOf, fetchAuthor, moreOfAuthor, peopleStrip, renderAuthor, renderPeople } from "./people.ts";
 import { API } from "./jobs.ts";
 import { Reader } from "./reader.ts";
 import { activeJob, examples, follow, library, now, openable, savedRewrites, status, supportState, type LibraryItem, type Status, type Support } from "./jobs.ts";
@@ -206,6 +207,11 @@ async function runSearch(q: string) {
   for (const h of hits) list.appendChild(row(h));
   track("search", { n: hits.length, ok: readableN, src: lastSearch.by });
   restoreScroll();
+  if (!opts.readable) {                // the authors this could name, over the studies
+    const ctl = new AbortController();
+    const stop = setInterval(() => { if (run !== searchRun) { ctl.abort(); clearInterval(stop); } }, 300);
+    peopleStrip(box, q, go, ctl.signal).finally(() => clearInterval(stop));
+  }
 
   // the readable ones: the same check as opening them (licence, layout), so a promise isn't broken later
   const pm = hits.filter((h) => h.readable && h.pmcid).map((h) => h.pmcid);
@@ -241,7 +247,7 @@ async function openTopics(q: string, group: number | null, mapOnly = false, fiel
   const o: TopicOptions = { by: opts.by, since: opts.since, group, field, definition: field ? definition.trim() : "" };
   if (mapOnly) {
     const d = await fetchTopics(q, o).catch(() => null);
-    if (d && !("pending" in d)) { drawTopicSpots(d, q, o); focus(focusPoint(), topicZoom ?? 3); }
+    if (d && !("pending" in d)) { drawTopicSpots(d, topicsUrl(q, o)); focus(focusPoint(), topicZoom ?? 3); }
     return;
   }
   ($("#search-results") as HTMLInputElement).value = q;
@@ -300,7 +306,7 @@ async function openTopics(q: string, group: number | null, mapOnly = false, fiel
     return;
   }
   live.textContent = `${d.groups.length} research groups.`;
-  drawTopicSpots(d, q, o);
+  drawTopicSpots(d, topicsUrl(q, o));
   paidNote = "";
   renderTopics(box, d, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q),
                          at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt, more: moreOf(q, o) });
@@ -332,7 +338,7 @@ function rememberAt(at: string) {
   if (u.href !== location.href) history.replaceState(history.state, "", u);
 }
 
-function drawTopicSpots(d: TopicMap, q: string, o: TopicOptions) {
+function drawTopicSpots(d: TopicMap, shown: string) {
   const names = new Map(d.groups.map((g) => [g.id, g.name]));
   const subNames = new Map(d.groups.flatMap((g) => (g.subgroups ?? []).map((s) => [`${g.id}.${s.id}`, s.name] as const)));
   const spots: Spot[] = [];
@@ -357,8 +363,72 @@ function drawTopicSpots(d: TopicMap, q: string, o: TopicOptions) {
   const middle = spots.length ? { x: pct([...xs], 0.5), y: pct([...ys], 0.5) } : null;
   const spread = spots.length ? Math.max(pct([...xs], 0.9) - pct([...xs], 0.1), pct([...ys], 0.9) - pct([...ys], 0.1)) : 1;
   topicZoom = Math.min(40, Math.max(2, 0.6 / Math.max(spread, 1e-3)));
-  topicShown = topicsUrl(q, o);
+  topicShown = shown;
   setResults(spots, middle);
+}
+
+// ---------------------------------------------------------------- people (people.ts)
+/** An author's page: their work as a one-screen overview (the topic map's), their studies on the globe. */
+async function openAuthor(id: string, mapOnly = false, kind: "author" | "institution" = "author") {
+  const here = `?${kind}=${encodeURIComponent(id)}`;
+  if (mapOnly) {
+    const d = await fetchAuthor(id, kind).catch(() => null);
+    if (d) { drawTopicSpots(d, here); focus(focusPoint(), topicZoom ?? 3); }
+    return;
+  }
+  ($("#search-results") as HTMLInputElement).value = "";
+  show("results");
+  document.body.classList.add("topics-mode");
+  document.title = `${kind === "author" ? "Author" : "Institution"} · ScienceMadeReadable`;
+  const run = ++searchRun;
+  const box = $("#results");
+  const live = $("#results-live");
+  box.setAttribute("aria-busy", "true");
+  live.textContent = kind === "author" ? "Opening the author's page…" : "Opening the institution's page…";
+  box.innerHTML = `<div class="page-skeleton" aria-hidden="true"><i class="h"></i><i class="h short"></i><i></i><i></i><i class="short"></i></div>`;
+  setResults([], null);
+  let d;
+  try {
+    d = await fetchAuthor(id, kind);
+  } catch (e) {
+    if (run !== searchRun) return;
+    box.removeAttribute("aria-busy");
+    const err = e instanceof TopicError ? e : null;
+    const say = err?.status === 404 ? `We don't know this ${kind} (an OpenAlex ${kind === "author" ? "A" : "I"}-number is expected).`
+      : err?.status === 503 ? "These pages are not available right now." : "The page didn't come back.";
+    box.innerHTML = `<p class="quiet">${esc(say)} <a href="#" id="retry">Try again</a></p>`;
+    live.textContent = say;
+    ($("#retry") as HTMLAnchorElement).onclick = (ev) => { ev.preventDefault(); openAuthor(id, false, kind); };
+    return;
+  }
+  if (run !== searchRun) return;
+  box.removeAttribute("aria-busy");
+  document.title = `${d.person.name} · ScienceMadeReadable`;
+  live.textContent = `${d.person.name}: ${d.person.works.toLocaleString()} studies in ${d.groups.length} ${d.level}.`;
+  drawTopicSpots(d, here);
+  renderAuthor(box, d, { row, go, focusGroup, url: () => here, listUrl: here,
+                         at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt, more: moreOfAuthor(id, kind) });
+  track(kind, { works: d.person.works, groups: d.groups.length });
+  focusTitle(box.querySelector("h1"));
+  restoreScroll();
+}
+
+/** Everyone with a name. */
+async function openPeople(q: string) {
+  q = q.trim();
+  if (!q) return;
+  ($("#search-results") as HTMLInputElement).value = q;
+  show("results");
+  document.body.classList.add("topics-mode");
+  document.title = `People named ${q} · ScienceMadeReadable`;
+  const run = ++searchRun;
+  const box = $("#results");
+  setResults([], null);
+  const ctl = new AbortController();
+  const stop = setInterval(() => { if (run !== searchRun) { ctl.abort(); clearInterval(stop); } }, 300);
+  await renderPeople(box, q, go, ctl.signal);
+  clearInterval(stop);
+  if (run === searchRun) { focusTitle(box.querySelector("h1")); restoreScroll(); }
 }
 
 /** The same study is often indexed several times (repository copies, preprint and article): keep one per title,
@@ -483,6 +553,25 @@ async function openWork(ref: string) {
     <p class="you-are-here">You are here, on the map of science.<br>Click the map to look around.</p>`;
   $("#w-back").onclick = () => history.length > 1 ? history.back() : go("");
   focusTitle(box.querySelector("h1"));
+  authorsOf(d.id).then((people) => {     // names as links to the authors' pages, where OpenAlex knows the person
+    if (run !== workRun || !people.length) return;
+    const by = box.querySelector<HTMLElement>(".w-by");
+    const fold = (x: string) => x.normalize("NFKD").toLowerCase().replace(/[^\p{L}]/gu, "");
+    if (!by) return;
+    const known = new Map(people.map((p) => [fold(p.name), p.id]));
+    const names: string[] = (d.authors as string | undefined)?.split(" | ").filter(Boolean) ?? [];
+    if (!names.length) return;
+    const link = (nm: string) => { const id = known.get(fold(nm)); return id ? `<a href="?author=${esc(id)}" data-go>${esc(nm)}</a>` : esc(nm); };
+    const shown = names.slice(0, 8), rest = names.slice(8);
+    by.innerHTML = shown.map(link).join(", ") +
+      (rest.length ? `, <button type="button" class="w-more-authors">and ${rest.length} more</button><span hidden>, ${rest.map(link).join(", ")}</span>` : "");
+    by.querySelector<HTMLButtonElement>(".w-more-authors")?.addEventListener("click", (e) => {
+      const b = e.currentTarget as HTMLButtonElement;
+      (b.nextElementSibling as HTMLElement).hidden = false;
+      b.remove();
+    });
+    for (const a of by.querySelectorAll<HTMLAnchorElement>("a[data-go]")) a.onclick = (e) => { e.preventDefault(); go(a.getAttribute("href")!); };
+  });
   for (const a of box.querySelectorAll<HTMLAnchorElement>("a[data-go]")) a.onclick = (e) => { e.preventDefault(); go(a.getAttribute("href")!); };
   setWalk([], []);
   const pos = await place([d.id]);
@@ -966,6 +1055,13 @@ function route() {
       show("explore");
       return focus(focusPoint(), topicZoom ?? 3);
     }
+    for (const kind of ["author", "institution"] as const) {   // an author's or institution's studies on the map
+      if (!q.get(kind)) continue;
+      useContext("results");
+      show("explore");
+      if (topicShown !== `?${kind}=${encodeURIComponent(q.get(kind)!)}`) return openAuthor(q.get(kind)!, true, kind);
+      return focus(focusPoint(), topicZoom ?? 3);
+    }
     if (q.get("work") || q.get("paper")) useContext("walk"); else if (q.get("q")) useContext("results");
     return openExplore(q.get("work"));
   }
@@ -976,6 +1072,9 @@ function route() {
     opts.readable = false;
     return openTopics(q.get("topics")!, Number(q.get("group")) || null, false, q.get("scope") === "field", q.get("definition") ?? "");
   }
+  if (q.get("author")) return openAuthor(q.get("author")!);
+  if (q.get("institution")) return openAuthor(q.get("institution")!, false, "institution");
+  if (q.get("people")) return openPeople(q.get("people")!);
   if (q.get("work")) return openWork(q.get("work")!);
   if (q.get("paper")) return openPaper(q.get("paper")!);
   if (q.get("q")) {

@@ -23,6 +23,7 @@ export interface Parts {
   info: HTMLElement;                 // what "?" opens: how the map was made, its limits, other ways to see it
   act: HTMLElement | null;           // one link in the bar (map the whole field, back to the whole map...)
   splitFrom: number;                 // a group this big can be mapped again on its own
+  legend?: string;                   // under the cloud (default: the word cloud's colours)
 }
 
 interface Rect { x: number; y: number; w: number; h: number }
@@ -91,7 +92,10 @@ let stop: (() => void) | null = null;   // the shown dashboard's listeners, remo
 
 export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts: Parts) {
   stop?.();
-  const whole = d.parent ? `All of group ${d.parent.group}` : d.mode === "field" ? "Whole field" : "Whole topic";
+  const person = d.mode === "author" || d.mode === "institution";
+  const their = d.mode === "institution" ? "its" : "their";
+  const whole = d.parent ? `All of group ${d.parent.group}` : d.mode === "field" ? "Whole field" : person ? `All ${their} work` : "Whole topic";
+  const unitName = (sub: boolean) => person ? (d.level === "subfields" ? (sub ? "topic" : "subfield") : (sub ? "subfield" : "field")) : sub ? "subgroup" : "group";
   const tv = box.appendChild(document.createElement("div"));
   tv.className = "tv";
   tv.innerHTML = `<h2 class="sr-only">Research groups: ${esc(d.question)}</h2>` +
@@ -110,7 +114,8 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
   info.append(parts.info);
   const actBox = $(".tv-act");
   const anySubs = d.groups.some((g) => g.subgroups?.length);
-  tm.setAttribute("aria-label", `The groups of ${whole.toLowerCase()}${anySubs ? " and their subgroups" : ""}, sized by their studies`);
+  tm.setAttribute("aria-label", person ? `${their[0].toUpperCase()}${their.slice(1)} ${unitName(false)}s${anySubs ? ` and the ${unitName(true)}s inside` : ""}, sized by their studies`
+    : `The groups of ${whole.toLowerCase()}${anySubs ? " and their subgroups" : ""}, sized by their studies`);
 
   let sel = parse(deps.at, d);
   if (sel.g == null && !d.overall) sel = { g: d.groups[0]?.id ?? null, s: null };   // maps made before 2026-10-15
@@ -127,8 +132,8 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
     const b = tm.appendChild(document.createElement("div"));
     if (!g) {                                          // studies in no group: a grey box, nothing to read
       b.className = "tov-g tov-none g0";
-      b.title = `${size.toLocaleString()} studies in no clear group`;
-      b.innerHTML = `<div class="tov-head"><span class="tov-name">In no clear group</span> <span class="tov-n">${size.toLocaleString()}</span></div>`;
+      b.title = person ? `${size.toLocaleString()} studies with no field label, or in fields too small to show` : `${size.toLocaleString()} studies in no clear group`;
+      b.innerHTML = `<div class="tov-head"><span class="tov-name">${person ? "Other" : "In no clear group"}</span> <span class="tov-n">${size.toLocaleString()}</span></div>`;
       tiles.push({ g, size, box: b, label: b.firstElementChild as HTMLElement, kids: [] });
       continue;
     }
@@ -138,11 +143,11 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
     const head = b.appendChild(document.createElement("button"));
     head.type = "button";
     head.className = "tov-head";
-    head.innerHTML = `<span class="tov-name"><b>${g.id}</b> ${esc(g.name)}</span> <span class="tov-n">${g.size.toLocaleString()}` +
-      (subs.length ? `<span class="tov-k"> · ${subs.length} subgroups</span>` : "") + `</span>`;
-    head.title = `Group ${g.id}: ${g.name} · ${g.size.toLocaleString()} studies`;
-    head.setAttribute("aria-label", `Group ${g.id}: ${g.name}, ${g.size.toLocaleString()} studies` +
-      (subs.length ? `, in ${subs.length} subgroups` : ""));
+    head.innerHTML = `<span class="tov-name">${person ? "" : `<b>${g.id}</b> `}${esc(g.name)}</span> <span class="tov-n">${g.size.toLocaleString()}` +
+      (subs.length ? `<span class="tov-k"> · ${subs.length} ${unitName(true)}s</span>` : "") + `</span>`;
+    head.title = `${person ? "" : `Group ${g.id}: `}${g.name} · ${g.size.toLocaleString()} studies`;
+    head.setAttribute("aria-label", `${person ? `${unitName(false)[0].toUpperCase()}${unitName(false).slice(1)}` : `Group ${g.id}`}: ${g.name}, ${g.size.toLocaleString()} studies` +
+      (subs.length ? `, in ${subs.length} ${unitName(true)}s` : ""));
     head.onclick = () => pick({ g: g.id, s: null });
     head.onfocus = () => preview({ g: g.id, s: null });
     pressable.set(`${g.id}`, head);
@@ -156,8 +161,9 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
       k.type = "button";
       k.className = "tov-s";
       k.innerHTML = `<span class="tov-name">${esc(s.name)}</span> <span class="tov-n">${s.size.toLocaleString()}</span>`;
-      k.title = `${g.id}.${s.id}: ${s.name} · ${s.size.toLocaleString()} studies`;
-      k.setAttribute("aria-label", `Subgroup ${g.id}.${s.id} of group ${g.id}: ${s.name}, ${s.size.toLocaleString()} studies`);
+      k.title = `${person ? "" : `${g.id}.${s.id}: `}${s.name} · ${s.size.toLocaleString()} studies`;
+      k.setAttribute("aria-label", person ? `${s.name}, a ${unitName(true)} of ${g.name}: ${s.size.toLocaleString()} studies`
+        : `Subgroup ${g.id}.${s.id} of group ${g.id}: ${s.name}, ${s.size.toLocaleString()} studies`);
       k.onclick = () => pick({ g: g.id, s: s.id });
       k.onpointerenter = () => preview({ g: g.id, s: s.id });
       k.onpointerleave = () => preview({ g: g.id, s: null });
@@ -168,8 +174,9 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
     if (g.subgroups_other) {
       const k = inner.appendChild(document.createElement("div"));
       k.className = "tov-s tov-none";
-      k.title = `${g.subgroups_other.toLocaleString()} studies of group ${g.id} in no clear subgroup`;
-      k.innerHTML = `<span class="tov-name">no clear subgroup</span>`;
+      k.title = person ? `${g.subgroups_other.toLocaleString()} studies of ${g.name} with no ${unitName(true)} label`
+        : `${g.subgroups_other.toLocaleString()} studies of group ${g.id} in no clear subgroup`;
+      k.innerHTML = `<span class="tov-name">${person ? `no ${unitName(true)} label` : "no clear subgroup"}</span>`;
       t.kids.push({ s: null, size: g.subgroups_other, el: k });
     }
   }
@@ -328,8 +335,8 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
       b.onclick = up;
       if (!d.overall && zoom == null) { step(whole, null); } else path.append(b);
     } else step(whole, null);
-    if (g) step(`${g.id} · ${g.name}`, s ? { g: g.id, s: null } : null, "tov-crumb");
-    if (s) step(`${g!.id}.${s.id} · ${s.name}`, null, "tov-crumb");
+    if (g) step(person ? g.name : `${g.id} · ${g.name}`, s ? { g: g.id, s: null } : null, "tov-crumb");
+    if (s) step(person ? s.name : `${g!.id}.${s.id} · ${s.name}`, null, "tov-crumb");
     actBox.replaceChildren();
     if (g && !s && !d.parent && g.size >= parts.splitFrom) {   // the picked group, on a map of its own
       const l = actBox.appendChild(document.createElement("a"));
@@ -347,10 +354,10 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
     const s = g && sel.s != null ? g.subgroups!.find((x) => x.id === sel.s)! : null;
     const it = s ?? g ?? d.overall;
     if (!it) return;
-    const unit = s ? "subgroup" : g ? "group" : d.mode === "field" ? "field" : "topic";
+    const unit = s ? unitName(true) : g ? unitName(false) : person ? "whole" : d.mode === "field" ? "field" : "topic";
     const name = s ? s.name : g ? g.name : d.question;
     read.insertAdjacentHTML("beforeend", `<h3 class="tv-read-h">${g ? `<span class="tg-chip ${colour(g.id)}" aria-hidden="true"></span>` : ""}` +
-      `<span>What to read in <b>${esc(name)}</b></span></h3>`);
+      `<span>${person ? (g ? `${their[0].toUpperCase()}${their.slice(1)} work in <b>${esc(name)}</b>` : `All the work of <b>${esc(name)}</b>`) : `What to read in <b>${esc(name)}</b>`}</span></h3>`);
     const names = new Map((s ? g!.subgroups! : d.groups).map((x) => [x.id, x.name]));
     if (Object.values(it.lenses ?? {}).some((l) => l.length))
       parts.lists(read, `o${atStr(sel) || 0}`, it.lenses, unit, names, deps, lens, (k) => { lens = k; },
@@ -371,7 +378,9 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
     const div = document.createElement("div");
     div.className = "tv-text-in";
     const title = s ? s.name : g ? g.name : d.question[0].toUpperCase() + d.question.slice(1);
-    const where = s ? `Subgroup ${g!.id}.${s.id}` : g ? `Group ${g.id}` : d.parent ? `Group ${d.parent.group}, grouped again` :
+    const cap = (u: string) => u[0].toUpperCase() + u.slice(1);
+    const where = person ? (s ? `${cap(unitName(true))} of ${g!.name}` : g ? cap(unitName(false)) : `All ${their} work`)
+      : s ? `Subgroup ${g!.id}.${s.id}` : g ? `Group ${g.id}` : d.parent ? `Group ${d.parent.group}, grouped again` :
       d.mode === "field" ? "The whole field" : "The closest studies";
     const meta = [where, `${it.size.toLocaleString()} studies`, parts.span(it.years)].filter(Boolean).join(" · ");
     // the whole field: the definition it was made from (in the address), if any
@@ -388,7 +397,7 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
     if (!it.cloud?.length) return div;
     const vs = s ? `the rest of group ${g!.id}` : g ? "the other groups" : "all of science";
     div.append(parts.cloud(it.cloud, 30, vs));
-    div.insertAdjacentHTML("beforeend", `<p class="tv-legend"><span class="cl-up">blue</span>: used more than in ${vs} · ` +
+    div.insertAdjacentHTML("beforeend", parts.legend ?? `<p class="tv-legend"><span class="cl-up">blue</span>: used more than in ${vs} · ` +
       `<span class="cl-down">red</span>: less · bigger: in more of its studies</p>`);
     return div;
   };

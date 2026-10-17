@@ -13,10 +13,12 @@ export interface TopicPaper {
   citations?: number; doi?: string; pmcid?: string; readable?: boolean; in_map?: boolean; why?: string;
 }
 export interface Expert { author: string; name: string; h: number; papers_in_group: number; top: TopicPaper; latest?: TopicPaper; why: string }
+/** Someone an author publishes with (author pages, people.ts): n = papers together. */
+export interface Coauthor { author?: string; institution?: string; country?: string | null; name: string; n: number; years: [number, number]; works?: number; top: TopicPaper; latest?: TopicPaper }
 /** A word of a cloud: share = of the studies that use it (the size); lift = how many times as often as elsewhere
  *  (the other groups, or all of science for the whole topic: the colour); score = how telling it is. */
-export interface CloudWord { t: string; share: number; lift: number; score: number }
-export type Lenses = Record<string, TopicPaper[]> & { experts: Expert[] };
+export interface CloudWord { t: string; share: number; lift: number; score: number; author?: string; institution?: string }
+export type Lenses = Record<string, TopicPaper[]> & { experts: Expert[]; coauthors?: Coauthor[]; people?: Coauthor[]; partners?: Coauthor[]; _total?: Record<string, number> };
 /** A group of a group, carried by the map (the data API makes the splits with the map). */
 /** An AI-written name and description of a group (whole-field maps; search/srl_search/suggest.py). */
 export interface Label { name: string; about?: string | null; by?: string }
@@ -32,7 +34,7 @@ export interface Group {
 /** The whole map read as one group (maps made before 2026-10-15 have none). */
 export interface Overall { size: number; years?: number[] | null; cloud?: CloudWord[]; lenses: Lenses }
 export interface TopicMap {
-  question: string; mode: string; groups: Group[]; overall?: Overall; cached?: boolean; papers_shown?: { shown: number; of: number }; parent?: { group: number; name: string; size: number };
+  question: string; mode: string; level?: string; groups: Group[]; overall?: Overall; cached?: boolean; papers_shown?: { shown: number; of: number }; parent?: { group: number; name: string; size: number };
   papers: { id: string[]; group: number[]; sub?: number[]; between: boolean[]; x: (number | null)[]; y: (number | null)[] };
   coverage: { papers: number; with_references: number; in_groups: number; other: number; references_thin: boolean;
               without_text_vector?: number };
@@ -123,7 +125,14 @@ const LENSES: [key: string, label: string, help: (u: string) => string][] = [
   ["foundations", "From outside", (u) => `What this ${u}'s studies cite most that is not itself part of the field: methods, tools and classics from neighbouring fields.`],
   ["experts", "Experts", (u) => `The authors whose works this ${u} cites most (an h-index counted inside the ${u}: first authors get full credit, last authors half, others less).`],
   ["bridges", "Bridges", () => "Studies of this group with many links to another group."],
-  ["newest", "Newest", (u) => `The latest studies in this ${u}.`],
+  // author pages (people.ts): "this whole" reads as all their work
+  ["cited", "Most cited", (u) => u === "whole" ? "Their studies, the most cited first." : `Their most cited studies in this ${u}.`],
+  ["first", "As first author", (u) => u === "whole" ? "Studies they are the first author of, the most cited first." : `Studies in this ${u} they are the first author of, the most cited first.`],
+  ["newest", "Newest", (u) => u === "whole" ? "Their latest studies." : `The latest studies in this ${u}.`],
+  ["coauthors", "Co-authors", (u) => u === "whole" ? "The people they publish with most, and their most cited study together." : `The people they publish with most in this ${u}.`],
+  // institution pages
+  ["people", "People", (u) => u === "whole" ? "Its authors on the most of its studies, with their most cited one here." : `Its authors on the most of its studies in this ${u}.`],
+  ["partners", "Partners", (u) => u === "whole" ? "The other organisations on its studies: who it works with most." : `The other organisations on its studies in this ${u}.`],
 ];
 
 export interface Deps {
@@ -271,7 +280,7 @@ export function lists(host: HTMLElement, key: string, lenses: Lenses, unit: stri
   const tabs = host.appendChild(document.createElement("div"));
   tabs.className = "tg-tabs";
   tabs.setAttribute("role", "tablist");
-  tabs.setAttribute("aria-label", `Reading lists of this ${unit}`);
+  tabs.setAttribute("aria-label", unit === "whole" ? "Lists of all their work" : `Reading lists of this ${unit}`);
   const help = host.appendChild(document.createElement("p"));
   help.className = "tg-help";
   const panel = host.appendChild(document.createElement("div"));
@@ -286,15 +295,17 @@ export function lists(host: HTMLElement, key: string, lenses: Lenses, unit: stri
     panel.setAttribute("aria-labelledby", buttons[i].id);
     help.textContent = say(unit);
     help.title = say(unit);
-    const rows = (list: (TopicPaper | Expert)[]) => k === "experts"
-      ? (list as Expert[]).map((e) => expert(e, deps, unit)) : (list as TopicPaper[]).map((p) => deps.row(asHit(p), why(k, p, names)));
-    const first = (lenses[k] ?? []) as (TopicPaper | Expert)[];
-    pages.set(rows(first), further && first.length >= HEAD ? async (offset, limit) => {
+    const rows = (list: (TopicPaper | Expert | Coauthor)[]) => k === "experts"
+      ? (list as Expert[]).map((e) => expert(e, deps, unit)) : k === "coauthors" || k === "people" || k === "partners" ? (list as Coauthor[]).map((e) => coauthor(e, deps, k))
+      : (list as TopicPaper[]).map((p) => deps.row(asHit(p), why(k, p, names)));
+    const first = (lenses[k] ?? []) as (TopicPaper | Expert | Coauthor)[];
+    const total = lenses._total?.[k] ?? 0;      // author and institution pages say how long each list is
+    pages.set(rows(first), further && (first.length >= HEAD || total > first.length) ? async (offset, limit) => {
       const r = await further(k, offset, limit);
       return r ? { rows: rows(r.items), total: r.total } : null;
     } : undefined);
   };
-  const pages = pager(host, panel, `Reading list of this ${unit}`);
+  const pages = pager(host, panel, unit === "whole" ? "list of all their work" : `Reading list of this ${unit}`);
   present.forEach(([k, label, say], i) => {
     const b = tabs.appendChild(document.createElement("button"));
     b.type = "button";
@@ -436,10 +447,31 @@ function expert(e: Expert, deps: Deps, unit = "group"): HTMLElement {
   div.className = "tg-expert";
   const paper = (p: TopicPaper | undefined) => p
     ? `<a href="?work=${encodeURIComponent(p.id)}" data-go>${esc(p.title)}</a> <span class="quiet">(${p.year ?? "n.d."})</span>` : "";
-  div.innerHTML = `<span class="hit-title"><a href="https://openalex.org/${esc(e.author)}" target="_blank" rel="noopener">${esc(e.name || e.author)}</a></span>` +
+  div.innerHTML = `<span class="hit-title"><a href="?author=${esc(e.author)}" data-go>${esc(e.name || e.author)}</a></span>` +
     `<span class="hit-meta">h = ${e.h} inside this ${unit}` + (e.papers_in_group ? ` · author of ${e.papers_in_group} of its studies` : "") + `</span>` +
     `<span class="hit-why">Most cited here: ${paper(e.top)}` +
     (e.latest && e.latest.id !== e.top.id ? `<br>Latest here: ${paper(e.latest)}` : "") + `</span>`;
+  for (const a of div.querySelectorAll<HTMLAnchorElement>("a[data-go]"))
+    a.onclick = (ev) => { ev.preventDefault(); deps.go(a.getAttribute("href")!); };
+  return div;
+}
+
+/** A co-author on an author's page, or a person or partner organisation on an institution's: the name (a link to
+ *  its own page), papers together, the best one. */
+function coauthor(e: Coauthor, deps: Deps, k = "coauthors"): HTMLElement {
+  const div = document.createElement("div");
+  div.className = "tg-expert";
+  const paper = (p: TopicPaper | undefined) => p
+    ? `<a href="?work=${encodeURIComponent(p.id)}" data-go>${esc(p.title)}</a> <span class="quiet">(${p.year ?? "n.d."})</span>` : "";
+  const span = e.years[0] === e.years[1] ? `${e.years[0]}` : `${e.years[0]}–${e.years[1]}`;
+  const href = e.institution ? `?institution=${esc(e.institution)}` : `?author=${esc(e.author ?? "")}`;
+  const here = k === "coauthors" ? "together" : "here";
+  div.innerHTML = `<span class="hit-title"><a href="${href}" data-go>${esc(e.name || e.author || e.institution || "")}</a>` +
+    (e.country ? ` <span class="quiet">(${esc(e.country)})</span>` : "") + `</span>` +
+    `<span class="hit-meta">${e.n === 1 ? `1 study ${here}` : `${e.n.toLocaleString()} studies ${here}`} · ${span}` +
+    (e.works != null ? ` · ${e.works.toLocaleString()} studies in all` : "") + `</span>` +
+    `<span class="hit-why">Most cited ${here}: ${paper(e.top)}` +
+    (e.latest && e.latest.id !== e.top.id ? `<br>Latest ${here}: ${paper(e.latest)}` : "") + `</span>`;
   for (const a of div.querySelectorAll<HTMLAnchorElement>("a[data-go]"))
     a.onclick = (ev) => { ev.preventDefault(); deps.go(a.getAttribute("href")!); };
   return div;
