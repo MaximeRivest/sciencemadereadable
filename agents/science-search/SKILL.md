@@ -56,7 +56,7 @@ already connected, use them rather than curl: same data, answers ready to cite.
   `k=100` instead of several small ones, `/works` only for the papers you keep, never calls in parallel.
 - HTTP 429: wait the seconds given in the `Retry-After` header (also `retry_after` in the body), then retry.
 - 502/503 for a minute or two: a data update or a restart. Retry later.
-- Requests, including search words, appear in the server's request log, which does not record the caller's
-  address.
+- Requests, including search words, are kept in usage statistics without the caller's address
+  (https://sciencemadereadable.com/privacy.html).
 
 To point a person to a paper in a readable page: `https://sciencemadereadable.com/?work=<DOI>`.
