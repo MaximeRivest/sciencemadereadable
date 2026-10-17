@@ -27,6 +27,10 @@ OUT.mkdir(exist_ok=True)
 results: list[tuple[bool, str]] = []
 
 
+# The checker's own visits stay out of the usage counts: the page counts nothing when the browser sends
+# Global Privacy Control (track.ts).
+NOT_COUNTED = "Object.defineProperty(Navigator.prototype, 'globalPrivacyControl', { get: () => true })"
+
 def check(ok, what: str):
     results.append((bool(ok), what))
     print(("  ok   " if ok else "  FAIL ") + what, flush=True)
@@ -50,6 +54,7 @@ def zoom(pg) -> float:
 def desktop(b, errs):
     print("desktop", flush=True)
     pg = b.new_page(viewport={"width": 1280, "height": 800}, color_scheme="light")
+    pg.add_init_script(NOT_COUNTED)
     pg.on("pageerror", lambda e: errs.append(str(e)))
     pg.goto(BASE)
     check(until(pg, '!!document.querySelector("form.search.big input")', 15), "home page loads")
@@ -178,6 +183,7 @@ def desktop(b, errs):
 def phone(p, b, errs):
     print("phone", flush=True)
     c = b.new_context(**p.devices["iPhone 13"])
+    c.add_init_script(NOT_COUNTED)
     pg = c.new_page()
     pg.on("pageerror", lambda e: errs.append(str(e)))
     cdp = c.new_cdp_session(pg)
@@ -209,6 +215,7 @@ def phone(p, b, errs):
 def experience(p, b, errs):
     print("experience", flush=True)
     pg = b.new_page(viewport={"width": 1280, "height": 800}, color_scheme="light")
+    pg.add_init_script(NOT_COUNTED)
     pg.on("pageerror", lambda e: errs.append(str(e)))
     scripts: list[tuple[str, int]] = []
     pg.on("requestfinished", lambda r: r.resource_type == "script" and scripts.append((r.url, r.sizes()["responseBodySize"])))
@@ -255,6 +262,7 @@ def experience(p, b, errs):
     pg.close()
     # phone: the menu, and targets big enough for a thumb
     c = b.new_context(**p.devices["iPhone 13"])
+    c.add_init_script(NOT_COUNTED)
     pg = c.new_page()
     pg.on("pageerror", lambda e: errs.append(str(e)))
     pg.goto(BASE + "?support")
