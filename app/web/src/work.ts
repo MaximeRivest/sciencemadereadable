@@ -46,6 +46,7 @@ export interface Context {
   id: string; in_index: boolean; maps: InMap[]; year?: number | null; title?: string; type?: string | null; citations?: number;
   references_listed?: number; authors?: Author[]; authors_count?: number; institutions?: Org[];
   affiliations?: "exact" | "none"; references?: Side; cited_by?: Side;
+  source?: { id: string; name: string; type: string; works: number; h: number; publisher?: { name: string | null } | null };
 }
 
 export interface Deps {
@@ -174,6 +175,7 @@ function welcome(at: HTMLElement) {
 
 /** Everything the data API knows around the study (authors, organisations, citations, field maps). */
 export function fillContext(box: HTMLElement, d: any, c: Context, deps: Deps) {
+  venue(box, d, c, deps);
   authors(box, d, c, deps);
   facts(box, d, c);
   where(box, d, c, deps);
@@ -189,6 +191,24 @@ function wire(el: HTMLElement, deps: Deps) {
     a.dataset.wired = "1";
     a.onclick = (e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return; e.preventDefault(); deps.go(a.getAttribute("href")!); };
   }
+}
+
+// ---------------------------------------------------------------- where it was published: a link to its page
+function venue(box: HTMLElement, d: any, c: Context, deps: Deps) {
+  const s = c.source;
+  if (!s?.name) return;
+  const kicker = box.querySelector<HTMLElement>(".st-kicker");
+  if (!kicker) return;
+  const a = document.createElement("a");
+  a.className = "st-venue";
+  a.href = `?source=${encodeURIComponent(s.id)}`;
+  a.dataset.go = "";
+  a.textContent = s.name;
+  a.title = [`The ${s.type}'s page`, `${n(s.works)} studies`, s.h ? `h-index ${s.h}` : "",
+             s.publisher?.name ? `published by ${s.publisher.name}` : ""].filter(Boolean).join(" · ");
+  const old = kicker.querySelector(".st-venue");
+  if (old) old.replaceWith(a); else kicker.append(" · ", a);
+  wire(kicker, deps);
 }
 
 // ---------------------------------------------------------------- authors and where they signed from

@@ -1131,7 +1131,7 @@ class Handler(SimpleHTTPRequestHandler):
 
 SEARCH_API = os.environ.get("SRL_SEARCH_API", "http://127.0.0.1:8810")
 admin.SEARCH_API = SEARCH_API   # paper titles for the dashboard
-DATA_ROUTES = re.compile(r"^/api/data/(search|search/[^\s?#]{2,6000}|topics|topics/[^\s?#]{2,6000}|fields|fields/queue|fields/suggest|walk|map/place|map/regions|map/counts|llms\.txt|docs|openapi\.json|similar/[\w./:%-]{2,300}|works/[\w./:%-]{2,300}|authors|authors/[\w./:%-]{2,300}|institutions|institutions/[\w./:%-]{2,300}"
+DATA_ROUTES = re.compile(r"^/api/data/(search|search/[^\s?#]{2,6000}|topics|topics/[^\s?#]{2,6000}|fields|fields/queue|fields/suggest|walk|map/place|map/regions|map/counts|llms\.txt|docs|openapi\.json|similar/[\w./:%-]{2,300}|works/[\w./:%-]{2,300}|authors|authors/[\w./:%-]{2,300}|institutions|institutions/[\w./:%-]{2,300}|sources|sources/[\w./:%-]{2,300}"
                          r"|map/tiles/[\w-]{1,40}/(?:index\.json|\d{1,2}/\d{1,6}/\d{1,6}\.(?:pts|ids)"
                          r"|v2/(?:map|labels|names)\.json|v2/[dpi]/\d{1,2}/\d{1,6}/\d{1,6}\.bin|v2/t/\d{1,2}/\d{1,6}/\d{1,6}\.json))$")
 ROBOTS_OPEN = "User-agent: *\nAllow: /\n"

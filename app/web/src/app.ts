@@ -385,7 +385,7 @@ function drawTopicSpots(d: TopicMap, shown: string) {
 
 // ---------------------------------------------------------------- people (people.ts)
 /** An author's page: their work as a one-screen overview (the topic map's), their studies on the globe. */
-async function openAuthor(id: string, mapOnly = false, kind: "author" | "institution" = "author") {
+async function openAuthor(id: string, mapOnly = false, kind: "author" | "institution" | "source" = "author") {
   const here = kind === "author" ? authorUrl(id) : `?${kind}=${encodeURIComponent(id)}`;
   if (mapOnly) {
     const d = await fetchAuthor(id, kind).catch(() => null);
@@ -395,13 +395,14 @@ async function openAuthor(id: string, mapOnly = false, kind: "author" | "institu
   ($("#search-results") as HTMLInputElement).value = "";
   show("results");
   document.body.classList.add("topics-mode");
-  document.title = `${kind === "author" ? "Author" : "Institution"} · ScienceMadeReadable`;
+  document.title = `${{ author: "Author", institution: "Institution", source: "Journal" }[kind]} · ScienceMadeReadable`;
   const run = ++searchRun;
   const box = $("#results");
   const live = $("#results-live");
   box.setAttribute("aria-busy", "true");
-  live.textContent = kind === "author" ? "Opening the author's page…" : "Opening the institution's page…";
-  box.innerHTML = `<div class="page-skeleton" aria-hidden="true"><i class="h"></i><i class="h short"></i><i></i><i></i><i class="short"></i></div>`;
+  live.textContent = `Opening the ${{ author: "author", institution: "institution", source: "journal" }[kind]}'s page…`;
+  box.innerHTML = `<div class="page-skeleton" aria-hidden="true"><i class="h"></i><i class="h short"></i><i></i><i></i><i class="short"></i></div>` +
+    (kind === "source" ? `<p class="checking">Reading what it publishes. A big journal takes a few seconds the first time.</p>` : "");
   setResults([], null);
   let d;
   try {
@@ -410,7 +411,7 @@ async function openAuthor(id: string, mapOnly = false, kind: "author" | "institu
     if (run !== searchRun) return;
     box.removeAttribute("aria-busy");
     const err = e instanceof TopicError ? e : null;
-    const say = err?.status === 404 ? `We don't know this ${kind} (an OpenAlex ${kind === "author" ? "A" : "I"}-number is expected).`
+    const say = err?.status === 404 ? `We don't know this ${kind} (an OpenAlex ${{ author: "A", institution: "I", source: "S" }[kind]}-number is expected).`
       : err?.status === 503 ? "These pages are not available right now." : "The page didn't come back.";
     box.innerHTML = `<p class="quiet">${esc(say)} <a href="#" id="retry">Try again</a></p>`;
     live.textContent = say;
@@ -1055,7 +1056,7 @@ function route() {
       show("explore");
       return focus(focusPoint(), topicZoom ?? 3);
     }
-    for (const kind of ["author", "institution"] as const) {   // an author's or institution's studies on the map
+    for (const kind of ["author", "institution", "source"] as const) {   // an author's or institution's studies on the map
       if (!q.get(kind)) continue;
       useContext("results");
       show("explore");
@@ -1075,6 +1076,7 @@ function route() {
   }
   if (q.get("author")) return openAuthor(q.get("author")! + (q.get("with") ? `,${q.get("with")}` : ""));
   if (q.get("institution")) return openAuthor(q.get("institution")!, false, "institution");
+  if (q.get("source")) return openAuthor(q.get("source")!, false, "source");
   if (q.get("people")) return openPeople(q.get("people")!);
   if (q.get("work")) return openWork(q.get("work")!);
   if (q.get("walk")) return openWalk(q.get("walk")!);

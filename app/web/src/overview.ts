@@ -92,8 +92,8 @@ let stop: (() => void) | null = null;   // the shown dashboard's listeners, remo
 
 export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts: Parts) {
   stop?.();
-  const person = d.mode === "author" || d.mode === "institution";
-  const their = d.mode === "institution" ? "its" : "their";
+  const person = d.mode === "author" || d.mode === "institution" || d.mode === "source";
+  const their = d.mode === "author" ? "their" : "its";
   const whole = d.parent ? `All of group ${d.parent.group}` : d.mode === "field" ? "Whole field" : person ? `All ${their} work` : "Whole topic";
   const unitName = (sub: boolean) => person ? (d.level === "subfields" ? (sub ? "topic" : "subfield") : (sub ? "subfield" : "field")) : sub ? "subgroup" : "group";
   const tv = box.appendChild(document.createElement("div"));

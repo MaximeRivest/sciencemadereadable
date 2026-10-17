@@ -524,6 +524,12 @@ body:not([data-view="work"]) .you-are-here { display: none; }
 .st-type { font-weight: 600; font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; }
 .st-type[title]:not([title=""]) { cursor: help; }
 .st-venue { font: italic 15px/1.4 var(--serif); color: var(--muted); }
+a.st-venue { color: var(--ink); text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+a.st-venue:hover { color: var(--accent); text-decoration-color: currentColor; }
+.so-glance { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+.so-glance b { color: var(--ink); font-weight: 600; }
+.so-glance span[title] { cursor: help; }
+.so-head .st-kicker { margin-bottom: 2px; }
 #work .st h1, #work h1.walk-title { font: 500 clamp(28px, 3.6vw, 38px)/1.2 var(--serif); margin: 10px 0 16px; letter-spacing: -.005em;
   text-wrap: balance; }
 #work h1.walk-title { font-size: clamp(22px, 2.6vw, 28px); }
@@ -1141,6 +1147,7 @@ main.legal li { margin: 4px 0; }
 .au-name { font: 600 24px/1.25 var(--serif); margin: 0; }
 .au-facts { font: 400 14px/1.3 var(--sans); color: var(--muted); margin-left: 8px; white-space: nowrap; }
 .au-where { margin: 3px 0 0; font-size: 13.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 700px) { .au-facts { display: block; margin: 4px 0 0; white-space: normal; } }
 .au-bars-wrap { display: inline-flex; align-items: center; gap: 5px; font-variant-numeric: tabular-nums; }
 .au-bars { display: inline-flex; align-items: flex-end; gap: 1px; height: 16px; vertical-align: -3px; }
 .au-bars i { display: block; width: 3px; background: var(--accent); opacity: .7; border-radius: 1px 1px 0 0; }

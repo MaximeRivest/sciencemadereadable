@@ -6,7 +6,7 @@
  *
  * Kept in this tab only (sessionStorage): it is never sent anywhere, and it is gone when the tab closes.
  */
-export type StopKind = "work" | "author" | "institution" | "topic" | "search" | "word";
+export type StopKind = "work" | "author" | "institution" | "source" | "topic" | "search" | "word";
 export interface Stop { kind: StopKind; label: string; url: string }
 
 const KEY = "smr:trail", SEEN = "smr:seen", MAX = 30;
@@ -29,7 +29,7 @@ export function remember(stop: Stop) {
 
 export const seen = (id: string) => read<string[]>(SEEN, []).includes(id);
 
-const NAME: Record<StopKind, string> = { work: "study", author: "person", institution: "organisation", topic: "topic", search: "search", word: "word" };
+const NAME: Record<StopKind, string> = { work: "study", author: "person", institution: "organisation", source: "journal", topic: "topic", search: "search", word: "word" };
 
 /** The last few stops before this page, as links (nothing when this is the first page of the walk). */
 export function renderTrail(host: HTMLElement, go: (url: string) => void, here = location.search, keep = 4) {

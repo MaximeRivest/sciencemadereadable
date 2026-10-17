@@ -15,6 +15,7 @@ const pct = (x: number) => x >= 0.095 ? `${Math.round(100 * x)}%` : x >= 0.0095 
 
 export interface WordAnswer {
   word: string; total: number; scanned: number; matched: number;
+  sampled?: boolean;               // a journal's page: counted on a random sample of its studies, the most cited first
   papers: { id: string; title: string; year: number | null; citations: number; first_author?: string; authors_count?: number }[];
 }
 export interface WordInfo {
@@ -22,6 +23,8 @@ export interface WordInfo {
   vs: string;                      // what the lift compares with ("the other groups", "all of science")
   unit: string;                    // "this group", "subgroup 3.2", "this field"
   topic: string;                   // the map's topic, to map the word within it
+  mapQ?: string;                   // or another map to offer (a journal's page: research on the word itself)
+  mapLabel?: string;
   fetch: () => Promise<WordAnswer | null>;
 }
 
@@ -34,14 +37,15 @@ export function openWord(info: WordInfo, go: (url: string) => void) {
   dlg.setAttribute("aria-label", `The word “${info.word}”`);
   const more = info.lift >= 1.25 ? `${info.lift >= 10 ? Math.round(info.lift) : info.lift.toFixed(1)} times as often as in ${info.vs}`
     : info.lift <= 0.8 ? `less often than in ${info.vs}` : `about as often as in ${info.vs}`;
-  const within = `${info.word} in ${info.topic}`;
+  const within = info.mapQ ?? `${info.word} in ${info.topic}`;
+  const label = info.mapLabel ?? `Map “${info.word}” within ${info.topic}`;
   dlg.innerHTML = `<div class="wcard-in"><button type="button" class="wcard-x" aria-label="Close">×</button>
     <p class="wcard-kicker">A word in ${esc(info.unit)}</p>
     <h2 class="wcard-word">“${esc(info.word)}”</h2>
     <p class="wcard-fact">Used by <b>${pct(info.share)}</b> of its studies: ${esc(more)}.</p>
     <div class="wcard-list" aria-live="polite"><p class="loading-line">Finding the studies that use it…</p></div>
     <div class="wcard-go">
-      <a class="btn" href="?topics=${encodeURIComponent(within)}" data-go title="The research groups of the studies closest in meaning to “${esc(within)}”">Map “${esc(info.word)}” within ${esc(info.topic)} →</a>
+      <a class="btn" href="?topics=${encodeURIComponent(within)}" data-go title="The research groups of the studies closest in meaning to “${esc(within)}”">${esc(label)} →</a>
       <a class="btn ghost" href="?q=${encodeURIComponent(`"${info.word}"`)}" data-go>Find it across all of science →</a>
     </div></div>`;
   document.body.appendChild(dlg);
@@ -57,7 +61,10 @@ export function openWord(info: WordInfo, go: (url: string) => void) {
     const list = d.querySelector<HTMLElement>(".wcard-list")!;
     if (!r) { list.innerHTML = `<p class="quiet">The studies didn't come back. Try again in a moment.</p>`; return; }
     if (!r.papers.length) { list.innerHTML = `<p class="quiet">None of its most central studies use it.</p>`; return; }
-    const note = r.scanned < r.total
+    const note = r.sampled
+      ? `Found in ${r.matched.toLocaleString()} of ${r.scanned.toLocaleString()} studies drawn at random from its ${r.total.toLocaleString()}` +
+        ` (the sample its words are counted on). The most cited first:`
+      : r.scanned < r.total
       ? `Found in ${r.matched.toLocaleString()} of its ${r.scanned.toLocaleString()} most central studies. The most central first:`
       : `${r.matched.toLocaleString()} of its ${r.total.toLocaleString()} studies use it. The most central first:`;
     list.innerHTML = `<p class="wcard-note">${esc(note)}</p><ol>${r.papers.slice(0, 8).map((p) => {

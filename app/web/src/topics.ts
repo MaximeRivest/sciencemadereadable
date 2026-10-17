@@ -20,7 +20,8 @@ export interface Coauthor { author?: string; institution?: string; country?: str
 /** A word of a cloud: share = of the studies that use it (the size); lift = how many times as often as elsewhere
  *  (the other groups, or all of science for the whole topic: the colour); score = how telling it is. */
 export interface CloudWord { t: string; share: number; lift: number; score: number; author?: string; institution?: string }
-export type Lenses = Record<string, TopicPaper[]> & { experts: Expert[]; coauthors?: Coauthor[]; people?: Coauthor[]; partners?: Coauthor[]; _total?: Record<string, number> };
+export type Lenses = Record<string, TopicPaper[]> & { experts: Expert[]; coauthors?: Coauthor[]; people?: Coauthor[]; partners?: Coauthor[];
+  authors?: Coauthor[]; institutions?: Coauthor[]; _total?: Record<string, number> };
 /** A group of a group, carried by the map (the data API makes the splits with the map). */
 /** An AI-written name and description of a group (whole-field maps; search/srl_search/suggest.py). */
 export interface Label { name: string; about?: string | null; by?: string }
@@ -144,13 +145,16 @@ const LENSES: [key: string, label: string, help: (u: string) => string][] = [
   ["experts", "Experts", (u) => `The authors whose works this ${u} cites most (an h-index counted inside the ${u}: first authors get full credit, last authors half, others less).`],
   ["bridges", "Bridges", () => "Studies of this group with many links to another group."],
   // author pages (people.ts): "this whole" reads as all their work
-  ["cited", "Most cited", (u) => u === "whole" ? "Their studies, the most cited first." : `Their most cited studies in this ${u}.`],
+  ["cited", "Most cited", (u) => u === "whole" ? "The most cited studies first." : `The most cited studies in this ${u}.`],
   ["first", "As first author", (u) => u === "whole" ? "Studies they are the first author of, the most cited first." : `Studies in this ${u} they are the first author of, the most cited first.`],
-  ["newest", "Newest", (u) => u === "whole" ? "Their latest studies." : `The latest studies in this ${u}.`],
+  ["newest", "Newest", (u) => u === "whole" ? "The latest studies." : `The latest studies in this ${u}.`],
   ["coauthors", "Co-authors", (u) => u === "whole" ? "The people they publish with most, and their most cited study together." : `The people they publish with most in this ${u}.`],
   // institution pages
   ["people", "People", (u) => u === "whole" ? "Its authors on the most of its studies, with their most cited one here." : `Its authors on the most of its studies in this ${u}.`],
   ["partners", "Partners", (u) => u === "whole" ? "The other organisations on its studies: who it works with most." : `The other organisations on its studies in this ${u}.`],
+  // source pages (journals, conferences, repositories)
+  ["authors", "Authors", (u) => u === "whole" ? "Who publishes here most, with their most cited study here." : `Who publishes most in this ${u} here.`],
+  ["institutions", "Institutions", (u) => u === "whole" ? "Where its authors work: the organisations on the most of its studies." : `Where the authors of this ${u}'s studies work.`],
 ];
 
 export interface Deps {
@@ -332,7 +336,7 @@ export function lists(host: HTMLElement, key: string, lenses: Lenses, unit: stri
     help.textContent = say(unit);
     help.title = say(unit);
     const rows = (list: (TopicPaper | Expert | Coauthor)[]) => k === "experts"
-      ? (list as Expert[]).map((e) => expert(e, deps, unit)) : k === "coauthors" || k === "people" || k === "partners" ? (list as Coauthor[]).map((e) => coauthor(e, deps, k))
+      ? (list as Expert[]).map((e) => expert(e, deps, unit)) : k === "coauthors" || k === "people" || k === "partners" || k === "authors" || k === "institutions" ? (list as Coauthor[]).map((e) => coauthor(e, deps, k))
       : (list as TopicPaper[]).map((p) => deps.row(asHit(p), why(k, p, names)));
     const first = (lenses[k] ?? []) as (TopicPaper | Expert | Coauthor)[];
     const total = lenses._total?.[k] ?? 0;      // author and institution pages say how long each list is

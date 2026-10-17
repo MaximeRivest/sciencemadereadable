@@ -8,7 +8,8 @@
  */
 import { API } from "./jobs.ts";
 import { renderOverview } from "./overview.ts";
-import { lists, span, TopicError, type CloudWord, type Deps, type More, type TopicMap } from "./topics.ts";
+import { cloud as wordCloud, lists, span, TopicError, type CloudWord, type Deps, type More, type TopicMap } from "./topics.ts";
+import { openWord, type WordAnswer } from "./words.ts";
 
 export interface Person {
   id: string; name: string; works: number; citations: number; h: number; years: [number, number] | null;
@@ -19,6 +20,9 @@ export interface Person {
   country?: string | null; kind?: string | null; ror?: string | null; authors?: number;
   cited_years?: [number, number] | null;                       // when the work carrying most citations was done
   records?: { id: string; name: string; works: number; citations: number }[];   // several records seen together
+  // sources (journals, conferences, repositories)
+  type?: string; issn?: string | null; publisher?: { id: string; name: string | null } | null; open_access?: number | null;
+  recent?: { years: [number, number]; papers: number; mean_citations: number; median_citations: number };
 }
 /** Another author record with the same name (/authors/{id}/namesakes). */
 export interface Namesake {
@@ -34,13 +38,14 @@ const apiRef = (id: string) => {
   const [first, ...rest] = id.split(",");
   return { path: encodeURIComponent(first), with: rest.join(",") };
 };
-export type Kind = "author" | "institution";
+export type Kind = "author" | "institution" | "source";
 export interface AuthorMap extends TopicMap { kind: Kind; person: Person; level: "fields" | "subfields" }
-const PATH: Record<Kind, string> = { author: "authors", institution: "institutions" };
+const PATH: Record<Kind, string> = { author: "authors", institution: "institutions", source: "sources" };
 export interface AuthorHit {
   id: string; name: string; works: number; citations?: number; h?: number; years?: [number, number] | null;
   topic?: { name: string; subfield: string; field: string } | null; institution?: { id: string; name: string; country?: string | null };
   country?: string | null; kind?: string | null;   // institutions
+  type?: string; issn?: string | null; publisher?: { id: string; name: string | null } | null;   // sources
   match: "full" | "part";
 }
 
@@ -103,6 +108,7 @@ const KINDS: Record<string, string> = { education: "university", healthcare: "ho
 export function renderAuthor(box: HTMLElement, d: AuthorMap, deps: Deps) {
   box.replaceChildren();
   const p = d.person;
+  if (d.kind === "source") return renderSource(box, d, deps);
   const head = box.appendChild(document.createElement("header"));
   head.className = "au-head";
   if (d.kind === "institution") {
@@ -174,6 +180,78 @@ export function renderAuthor(box: HTMLElement, d: AuthorMap, deps: Deps) {
     cloud: (w, k) => peopleCloud(w, k, deps), lists, span, info, act: null, splitFrom: Infinity,
     legend: `<p class="tv-legend">The people they publish with here · bigger: on more of these studies</p>`,
   });
+}
+
+/** A journal's (conference's, repository's) page: what it is and who publishes it, how much and how it is read,
+ *  then the same overview as an author's: its fields as boxes, its papers on the globe, under it the words its
+ *  papers use (each opens its card: the papers that use it), and lists (most cited, newest, authors, institutions). */
+function renderSource(box: HTMLElement, d: AuthorMap, deps: Deps) {
+  const p = d.person;
+  const head = box.appendChild(document.createElement("header"));
+  head.className = "au-head so-head";
+  const type = p.type ?? "source";
+  const pct = p.open_access != null ? Math.round(100 * p.open_access) : null;
+  const facts = [plural(p.works, "study", "studies"), p.citations ? `cited ${n(p.citations)} times` : "", p.h ? `h-index ${p.h}` : "",
+    p.years ? `${p.years[0]}–${p.years[1]}` : ""].filter(Boolean).join(" · ");
+  const pub = p.publisher?.name ? (p.publisher.id.startsWith("I")
+    ? `published by <a href="?institution=${esc(p.publisher.id)}" data-go>${esc(p.publisher.name)}</a>` : `published by ${esc(p.publisher.name)}`) : "";
+  const issn = p.issn ? `ISSN <a href="https://portal.issn.org/resource/ISSN/${esc(p.issn)}" target="_blank" rel="noopener" title="Its record at the ISSN portal">${esc(p.issn)} ↗</a>` : "";
+  head.innerHTML = `<p class="st-kicker"><span class="st-type">${esc(type)}</span></p>` +
+    `<h1 class="au-name">${esc(p.name)} <span class="au-facts">${esc(facts)}</span></h1>` +
+    `<p class="au-where">${[pub, issn].filter(Boolean).join(" · ")}${pub || issn ? " · " : ""}<span class="au-bars-slot"></span>` +
+    `<a href="https://openalex.org/${esc(p.id)}" target="_blank" rel="noopener">OpenAlex ↗</a>` +
+    ` · <a href="https://scholar.google.com/scholar?q=${encodeURIComponent(`source:"${p.name}"`)}" target="_blank" rel="noopener">Google Scholar ↗</a></p>`;
+  const glance: string[] = [];
+  if (pct != null) glance.push(`<span title="Share of its studies anyone can read for free (OpenAlex)"><b>${pct}%</b> open access</span>`);
+  if (p.recent) glance.push(`<span title="${esc(`The ${n(p.recent.papers)} studies it published in ${p.recent.years[0]}–${p.recent.years[1]}: ` +
+    `mean and median citations so far (OpenAlex's counts). Not an impact factor; fields cite at very different rates, so compare it ` +
+    `only with journals of the same field.`)}">its ${p.recent.years[0]}–${p.recent.years[1]} studies are cited <b>${p.recent.mean_citations}</b> times on average ` +
+    `(median ${p.recent.median_citations})</span>`);
+  if (p.authors) glance.push(`<span><b>${n(p.authors)}</b> authors</span>`);
+  if (glance.length) head.insertAdjacentHTML("beforeend", `<p class="so-glance">${glance.join(`<span class="st-sep"> · </span>`)}</p>`);
+  const slot = head.querySelector<HTMLElement>(".au-bars-slot")!;
+  const b = bars(p);
+  if (b) slot.replaceWith(b, " · "); else slot.remove();
+  for (const a of head.querySelectorAll<HTMLAnchorElement>("a[data-go]"))
+    a.onclick = (e) => { e.preventDefault(); deps.go(a.getAttribute("href")!); };
+
+  const info = document.createElement("div");
+  const level = d.level === "subfields" ? "subfields, with their topics inside" : "fields, with their subfields inside";
+  info.innerHTML = `<p><b>${esc(p.name)}: ${plural(p.works, "study", "studies")}, in ${d.groups.length} ${d.level}.</b> ` +
+    `Each box is one of its ${level}: the label OpenAlex gives each study, sized by how many of its studies carry it. ` +
+    `Point at a box to see the words its studies use and light them on the map; click it for its lists: most cited, ` +
+    `newest, who publishes there and where they work. Click a word to see the studies that use it.</p>` +
+    `<p class="quiet">A study counts for the ${esc(type)} where it was published (OpenAlex's primary location). The words ` +
+    `come from the titles and abstracts of a sample: up to 3,000 of its studies at random, plus 400 of each field; the ` +
+    `whole is compared with all of science, a field with the rest of the ${esc(type)}. Citation counts are OpenAlex's. ` +
+    `Authors on papers with more than 100 authors are not counted. The dots on the map are the most cited and newest ` +
+    `studies, up to 1,200, among those with an English abstract.</p>` +
+    (d.coverage.other ? `<p class="quiet">Grey: ${n(d.coverage.other)} studies with no field label, or in fields too small to show.</p>` : "");
+  renderOverview(box, d, deps, { cloud: wordCloud, lists, span, info, act: null, splitFrom: Infinity });
+  box.addEventListener("click", (e) => {
+    const w = (e.target as HTMLElement).closest<HTMLButtonElement>(".tg-word");
+    const host = w?.closest<HTMLElement>("[data-at]");
+    if (!w || !host) return;
+    const at = host.dataset.at ?? "";
+    const [g, s] = at.split(".").map(Number);
+    const grp = at ? d.groups.find((x) => x.id === g) : null;
+    const sub = grp && s ? grp.subgroups?.find((x) => x.id === s) : null;
+    const word = w.textContent ?? "";
+    openWord({
+      word, share: Number(w.dataset.share), lift: Number(w.dataset.lift), vs: w.dataset.vs ?? "",
+      unit: sub ? `“${sub.name}” in ${p.name}` : grp ? `“${grp.name}” in ${p.name}` : p.name,
+      topic: p.name, mapQ: word, mapLabel: `Map research on “${word}”`,
+      fetch: () => wordInSource(p.id, at, word),
+    }, deps.go);
+  });
+}
+
+async function wordInSource(id: string, at: string, word: string): Promise<WordAnswer | null> {
+  try {
+    const q = new URLSearchParams({ word, read: at, limit: "8" });
+    const r = await fetch(`${API}/api/data/sources/${encodeURIComponent(id)}?${q}`, { signal: AbortSignal.timeout(30000) });
+    return r.ok ? await r.json() : null;
+  } catch { return null; }
 }
 
 /** Under the name: the records seen together (each can be taken out), and the other records with the same name, to
@@ -291,7 +369,8 @@ export function authorRow(a: AuthorHit, go: (url: string) => void, kind: Kind = 
   const el = document.createElement("a");
   el.className = "hit au-hit";
   el.href = `?${kind}=${encodeURIComponent(a.id)}`;
-  const why = kind === "author" ? [a.topic?.name, a.institution?.name] : [KINDS[a.kind ?? ""] ?? a.kind, a.country];
+  const why = kind === "author" ? [a.topic?.name, a.institution?.name]
+    : kind === "source" ? [a.type, a.publisher?.name, a.issn ? `ISSN ${a.issn}` : null] : [KINDS[a.kind ?? ""] ?? a.kind, a.country];
   el.innerHTML = `<span class="hit-title">${esc(a.name)}</span>` +
     `<span class="hit-meta">${esc(who(a))}</span>` +
     `<span class="hit-why">${why.filter((x): x is string => !!x).map(esc).join(" · ")}</span>`;
@@ -310,9 +389,10 @@ export const looksLikeName = (q: string, max = 4) => {
 export async function peopleStrip(host: HTMLElement, q: string, go: (url: string) => void, signal?: AbortSignal) {
   if (!looksLikeName(q, 6)) return;
   const words = q.trim().split(/\s+/).length;
-  const [people, orgs] = await Promise.all([
+  const [people, orgs, srcs] = await Promise.all([
     words <= 4 ? searchAuthors(q, 12, signal) : Promise.resolve([]),
     searchAuthors(q, 4, signal, "institution"),
+    searchAuthors(q, 3, signal, "source"),
   ]);
   if (signal?.aborted) return;
   // one word (a surname alone): only people with some body of work, so a topic word that is also a rare surname
@@ -328,7 +408,13 @@ export async function peopleStrip(host: HTMLElement, q: string, go: (url: string
   }
   const show = hits.slice(0, 3);
   const orgShow = orgs.filter((o) => o.match === "full" && o.works >= 100).slice(0, 2);
-  if (!show.length && !orgShow.length) return;
+  // journals (and conferences, repositories) with exactly that name and a body of work: "Nature", "The Lancet"
+  const srcShow = srcs.filter((o) => o.match === "full" && o.works >= 200).slice(0, 2);
+  // the search is a journal's name ("Journal of Ecology"): only people with exactly that name, if any
+  const qKey = q.normalize("NFKD").toLowerCase().replace(/[^\p{L}]/gu, "");
+  if (srcShow.some((o) => o.name.normalize("NFKD").toLowerCase().replace(/[^\p{L}]/gu, "") === qKey))
+    show.splice(0, show.length, ...show.filter((a) => nameKey(a) === qKey));
+  if (!show.length && !orgShow.length && !srcShow.length) return;
   const strip = document.createElement("section");
   strip.className = "au-strip";
   strip.setAttribute("aria-label", "People and organisations with this name");
@@ -357,6 +443,11 @@ export async function peopleStrip(host: HTMLElement, q: string, go: (url: string
     }
   }
   if (orgShow.length && exact) orgs_();
+  if (srcShow.length) {
+    strip.insertAdjacentHTML("afterbegin", `<h2 class="au-strip-h">${srcShow.every((x) => x.type === "journal") ? "Journals" : "Sources"} named ${esc(q.trim())}</h2>`);
+    const h = strip.querySelector(".au-strip-h")!;
+    for (const o of [...srcShow].reverse()) h.after(authorRow(o, go, "source"));
+  }
   host.prepend(strip);
 }
 

@@ -139,6 +139,15 @@ def desktop(b, errs):
                 'document.querySelectorAll(".st-list .hit").length >= 5', 15), "and what it builds on")
     pg.evaluate('document.querySelector(".st-walk").scrollIntoView()')
     check(until(pg, 'document.querySelectorAll(".st-walk .hit").length >= 1', 30), "a taste of its citation walk")
+    # its journal's page (people.ts renderSource): from the study's page, its words open their studies
+    pg.click("a.st-venue")
+    check(until(pg, 'location.search.startsWith("?source=") && document.querySelectorAll(".tov-map .tov-g").length >= 2 '
+                '&& document.querySelectorAll(".tv-cloud .tg-word").length >= 10', 60),
+          "the journal's name opens its page: its fields and its words")
+    pg.click(".tv-cloud .tg-word")
+    check(until(pg, 'document.querySelectorAll("dialog.wcard[open] .wcard-list li").length >= 1', 30),
+          "a word of the journal lists its studies that use it")
+    pg.keyboard.press("Escape")
     pg.goto(BASE + "?walk=10.1371/journal.pone.0322636")
     check(until(pg, 'document.querySelectorAll(".walk-group").length >= 2'), "the citation walk has its own page")
     check(pg.evaluate('document.querySelectorAll("#links line").length') > 0, "the walk is drawn on the map")
@@ -267,14 +276,14 @@ def experience(p, b, errs):
     # no serious accessibility problem, light and dark
     axe = Axe()
     for theme in ("light", "dark"):
-        for q in ["", "?q=coral%20bleaching", "?topics=coral%20reefs%20and%20marine%20heatwaves", "?work=10.1126/science.aan8048",
+        for q in ["", "?q=coral%20bleaching", "?topics=coral%20reefs%20and%20marine%20heatwaves", "?work=10.1126/science.aan8048", "?source=S11703781",
                   "?api", "?support", "?library", "?reading"]:
             pg.emulate_media(color_scheme=theme)
             pg.goto(BASE + q)
             pg.evaluate(f"document.documentElement.dataset.theme = '{theme}'")
             if q.startswith("?topics"):
                 until(pg, 'document.querySelectorAll("#results .tov-map .tov-g").length > 0', 100)
-            pg.wait_for_timeout(3000 if q.startswith(("?q", "?work", "?topics")) else 1200)
+            pg.wait_for_timeout(3000 if q.startswith(("?q", "?work", "?topics", "?source")) else 1200)
             bad = [(v["id"], len(v["nodes"])) for v in axe.run(pg).response["violations"] if v["impact"] in ("serious", "critical")]
             check(not bad, f"accessibility, {theme}, {q or 'home'}: no serious problems" + (f" {bad}" if bad else ""))
     pg.close()
