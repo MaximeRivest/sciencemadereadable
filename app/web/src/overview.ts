@@ -56,8 +56,7 @@ export function squarify(values: number[], r: Rect): Rect[] {
   return out;
 }
 
-const HEAD = 24;    // px: a group box's name strip, above its subgroups (style.css .tov-head)
-const HEAD_Z = 32;  // px: the same, for the group zoomed into (.tov-g.z .tov-head)
+const HEAD_Z = 32;  // px: at least, the name strip of the group zoomed into (.tov-g.z .tov-head)
 const LINE = 14.4;  // px: a line of a subgroup's name (.tov-s: 11.5px × 1.25)
 const LINE_Z = 16.3; // px: the same, zoomed in (.tov-g.z .tov-s: 13px × 1.25)
 const ANIM = 480;   // ms: the zoom (.tov-map.anim)
@@ -84,7 +83,7 @@ const parse = (at: string | undefined, d: TopicMap): At => {
 const atStr = (a: At) => a.g == null ? "" : a.s == null ? `${a.g}` : `${a.g}.${a.s}`;
 const same = (a: At, b: At) => a.g === b.g && a.s === b.s;
 
-interface Tile { g: Group | null; size: number; box: HTMLElement; head?: HTMLButtonElement; inner?: HTMLElement;
+interface Tile { g: Group | null; size: number; box: HTMLElement; head?: HTMLButtonElement; label: HTMLElement; inner?: HTMLElement;
                  kids: { s: Sub | null; size: number; el: HTMLElement }[] }
 
 let stop: (() => void) | null = null;   // the shown dashboard's listeners, removed when another replaces it
@@ -128,8 +127,8 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
     if (!g) {                                          // studies in no group: a grey box, nothing to read
       b.className = "tov-g tov-none g0";
       b.title = `${size.toLocaleString()} studies in no clear group`;
-      b.innerHTML = `<span class="tov-name">In no clear group</span> <span class="tov-n">${size.toLocaleString()}</span>`;
-      tiles.push({ g, size, box: b, kids: [] });
+      b.innerHTML = `<div class="tov-head"><span class="tov-name">In no clear group</span> <span class="tov-n">${size.toLocaleString()}</span></div>`;
+      tiles.push({ g, size, box: b, label: b.firstElementChild as HTMLElement, kids: [] });
       continue;
     }
     b.className = `tov-g ${colour(g.id)}`;
@@ -137,15 +136,16 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
     const subs = g.subgroups ?? [];
     const head = b.appendChild(document.createElement("button"));
     head.type = "button";
-    head.className = "tov-head" + (subs.length ? "" : " tov-fill");
-    head.innerHTML = `<span class="tov-name"><b>${g.id}</b> ${esc(g.name)}</span> <span class="tov-n">${g.size.toLocaleString()}</span>`;
+    head.className = "tov-head";
+    head.innerHTML = `<span class="tov-name"><b>${g.id}</b> ${esc(g.name)}</span> <span class="tov-n">${g.size.toLocaleString()}` +
+      (subs.length ? `<span class="tov-k"> · ${subs.length} subgroups</span>` : "") + `</span>`;
     head.title = `Group ${g.id}: ${g.name} · ${g.size.toLocaleString()} studies`;
     head.setAttribute("aria-label", `Group ${g.id}: ${g.name}, ${g.size.toLocaleString()} studies` +
       (subs.length ? `, in ${subs.length} subgroups` : ""));
     head.onclick = () => pick({ g: g.id, s: null });
     head.onfocus = () => preview({ g: g.id, s: null });
     pressable.set(`${g.id}`, head);
-    const t: Tile = { g, size, box: b, head, kids: [] };
+    const t: Tile = { g, size, box: b, head, label: head, kids: [] };
     tiles.push(t);
     if (!subs.length) continue;
     const inner = t.inner = b.appendChild(document.createElement("div"));
@@ -173,7 +173,66 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
     }
   }
 
-  /** Every box where it belongs: the field's boxes, or the zoomed group filling the space with its subgroups. */
+  /** Names are fitted on a hidden copy of a box at its final size (the boxes themselves may be moving): the
+   *  largest type, 15 px down to 10.5, that shows the whole name and its count (then the name and count only);
+   *  a box too small even then keeps the lines that fit and ends in "…" (its name is in its tooltip, and shown
+   *  in full under the globe when pointed at). Zoomed in, the group's name strip is as tall as its name needs. */
+  const probe = tm.appendChild(document.createElement("div"));
+  probe.className = "tov-g tov-probe";
+  probe.setAttribute("aria-hidden", "true");
+  const SIZES = [15, 14, 13, 12.5, 12, 11.5, 11, 10.5];
+  const fitName = (t: Tile, w: number, h: number) => {
+    const el = t.label;
+    probe.className = `tov-g tov-probe${t.g ? "" : " tov-none"}`;
+    probe.style.width = `${w}px`; probe.style.height = `${h}px`;
+    const c = probe.appendChild(el.cloneNode(true) as HTMLElement);
+    c.classList.remove("cut", "bare");
+    const name = c.querySelector<HTMLElement>(".tov-name")!, k = c.querySelector<HTMLElement>(".tov-k");
+    const n = c.querySelector<HTMLElement>(".tov-n")!;
+    name.style.setProperty("-webkit-line-clamp", "none");
+    // whole words only (no hyphenation here): a word wider than the box makes it scroll sideways, so it doesn't fit
+    const fits = () => c.scrollHeight <= c.clientHeight + 1 && c.scrollWidth <= c.clientWidth + 1 &&
+      name.scrollWidth <= name.clientWidth + 1;
+    // the name first: the subgroups' count goes first, then the size (both are under the globe when pointed at)
+    let size = 0, withK = false, bare = false;
+    outer: for (const f of SIZES) {
+      c.style.fontSize = `${f}px`;
+      for (const [kOn, nOn] of [[true, true], [false, true]] as const) {
+        if (k) k.hidden = !kOn;
+        n.hidden = !nOn;
+        if ((kOn && !k) || !fits()) continue;
+        size = f; withK = kOn && !!k; break outer;
+      }
+    }
+    if (!size) {                                       // smallest type, the name alone
+      size = SIZES[SIZES.length - 1];
+      c.style.fontSize = `${size}px`;
+      n.hidden = true;
+      if (k) k.hidden = true;
+      bare = true;
+    }
+    let lines = 0;
+    if (!fits()) lines = Math.max(1, Math.floor((c.clientHeight - 10) / (size * 1.25)));   // whole lines, then "…"
+    c.remove();
+    el.style.fontSize = `${size}px`;
+    el.classList.toggle("cut", lines > 0);
+    el.classList.toggle("bare", bare);
+    el.querySelector<HTMLElement>(".tov-name")!.style.setProperty("-webkit-line-clamp", lines ? String(lines) : "none");
+    const kk = el.querySelector<HTMLElement>(".tov-k");
+    if (kk) kk.hidden = !withK;
+  };
+  const stripHeight = (t: Tile, w: number) => {        // zoomed in: the name strip, wrapped to the box's width
+    probe.className = "tov-g tov-probe z";
+    probe.style.width = `${w}px`; probe.style.height = "auto";
+    const c = probe.appendChild(t.head!.cloneNode(true) as HTMLElement);
+    c.style.removeProperty("font-size");
+    const hz = Math.max(HEAD_Z, Math.ceil(c.offsetHeight));
+    c.remove();
+    return hz;
+  };
+
+  /** Every box where it belongs. The field: the groups alone, their subgroups hidden (pointing at a group is about
+   *  the group); zoomed into one: it fills the space and its subgroups show. */
   let settle = 0;
   const layout = (animate: boolean) => {
     const W = tm.clientWidth, H = tm.clientHeight;
@@ -181,31 +240,39 @@ export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts:
     if (animate && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
       tm.classList.add("anim");
       clearTimeout(settle);
-      settle = window.setTimeout(() => tm.classList.remove("anim"), ANIM + 60);
+      settle = window.setTimeout(() => tm.classList.remove("anim"), ANIM + 360);
     }
     tm.classList.toggle("zoomed", zoom != null);
     const outer = squarify(tiles.map((t) => t.size), { x: 0, y: 0, w: W, h: H });
     tiles.forEach((t, i) => {
       const z = t.g != null && t.g.id === zoom, gone = zoom != null && !z;
-      const r = z ? { x: 0, y: 0, w: W, h: H } : outer[i];
-      place(t.box, r, W, H);
+      const r = outer[i];
+      place(t.box, z ? { x: 0, y: 0, w: W, h: H } : r, W, H);
       t.box.classList.toggle("z", z);
       t.box.classList.toggle("gone", gone);
       t.box.inert = gone;
-      t.box.classList.toggle("tiny", !z && (r.w < 90 || r.h < 34));
-      if (!t.inner) { if (t.head) clamp(t.head, r.h - 10 - LINE); return; }
-      const head = z ? HEAD_Z : HEAD;
-      const iw = Math.max(1, r.w - 4), ih = Math.max(1, r.h - head - 3);
-      t.box.classList.toggle("cramped", !z && (r.h < HEAD + 24 || r.w < 40));
+      t.box.classList.toggle("tiny", r.w < 34 || r.h < 26);
+      if (z) {                                         // zoomed: the strip's own type (style.css), the whole name
+        t.label.style.removeProperty("font-size");
+        t.label.classList.remove("cut");
+        t.label.querySelector<HTMLElement>(".tov-name")!.style.setProperty("-webkit-line-clamp", "none");
+      } else if (!gone) fitName(t, r.w, r.h);          // its name sized to its box
+      if (!t.inner) return;
+      t.inner.inert = !z;                              // subgroups: only once inside the group
+      // subgroups laid out for the zoomed box, so they grow into place with it
+      const hz = stripHeight(t, W);
+      t.box.style.setProperty("--hz", `${hz}px`);
+      const iw = Math.max(1, W - 4), ih = Math.max(1, H - hz - 3);
       const rects = squarify(t.kids.map((k) => k.size), { x: 0, y: 0, w: iw, h: ih });
       t.kids.forEach((k, j) => {
         const rr = rects[j];
         place(k.el, rr, iw, ih);
-        k.el.classList.toggle("tiny", rr.w < (z ? 56 : 64) || rr.h < (z ? 26 : 30));
-        clamp(k.el, rr.h - (z ? 12 + LINE_Z : 8 + LINE), z ? LINE_Z : LINE);
+        k.el.classList.toggle("tiny", rr.w < 56 || rr.h < 26);
+        clamp(k.el, rr.h - 12 - LINE_Z, LINE_Z);
       });
     });
   };
+  document.fonts?.ready.then(() => { if (tm.isConnected) layout(false); });   // names measured in the real font
 
   // ------------------------------------------------------------------ pointing, picking, zooming
   /** The unit shown under the globe and lit on it: the one pointed at, else the one picked. Leaving a box waits a
