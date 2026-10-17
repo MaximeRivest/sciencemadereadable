@@ -339,7 +339,7 @@ async function openTopics(q: string, group: number | null, mapOnly = false, fiel
 /** The box picked in a topic map's overview stays in the address (replaced, not a new page: Back still leaves the
  *  map), so a shared link or a return opens on it. */
 function rememberAt(at: string) {
-  if (at && at !== new URLSearchParams(location.search).get("at")) track("pick", { at });
+  if (at && at !== new URLSearchParams(location.search).get("at")) track("pick", { box: at });
   const u = new URL(location.href);
   if (at) u.searchParams.set("at", at); else u.searchParams.delete("at");
   if (u.href !== location.href) history.replaceState(history.state, "", u);

@@ -14,7 +14,7 @@ Site events (app/stats/events-YYYY-MM.jsonl, one JSON per line):
            still loading or being written then)
   search   q: the words, by, n: papers found, ok: how many of them can be opened, ms: how long it took
   topics   a topic map shown (q, group, field, groups, cached, pending: still being made), pick: a box picked
-           in it (at), more: a reading list read further (list, n: from)
+           in it (box), more: a reading list read further (list, n: from)
   author / institution   a person's or organisation's page (works, groups)
   open     a paper opened (doi), or err: why it couldn't be (licence, layout, missing...)
   read     a saved rewrite shown (doi, model, src: benchmark/demo/browser)
@@ -50,9 +50,10 @@ TYPES = {"view", "hide", "search", "topics", "pick", "more", "author", "institut
          "field_pay", "field_paid"}
 # text fields: their longest length; 0: a number
 FIELDS = {"view": 12, "u": 400, "ref": 80, "q": 300, "by": 12, "doi": 120, "model": 20, "err": 40, "src": 12,
-          "where": 20, "busy": 20, "at": 20, "list": 20, "group": 12, "field": 4,
+          "where": 20, "busy": 20, "box": 20, "list": 20, "group": 12, "field": 4,
           "n": 0, "s": 0, "wait": 0, "w": 0, "ok": 0, "ms": 0, "status": 0, "groups": 0, "works": 0, "cached": 0,
           "sub": 0, "pending": 0, "eta_h": 0, "amount": 0}
+assert not FIELDS.keys() & {"at", "t", "v"}, "a field would overwrite the time, type or visitor"
 KEEP_MONTHS = 25   # the longest the French data regulator (CNIL) accepts for audience measurement
 RECENT = collections.defaultdict(collections.deque)   # address → times of its last events (rate limit)
 
