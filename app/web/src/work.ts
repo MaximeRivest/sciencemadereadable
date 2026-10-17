@@ -195,7 +195,7 @@ function authors(box: HTMLElement, d: any, c: Context, deps: Deps) {
   const orgs = c.institutions ?? [];
   const exact = c.affiliations === "exact";
   const one = (a: Author | { name: string; position: number }) => {
-    const at = exact && "at" in a ? (a.at ?? []) : [];
+    const at = exact && "at" in a ? [...(a.at ?? [])].sort((x, y) => x - y) : [];
     const sup = at.length ? `<sup>${at.map((i) => i + 1).join(",")}</sup>` : "";
     if (!("id" in a)) return `<span class="st-au">${esc(a.name)}${sup}</span>`;
     const tip = [a.works ? plural(a.works, "study", "studies") : "", a.h ? `h-index ${a.h}` : "",
