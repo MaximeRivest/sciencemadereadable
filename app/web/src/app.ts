@@ -48,7 +48,7 @@ function saveKeyForm() {
 // ---------------------------------------------------------------- views
 function show(view: "home" | "results" | "reader" | "library" | "work" | "explore" | "api" | "support" | "fields" | "reading" | "account") {
   document.body.dataset.view = view;
-  document.body.classList.remove("topics-mode");
+  document.body.classList.remove("topics-mode", "topics-dash");
   if (view !== "home") {   // leaving home closes its search tips, so Back finds the page as it was first seen
     document.getElementById("home-tips")?.setAttribute("hidden", "");
     document.querySelector("#home .help")?.setAttribute("aria-expanded", "false");
@@ -307,13 +307,15 @@ async function openTopics(q: string, group: number | null, mapOnly = false, fiel
   track("topics", { groups: d.groups.length, cached: d.cached ? 1 : 0, sub: group ? 1 : 0 });
   restoreScroll();
   // A map made just now gets AI-written group names a few seconds later (the search service writes them in the
-  // background): fetch it once more and show them, unless the reader has moved on or scrolled into the groups.
+  // background): fetch it once more and show them, unless the reader has moved on, scrolled, or picked a group.
   if (!d.cached && !field && !d.groups.some((g) => g.label)) {
     const here = location.search;
     const later = async (waits: number[]) => {
-      if (!waits.length || run !== searchRun || location.search !== here || window.scrollY > 400) return;
+      const busy = () => run !== searchRun || location.search !== here || window.scrollY > 400 ||
+        !!box.querySelector(".tv[data-touched]");      // the reader has picked a group: don't redraw under them
+      if (!waits.length || busy()) return;
       const d2 = await fetchTopics(q, o).catch(() => null);
-      if (run !== searchRun || location.search !== here || window.scrollY > 400) return;
+      if (busy()) return;
       if (!d2 || "pending" in d2 || !d2.groups.some((g) => g.label)) { setTimeout(() => later(waits.slice(1)), waits[0]); return; }
       renderTopics(box, d2, { row, go, focusGroup, url: (x) => topicsUrl(q, { ...o, ...x }), listUrl: searchUrl(q),
                               at: new URLSearchParams(location.search).get("at") ?? "", select: rememberAt });

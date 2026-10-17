@@ -72,13 +72,6 @@ function named(d: TopicMap): TopicMap {
   return d;
 }
 
-/** The AI's description of a group, and the words that set it apart (the map's own, as before). */
-export function about(g: { label?: Label | null; words?: string }): string {
-  if (!g.label?.about && !g.words) return "";
-  return (g.label?.about ? `<p class="tg-about">${esc(g.label.about)}</p>` : "") +
-    (g.words ? `<p class="tg-words quiet small">Words that set it apart: ${esc(g.words)}</p>` : "");
-}
-
 export class TopicError extends Error {
   constructor(public status: number, public detail: string, public retry?: number) { super(detail || String(status)); }
 }
@@ -92,13 +85,15 @@ export const asHit = (p: TopicPaper): Hit => ({
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 export const span = (y?: number[] | null) => y ? (y[0] === y[2] ? `${y[1]}` : `mostly ${y[0]}–${y[2]}`) : "";
 
-// "this {u}": the group, or the whole topic (the same lists, from every study's citations)
+// "this {u}": the group, or the whole topic (the same lists, from every study's citations). Core first: what the
+// group stands on. "Overviews" (was "Start here"): recent studies citing most of the key works, often reviews; one
+// way in among others, not an instruction.
 const LENSES: [key: string, label: string, help: (u: string) => string][] = [
-  ["start_here", "Start here", (u) => `Recent studies of this ${u} that cite most of its key works: often reviews, a good first read.`],
   ["core", "Core", (u) => `The works this ${u}'s studies cite most: its foundations.`],
+  ["start_here", "Overviews", (u) => `Recent studies that cite most of this ${u}'s key works: often reviews that tie it together.`],
   ["rising", "Rising", (u) => `Works from the last five years already cited by many of this ${u}'s studies.`],
   ["distinctive", "Only here", () => "Works cited mostly by this group, not by the others: what sets it apart."],
-  ["foundations", "Foundations from outside the field", (u) => `What this ${u}'s studies cite most that is not itself part of the field: methods, tools and classics from neighbouring fields.`],
+  ["foundations", "Foundations from outside", (u) => `What this ${u}'s studies cite most that is not itself part of the field: methods, tools and classics from neighbouring fields.`],
   ["experts", "Experts", (u) => `The authors whose works this ${u} cites most (an h-index counted inside the ${u}: first authors get full credit, last authors half, others less).`],
   ["bridges", "Bridges", () => "Studies of this group with many links to another group."],
   ["newest", "Newest", (u) => `The latest studies in this ${u}.`],
@@ -116,92 +111,92 @@ export interface Deps {
   paidNote?: string;                         // said once, after coming back from paying
 }
 
-/** The whole map: a sentence on what was done, then one card per group. */
+/** The whole map on one screen (overview.ts); how it was made waits behind its "?". */
 export function renderTopics(box: HTMLElement, d: TopicMap, deps: Deps) {
   box.replaceChildren();
-  const head = box.appendChild(document.createElement("div"));
-  head.className = "topics-head";
-  const how = d.mode === "keyword" ? "studies containing these words" : "studies closest in meaning";
-  const back = `<a href="${esc(deps.listUrl)}" data-go>Back to the list</a>`;
+  const wire = (el: HTMLElement) => {
+    for (const a of el.querySelectorAll<HTMLAnchorElement>("a[data-go]"))
+      a.onclick = (e) => { e.preventDefault(); deps.go(a.getAttribute("href")!); };
+  };
+  if (!d.groups.length) {
+    box.innerHTML = `<p>These studies don't split into clear groups. <a href="${esc(deps.listUrl)}" data-go>See them as a list</a>.</p>`;
+    return wire(box);
+  }
+  const back = `<a href="${esc(deps.listUrl)}" data-go>The studies as a list</a>`;
+  const info = document.createElement("div");
+  let act: HTMLElement | null = null;
+  const named = d.groups.some((g) => g.label);
+  let made: string;
   if (d.parent) {
-    head.innerHTML = `<p class="quiet search-how"><a href="${esc(deps.url({ group: null }))}" data-go>← The whole map</a> · ${back}</p>` +
-      `<h2 class="topics-title"><span class="tg-chip g${d.parent.group}"></span>Inside group ${d.parent.group}: ${esc(d.parent.name)}</h2>` +
-      `<p class="quiet">Its ${d.parent.size.toLocaleString()} studies, grouped again: ${d.groups.length} smaller groups.</p>`;
+    made = `<p><b>Group ${d.parent.group}, ${esc(d.parent.name)}, grouped again:</b> its ${d.parent.size.toLocaleString()} ` +
+      `studies in ${d.groups.length} smaller groups.</p>`;
+    act = link(deps.url({ group: null }), "← The whole map", deps);
   } else if (d.mode === "field") {
-    head.innerHTML = `<p class="quiet search-how">The whole field: ${d.coverage.papers.toLocaleString()} studies in ${d.groups.length} research groups · ` +
-      `<a href="${esc(deps.url({ field: false }))}" data-go>The 1,000 closest instead</a> · ${back}</p>` +
-      `<p class="topics-intro">Every study we could find on this topic: close in meaning and judged one by one by an AI, ` +
-      `or cited by many of the field's own studies (which brings in classics without an abstract). Checked once against ` +
-      `19 published reviews of habitat fragmentation, this way found about 9 in 10 of the studies they cite. Big groups ` +
-      `are split into smaller ones.</p>` +
-      (d.papers_shown ? `<p class="quiet small">To keep the page fast, the dots are a random sample of its studies; the ` +
-        `counts, groups and reading lists cover all ${d.papers_shown.of.toLocaleString()}.</p>` : "") +
-      (d.field?.credit ? `<p class="quiet small">Made sooner thanks to ${esc(d.field.credit)}.</p>` : "") +
-      `<p class="quiet small"><a href="?fields" data-go>All whole-field maps</a></p>`;
+    made = `<p><b>${d.coverage.papers.toLocaleString()} studies in ${d.groups.length} research groups.</b> Every study we ` +
+      `could find on this topic: close in meaning and judged one by one by an AI, or cited by many of the field's own ` +
+      `studies (which brings in classics that have no abstract). Big groups are split into smaller ones.</p>` +
+      `<p class="quiet">How complete? We tested this method once, on habitat fragmentation: it found about 9 in 10 of the ` +
+      `studies cited by 19 published reviews of that field.</p>` +
+      (d.papers_shown ? `<p class="quiet">To keep the page fast, the dots on the map are a random sample of its studies; ` +
+        `the counts, groups and reading lists cover all ${d.papers_shown.of.toLocaleString()}.</p>` : "") +
+      (d.field?.credit ? `<p class="quiet">Made sooner thanks to ${esc(d.field.credit)}.</p>` : "");
   } else {
-    head.innerHTML = `<p class="quiet search-how">${d.coverage.papers.toLocaleString()} ${how}, in ${d.groups.length} research groups · ${back}</p>` +
-      `<p class="topics-intro">Studies land in the same group when they cite the same works and talk about the same things. ` +
-      `Each group's name is made of the words that set it apart (chosen automatically), and its reading lists come from ` +
-      `what its own studies cite: what matters to <em>that</em> group.</p>` +
-      `<p class="quiet small"><a href="?fields&ask=${encodeURIComponent(d.question)}" data-go>Map the whole field instead</a>: every ` +
-      `study on this topic, from thousands to a million, not just the closest 1,000. The first time takes from half an hour to two hours; then ` +
-      `it opens at once for everyone.</p><p class="quiet small" id="field-near"></p>`;
-    fieldsMade(d.question, 1).then(([m]) => {
-      const el = head.querySelector("#field-near");
-      if (!el || !m || (m.score ?? 0) < NEAR_FIELD) return;
-      el.innerHTML = `Most of these studies are in a whole-field map already made: <a href="${esc(fieldUrl(m.topic, m.definition))}" ` +
-        `data-go>${esc(m.topic)}</a> (${(m.papers ?? 0).toLocaleString()} studies).`;
-      const a = el.querySelector("a")!;
-      a.onclick = (ev) => { ev.preventDefault(); deps.go(a.getAttribute("href")!); };
+    const how = d.mode === "keyword" ? "studies containing your words" : "studies closest in meaning to your search";
+    made = `<p><b>The ${d.coverage.papers.toLocaleString()} ${how}, in ${d.groups.length} research groups.</b></p>` +
+      `<div class="tv-opts"></div>` +
+      `<p class="quiet"><a href="?fields&ask=${encodeURIComponent(d.question)}" data-go>Map the whole field instead</a>: ` +
+      `every study on this topic, from thousands to a million, not just the closest 1,000. The first time takes from half ` +
+      `an hour to two hours; then it opens at once for everyone.</p>`;
+    act = link(`?fields&ask=${encodeURIComponent(d.question)}`, "Map the whole field", deps);
+    fieldsMade(d.question, 1).then(([m]) => {      // a whole-field map that already holds most of these: go there instead
+      if (!m || (m.score ?? 0) < NEAR_FIELD || !act?.isConnected) return;
+      const a = act as HTMLAnchorElement;
+      a.href = fieldUrl(m.topic, m.definition);
+      a.textContent = `Whole-field map: ${m.topic}`;
+      a.title = `Most of these studies are in a whole-field map already made: ${m.topic} (${(m.papers ?? 0).toLocaleString()} studies)`;
     });
   }
-  if (d.coverage.references_thin)
-    head.insertAdjacentHTML("beforeend", `<p class="quiet small">Only ${d.coverage.with_references.toLocaleString()} of these studies list their references in our data, so here the groups rely more on wording.</p>`);
-  if (!d.groups.length) {
-    head.insertAdjacentHTML("beforeend", `<p>These studies don't split into clear groups. <a href="${esc(deps.listUrl)}" data-go>See them as a list</a>.</p>`);
-  }
-  const names = new Map(d.groups.map((g) => [g.id, g.name]));
-  hold = null;
-  if (d.groups.length) {
-    box.appendChild(renderOverview(d, deps, { cloud, lists, span, hover, keep }));
-    box.insertAdjacentHTML("beforeend", `<h2 class="tov-title">The groups, one by one</h2>`);
-  }
-  for (const g of d.groups) box.appendChild(card(g, names, deps, !d.parent, d.mode === "field" ? 300 : 60));
-  if (d.coverage.other)
-    box.insertAdjacentHTML("beforeend", `<p class="quiet small topics-foot">${d.coverage.other.toLocaleString()} studies fit no group well (grey on the map).</p>`);
-  for (const a of box.querySelectorAll<HTMLAnchorElement>("a[data-go]"))
-    a.onclick = (e) => { e.preventDefault(); deps.go(a.getAttribute("href")!); };
+  info.innerHTML = made +
+    `<p>Studies land in the same group when they cite the same works and use the same words. Each box is a group, ` +
+    `sized by its studies; the boxes inside it are its subgroups. Point at one to see what it is about and light its ` +
+    `studies on the map; click it to keep it, open its subgroups and read its lists. Esc or ↑ goes back up.</p>` +
+    `<p class="quiet">${named ? "Group names and descriptions are written by an AI from each group's studies. " :
+      "Each group is named by the words that set it apart, chosen automatically. "}The reading lists come from what the ` +
+    `group's own studies cite: what matters to <em>that</em> group.</p>` +
+    (d.coverage.other ? `<p class="quiet">Grey: ${d.coverage.other.toLocaleString()} studies that fit no group well.</p>` : "") +
+    (d.coverage.references_thin ? `<p class="quiet">Only ${d.coverage.with_references.toLocaleString()} of these studies ` +
+      `list their references in our data, so here the groups rely more on wording.</p>` : "") +
+    `<p class="tv-links">${d.mode === "field" && !d.parent ? `<a href="${esc(deps.url({ field: false }))}" data-go>The 1,000 closest instead</a> · ` : ""}` +
+    `${back} · <a href="?fields" data-go>All whole-field maps</a></p>`;
+  const opts = info.querySelector<HTMLElement>(".tv-opts");
+  if (opts) searchOpts(opts, d, deps);
+  wire(info);
+  renderOverview(box, d, deps, { cloud, lists, span, info, act, splitFrom: d.mode === "field" ? 300 : 60 });
 }
 
-/** The map lights one group (or subgroup) while it is pointed at, and goes back to the one picked in the overview. */
-let hold: [number, number | null] | null = null;
-function hover(deps: Deps, g: number | null, sub: number | null = null) {
-  if (g == null) deps.focusGroup(hold?.[0] ?? null, hold?.[1] ?? null); else deps.focusGroup(g, sub);
+function link(href: string, text: string, deps: Deps): HTMLAnchorElement {
+  const a = document.createElement("a");
+  a.href = href;
+  a.textContent = text;
+  a.onclick = (e) => { e.preventDefault(); deps.go(a.getAttribute("href")!); };
+  return a;
 }
-function keep(deps: Deps, f: [number, number | null] | null) { hold = f; hover(deps, null); }
 
-function card(g: Group, names: Map<number, string>, deps: Deps, canSplit: boolean, splitFrom: number): HTMLElement {
-  const sec = document.createElement("section");
-  sec.className = `tgroup g${((g.id - 1) % GROUP_COLOURS) + 1}`;
-  sec.setAttribute("aria-labelledby", `tg-${g.id}`);
-  const uses = Object.entries(g.cites_groups ?? {}).slice(0, 1)
-    .map(([k]) => `builds on group ${k} (${esc(names.get(Number(k)) ?? "")})`);
-  const meta = [`${g.size.toLocaleString()} studies`, span(g.years), ...uses].filter(Boolean).join(" · ");
-  sec.innerHTML = `<h3 id="tg-${g.id}"><span class="tg-chip" aria-hidden="true"></span><span class="tg-num">Group ${g.id}</span> ${esc(g.name)}</h3>` +
-    about(g) + `<p class="tg-meta">${meta}</p>`;
-  sec.onpointerenter = () => hover(deps, g.id);
-  sec.onpointerleave = () => hover(deps, null);
-  sec.addEventListener("focusin", () => hover(deps, g.id));
-  if (g.cloud?.length) sec.append(cloud(g.cloud, 24, "the other groups"));
-  lists(sec, `${g.id}`, g.lenses, "group", names, deps);
-  if (canSplit && g.size >= splitFrom) {
-    const a = sec.appendChild(document.createElement("a"));
-    a.className = "tg-split";
-    a.href = deps.url({ group: g.id });
-    a.textContent = `Split this group into smaller ones →`;
-    a.onclick = (e) => { e.preventDefault(); deps.go(a.getAttribute("href")!); };
-  }
-  return sec;
+/** A map of the closest studies is made from a search: by meaning or exact words, from a year on. */
+function searchOpts(host: HTMLElement, d: TopicMap, deps: Deps) {
+  const p = new URLSearchParams(location.search);
+  const by = d.mode === "keyword" ? "words" : "meaning", since = p.get("since") ?? "";
+  host.innerHTML = `<span class="seg" role="radiogroup" aria-label="Made from studies found">` +
+    `<button type="button" role="radio" data-by="meaning" aria-checked="${by === "meaning"}">By meaning</button>` +
+    `<button type="button" role="radio" data-by="words" aria-checked="${by === "words"}">Exact words</button></span> ` +
+    `<select aria-label="Published"><option value="">Any year</option><option value="2024">Since 2024</option>` +
+    `<option value="2020">Since 2020</option><option value="2015">Since 2015</option></select>`;
+  const sel = host.querySelector("select")!;
+  sel.value = since;
+  const to = (o: TopicOptions) => deps.go(deps.url(o));
+  for (const b of host.querySelectorAll<HTMLButtonElement>("[data-by]"))
+    b.onclick = () => { if (b.dataset.by !== by) to({ by: b.dataset.by as "meaning" | "words" }); };
+  sel.onchange = () => to({ since: sel.value });
 }
 
 const pct = (x: number) => x >= 0.095 ? `${Math.round(100 * x)}%` : x >= 0.0095 ? `${(100 * x).toFixed(1)}%`
@@ -212,7 +207,7 @@ const pct = (x: number) => x >= 0.095 ? `${Math.round(100 * x)}%` : x >= 0.0095 
  *  on a log scale up to `cap` times (as often or as rarely): x8 against the other groups, x1000 against all of
  *  science (a topic's own words are thousands of times commoner in it). A wrapped line of words, the biggest in
  *  the middle, so it reads as text (and to screen readers in order of size, from the centre out). */
-export function cloud(words: CloudWord[], k: number, vs: string, note?: string, cap = vs === "all of science" ? 1000 : 8): HTMLElement {
+export function cloud(words: CloudWord[], k: number, vs: string, cap = vs === "all of science" ? 1000 : 8): HTMLElement {
   const w = words.slice(0, k);
   const lo = Math.min(...w.map((x) => x.share)), hi = Math.max(...w.map((x) => x.share));
   const big = k >= 30 ? 27 : 22;
@@ -220,7 +215,6 @@ export function cloud(words: CloudWord[], k: number, vs: string, note?: string, 
   [...w].sort((a, b) => b.share - a.share).forEach((x, i) => (i % 2 ? order.push(x) : order.unshift(x)));
   const div = document.createElement("div");
   div.className = "tg-cloud-box";
-  if (note) div.insertAdjacentHTML("beforeend", `<p class="tg-help">${note}</p>`);
   const ul = div.appendChild(document.createElement("ul"));
   ul.className = "tg-cloud";
   ul.setAttribute("aria-label", `The words its studies use most, compared with ${vs}`);
@@ -240,51 +234,54 @@ export function cloud(words: CloudWord[], k: number, vs: string, note?: string, 
   return div;
 }
 
-/** What the colours say, once above the clouds. */
-export const legend = (vs: string) => `<span class="cl-up">blue</span>: used more than in ${vs} · ` +
-  `<span class="cl-even">grey</span>: about as much · <span class="cl-down">red</span>: less. Bigger: more of its studies use it.`;
-
-/** Reading lists as tabs: of a group (key "3"), a subgroup ("o3.2") or the whole topic ("o0"); the key keeps the
- *  tabs' ids apart when one group's lists show twice (in the overview and in its card). */
-export function lists(sec: HTMLElement, key: string, lenses: Lenses, unit: string, names: Map<number, string>, deps: Deps) {
-  const g = { id: key, lenses };
-  const present = LENSES.filter(([k]) => (g.lenses[k] ?? []).length);
-  const tabs = sec.appendChild(document.createElement("div"));
+/** Reading lists as tabs: of a group (key "3"), a subgroup ("3.2") or the whole topic ("0"); `want` opens that
+ *  list if the unit has it (the reader's last choice carries over as they move between groups). */
+export function lists(host: HTMLElement, key: string, lenses: Lenses, unit: string, names: Map<number, string>, deps: Deps,
+                      want = "core", onPick: (lens: string) => void = () => {}) {
+  const present = LENSES.filter(([k]) => (lenses[k] ?? []).length);
+  const tabs = host.appendChild(document.createElement("div"));
   tabs.className = "tg-tabs";
   tabs.setAttribute("role", "tablist");
   tabs.setAttribute("aria-label", `Reading lists of this ${unit}`);
-  const panel = sec.appendChild(document.createElement("div"));
+  const help = host.appendChild(document.createElement("p"));
+  help.className = "tg-help";
+  const panel = host.appendChild(document.createElement("div"));
   panel.className = "tg-panel";
   panel.setAttribute("role", "tabpanel");
-  panel.id = `tgp-${g.id}`;
+  panel.tabIndex = 0;                                  // it scrolls on its own: reachable by keyboard
+  panel.id = `tgp-${key}`;
   const buttons: HTMLButtonElement[] = [];
   const pick = (i: number, focus = false) => {
     buttons.forEach((b, j) => { b.setAttribute("aria-selected", String(i === j)); b.tabIndex = i === j ? 0 : -1; });
     if (focus) buttons[i].focus();
-    const [key, , help] = present[i];
+    const [k, , say] = present[i];
     panel.setAttribute("aria-labelledby", buttons[i].id);
+    help.textContent = say(unit);
     panel.replaceChildren();
-    panel.insertAdjacentHTML("beforeend", `<p class="tg-help">${esc(help(unit))}</p>`);
-    if (key === "experts") for (const e of g.lenses.experts) panel.appendChild(expert(e, deps, unit));
-    else for (const p of g.lenses[key] ?? []) panel.appendChild(deps.row(asHit(p), why(key, p, names)));
+    panel.scrollTop = 0;
+    if (k === "experts") for (const e of lenses.experts) panel.appendChild(expert(e, deps, unit));
+    else for (const p of lenses[k] ?? []) panel.appendChild(deps.row(asHit(p), why(k, p, names)));
   };
-  present.forEach(([, label], i) => {
+  present.forEach(([k, label, say], i) => {
     const b = tabs.appendChild(document.createElement("button"));
     b.type = "button";
-    b.id = `tgt-${g.id}-${i}`;
+    b.id = `tgt-${key}-${i}`;
     b.setAttribute("role", "tab");
     b.setAttribute("aria-controls", panel.id);
+    b.title = say(unit);
     b.textContent = label;
-    b.onclick = () => pick(i);
+    b.onclick = () => { onPick(k); pick(i); };
     b.onkeydown = (e) => {
       if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
         e.preventDefault();
-        pick((i + (e.key === "ArrowRight" ? 1 : present.length - 1)) % present.length, true);
+        const j = (i + (e.key === "ArrowRight" ? 1 : present.length - 1)) % present.length;
+        onPick(present[j][0]);
+        pick(j, true);
       }
     };
     buttons.push(b);
   });
-  if (present.length) pick(0);
+  if (present.length) pick(Math.max(0, present.findIndex(([k]) => k === want)));
 }
 
 function why(key: string, p: TopicPaper, names: Map<number, string>): string {

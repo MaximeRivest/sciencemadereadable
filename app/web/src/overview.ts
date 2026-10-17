@@ -1,22 +1,26 @@
 /**
- * The overview of a topic map: the whole field at a glance, as boxes. Each research group is a box sized by its
- * studies, and the boxes inside it are its subgroups (the data API makes them with the map), so how the field
- * divides, and how each part divides again, shows before anyone reads a list. Pick a box (the whole, a group or a
- * subgroup) and its words and reading lists open right under the boxes; pointing at one lights its studies on
- * the map of science. Layout: squarified treemap (Bruls, Huizing & van Wijk 2000), boxes as close to squares as
- * the sizes allow, biggest first, so sizes compare and names fit.
+ * A topic map on one screen. Top left, the field as boxes: each research group a box sized by its studies, its
+ * subgroups the boxes inside it (the data API makes them with the map). Top right, the map of science (the page's
+ * own globe, placed over an empty slot here). Under the globe, what the box pointed at (or picked) is about: its
+ * name, description and word cloud; under the boxes, the picked one's reading lists.
+ *
+ * Pointing at a box previews it (the globe lights its studies, the panel under the globe shows its words); clicking
+ * keeps it, and a group with subgroups zooms in: its box grows to fill the space while its subgroups spread out to
+ * be read, and "↑" goes back up. Layout: squarified treemap (Bruls, Huizing & van Wijk 2000), boxes as close to
+ * squares as the sizes allow, biggest first, so sizes compare and names fit; laid out again for the zoomed group.
  */
 import type { CloudWord, Deps, Group, Lenses, Sub, TopicMap } from "./topics.ts";
-import { about, legend } from "./topics.ts";
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
 export interface Parts {
-  cloud: (w: CloudWord[], k: number, vs: string, note?: string) => HTMLElement;
-  lists: (sec: HTMLElement, key: string, l: Lenses, unit: string, names: Map<number, string>, deps: Deps) => void;
+  cloud: (w: CloudWord[], k: number, vs: string) => HTMLElement;
+  lists: (host: HTMLElement, key: string, l: Lenses, unit: string, names: Map<number, string>, deps: Deps,
+          want: string, onPick: (lens: string) => void) => void;
   span: (y?: number[] | null) => string;
-  hover: (deps: Deps, g: number | null, sub?: number | null) => void;
-  keep: (deps: Deps, f: [number, number | null] | null) => void;
+  info: HTMLElement;                 // what "?" opens: how the map was made, its limits, other ways to see it
+  act: HTMLElement | null;           // one link in the bar (map the whole field, back to the whole map...)
+  splitFrom: number;                 // a group this big can be mapped again on its own
 }
 
 interface Rect { x: number; y: number; w: number; h: number }
@@ -51,16 +55,24 @@ export function squarify(values: number[], r: Rect): Rect[] {
   return out;
 }
 
-const HEAD = 24;   // px: a group box's name strip, above its subgroups
-const LINE = 14.4; // px: a line of a box's name (style.css .tov-s)
+const HEAD = 24;    // px: a group box's name strip, above its subgroups (style.css .tov-head)
+const HEAD_Z = 32;  // px: the same, for the group zoomed into (.tov-g.z .tov-head)
+const LINE = 14.4;  // px: a line of a subgroup's name (.tov-s: 11.5px × 1.25)
+const LINE_Z = 16.3; // px: the same, zoomed in (.tov-g.z .tov-s: 13px × 1.25)
+const ANIM = 480;   // ms: the zoom (.tov-map.anim)
 
 /** A name gets the whole lines its box has room for (then "…"), never a line cut in half. */
-function clamp(el: HTMLElement, px: number) {
+function clamp(el: HTMLElement, px: number, line = LINE) {
   const name = el.querySelector<HTMLElement>(".tov-name");
-  if (name) name.style.setProperty("-webkit-line-clamp", String(Math.max(1, Math.floor(px / LINE))));
+  if (name) name.style.setProperty("-webkit-line-clamp", String(Math.max(1, Math.floor(px / line))));
 }
+const place = (el: HTMLElement, r: Rect, ow: number, oh: number) => {   // in % of the parent: follows its size
+  el.style.left = `${100 * r.x / ow}%`; el.style.top = `${100 * r.y / oh}%`;
+  el.style.width = `${100 * r.w / ow}%`; el.style.height = `${100 * r.h / oh}%`;
+};
+const colour = (id: number) => `g${((id - 1) % 9) + 1}`;
 
-/** Where things stand: "" the whole, "3" group 3, "3.2" subgroup 2 of group 3. */
+/** Where things stand: the whole (g null), a group, or one of its subgroups. */
 type At = { g: number | null; s: number | null };
 const parse = (at: string | undefined, d: TopicMap): At => {
   const [a, b] = (at ?? "").split(".").map(Number);
@@ -69,169 +81,269 @@ const parse = (at: string | undefined, d: TopicMap): At => {
   return { g: g.id, s: g.subgroups?.some((x) => x.id === b) ? b : null };
 };
 const atStr = (a: At) => a.g == null ? "" : a.s == null ? `${a.g}` : `${a.g}.${a.s}`;
+const same = (a: At, b: At) => a.g === b.g && a.s === b.s;
 
-export function renderOverview(d: TopicMap, deps: Deps, parts: Parts): HTMLElement {
-  const sec = document.createElement("section");
-  sec.className = "tov";
-  sec.setAttribute("aria-labelledby", "tov-h");
-  const whole = d.parent ? `group ${d.parent.group}` : d.mode === "field" ? "the field" : "the topic";
+interface Tile { g: Group | null; size: number; box: HTMLElement; head?: HTMLButtonElement; inner?: HTMLElement;
+                 kids: { s: Sub | null; size: number; el: HTMLElement }[] }
+
+let stop: (() => void) | null = null;   // the shown dashboard's listeners, removed when another replaces it
+
+export function renderOverview(box: HTMLElement, d: TopicMap, deps: Deps, parts: Parts) {
+  stop?.();
+  const whole = d.parent ? `All of group ${d.parent.group}` : d.mode === "field" ? "Whole field" : "Whole topic";
+  const tv = box.appendChild(document.createElement("div"));
+  tv.className = "tv";
+  tv.innerHTML = `<h2 class="sr-only">Research groups: ${esc(d.question)}</h2>` +
+    `<div class="tv-left"><div class="tv-bar"><nav class="tov-path" aria-label="Where you are in this map"></nav>` +
+    `<span class="tv-act"></span><button type="button" class="tv-q" aria-expanded="false" aria-controls="tv-info" ` +
+    `title="About this map" aria-label="About this map">?</button></div>` +
+    `<div class="tv-info" id="tv-info" role="region" aria-label="About this map" hidden></div>` +
+    `<div class="tov-map" role="group"></div></div>` +
+    `<div class="tv-globe" aria-hidden="true"></div>` +
+    `<section class="tv-about" aria-label="What it is about"></section>` +
+    `<section class="tv-read" aria-label="Reading lists"></section>`;
+  const $ = <T extends HTMLElement>(s: string) => tv.querySelector<T>(s)!;
+  const path = $(".tov-path"), tm = $(".tov-map"), aboutBox = $(".tv-about"), read = $(".tv-read");
+  const slot = $(".tv-globe"), q = $<HTMLButtonElement>(".tv-q"), info = $("#tv-info");
+  info.append(parts.info);
+  if (parts.act) $(".tv-act").append(parts.act);
   const anySubs = d.groups.some((g) => g.subgroups?.length);
-  sec.innerHTML = `<h2 class="tov-title" id="tov-h">${esc(whole[0].toUpperCase() + whole.slice(1))} at a glance</h2>` +
-    `<p class="tg-help">Each box is a research group, sized by its studies${anySubs ? "; the boxes inside it are its subgroups" : ""}. ` +
-    `Pick one to see its words and reading lists below; point at one to find its studies on the map.</p>`;
-  const tm = sec.appendChild(document.createElement("div"));
-  tm.className = "tov-map";
-  tm.setAttribute("role", "group");
-  tm.setAttribute("aria-label", `The groups of ${whole}${anySubs ? " and their subgroups" : ""}, sized by their studies`);
-  const panel = sec.appendChild(document.createElement("div"));
-  panel.className = "tov-panel";
-  const tiles = new Map<string, HTMLButtonElement>();
-  let at = parse(deps.at, d);
-  if (at.g == null && !d.overall) at = { g: d.groups[0]?.id ?? null, s: null };   // maps made before 2026-10-15
+  tm.setAttribute("aria-label", `The groups of ${whole.toLowerCase()}${anySubs ? " and their subgroups" : ""}, sized by their studies`);
 
-  const pick = (a: At, scroll = false) => {
-    at = a;
-    for (const [k, b] of tiles) b.setAttribute("aria-pressed", String(k === atStr(a)));
-    parts.keep(deps, a.g == null ? null : [a.g, a.s]);
-    deps.select?.(atStr(a));
-    detail(panel, d, a, deps, parts, pick);
-    if (scroll && panel.getBoundingClientRect().top > innerHeight - 120) panel.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+  let sel = parse(deps.at, d);
+  if (sel.g == null && !d.overall) sel = { g: d.groups[0]?.id ?? null, s: null };   // maps made before 2026-10-15
+  const hasSubs = (id: number | null) => !!d.groups.find((g) => g.id === id)?.subgroups?.length;
+  let zoom: number | null = deps.at && hasSubs(sel.g) ? sel.g : null;
+  let lens = "core";
 
-  // the layout, in px of the box as it is now (positions are kept in % so it follows the page's width)
-  const W = Math.max(280, Math.min(760, (document.querySelector("#results") as HTMLElement | null)?.clientWidth || 680));
-  const H = Math.round(W * (W < 520 ? 1.15 : 0.62));
-  const pctOf = (r: Rect, ow: number, oh: number, el: HTMLElement) => {
-    el.style.left = `${100 * r.x / ow}%`; el.style.top = `${100 * r.y / oh}%`;
-    el.style.width = `${100 * r.w / ow}%`; el.style.height = `${100 * r.h / oh}%`;
-  };
-  tm.style.aspectRatio = `${W} / ${H}`;
+  // ------------------------------------------------------------------ the boxes
+  const tiles: Tile[] = [];
+  const pressable = new Map<string, HTMLButtonElement>();
   const items: { g: Group | null; size: number }[] = d.groups.map((g) => ({ g, size: g.size }));
   if (d.coverage.other) items.push({ g: null, size: d.coverage.other });
-  const outer = squarify(items.map((x) => x.size), { x: 0, y: 0, w: W, h: H });
-  items.forEach(({ g, size }, i) => {
-    const r = outer[i];
-    const colour = g ? `g${((g.id - 1) % 9) + 1}` : "g0";
+  for (const { g, size } of items) {
+    const b = tm.appendChild(document.createElement("div"));
     if (!g) {                                          // studies in no group: a grey box, nothing to read
-      const div = tm.appendChild(document.createElement("div"));
-      div.className = `tov-g tov-none ${colour}` + (r.w < 90 || r.h < 34 ? " tiny" : "");
-      div.title = `${size.toLocaleString()} studies in no clear group`;
-      div.innerHTML = `<span class="tov-name">In no clear group</span> <span class="tov-n">${size.toLocaleString()}</span>`;
-      pctOf(r, W, H, div);
-      return;
+      b.className = "tov-g tov-none g0";
+      b.title = `${size.toLocaleString()} studies in no clear group`;
+      b.innerHTML = `<span class="tov-name">In no clear group</span> <span class="tov-n">${size.toLocaleString()}</span>`;
+      tiles.push({ g, size, box: b, kids: [] });
+      continue;
     }
-    const box = tm.appendChild(document.createElement("div"));
-    box.className = `tov-g ${colour}`;
-    pctOf(r, W, H, box);
-    box.onpointerenter = () => parts.hover(deps, g.id);
-    box.onpointerleave = () => parts.hover(deps, null);
+    b.className = `tov-g ${colour(g.id)}`;
+    b.onpointerenter = () => preview({ g: g.id, s: null });
     const subs = g.subgroups ?? [];
-    const head = box.appendChild(document.createElement("button"));
+    const head = b.appendChild(document.createElement("button"));
     head.type = "button";
-    head.className = "tov-head" + (subs.length ? "" : " tov-fill") + (r.w < 90 || r.h < 34 ? " tiny" : "");
+    head.className = "tov-head" + (subs.length ? "" : " tov-fill");
     head.innerHTML = `<span class="tov-name"><b>${g.id}</b> ${esc(g.name)}</span> <span class="tov-n">${g.size.toLocaleString()}</span>`;
     head.title = `Group ${g.id}: ${g.name} · ${g.size.toLocaleString()} studies`;
     head.setAttribute("aria-label", `Group ${g.id}: ${g.name}, ${g.size.toLocaleString()} studies` +
       (subs.length ? `, in ${subs.length} subgroups` : ""));
-    if (!subs.length) clamp(head, r.h - 10 - LINE);
-    head.onclick = () => pick({ g: g.id, s: null }, true);
-    head.onfocus = () => parts.hover(deps, g.id);
-    tiles.set(`${g.id}`, head);
-    if (!subs.length || r.h < HEAD + 24 || r.w < 40) return;   // too small to show inside: the group's panel lists them
-    const inner = box.appendChild(document.createElement("div"));
+    head.onclick = () => pick({ g: g.id, s: null });
+    head.onfocus = () => preview({ g: g.id, s: null });
+    pressable.set(`${g.id}`, head);
+    const t: Tile = { g, size, box: b, head, kids: [] };
+    tiles.push(t);
+    if (!subs.length) continue;
+    const inner = t.inner = b.appendChild(document.createElement("div"));
     inner.className = "tov-inner";
-    const iw = r.w - 4, ih = r.h - HEAD - 3;
-    const kids: { s: Sub | null; size: number }[] = subs.map((s) => ({ s, size: s.size }));
-    if (g.subgroups_other) kids.push({ s: null, size: g.subgroups_other });
-    const rects = squarify(kids.map((k) => k.size), { x: 0, y: 0, w: iw, h: ih });
-    kids.forEach(({ s, size }, j) => {
-      const rr = rects[j];
-      const tiny = rr.w < 64 || rr.h < 30;
-      if (!s) {
-        const div = inner.appendChild(document.createElement("div"));
-        div.className = "tov-s tov-none" + (tiny ? " tiny" : "");
-        div.title = `${size.toLocaleString()} studies of group ${g.id} in no clear subgroup`;
-        div.innerHTML = `<span class="tov-name">no clear subgroup</span>`;
-        pctOf(rr, iw, ih, div);
-        return;
-      }
-      const b = inner.appendChild(document.createElement("button"));
-      b.type = "button";
-      b.className = "tov-s" + (tiny ? " tiny" : "");
-      b.innerHTML = `<span class="tov-name">${esc(s.name)}</span> <span class="tov-n">${s.size.toLocaleString()}</span>`;
-      b.title = `${g.id}.${s.id}: ${s.name} · ${s.size.toLocaleString()} studies`;
-      b.setAttribute("aria-label", `Subgroup ${g.id}.${s.id} of group ${g.id}: ${s.name}, ${s.size.toLocaleString()} studies`);
-      clamp(b, rr.h - 8 - LINE);
-      b.onclick = () => pick({ g: g.id, s: s.id }, true);
-      b.onpointerenter = () => parts.hover(deps, g.id, s.id);
-      b.onpointerleave = () => parts.hover(deps, g.id);
-      b.onfocus = () => parts.hover(deps, g.id, s.id);
-      pctOf(rr, iw, ih, b);
-      tiles.set(`${g.id}.${s.id}`, b);
-    });
-  });
-  tm.onpointerleave = () => parts.hover(deps, null);
-  tm.addEventListener("focusout", (e) => { if (!tm.contains(e.relatedTarget as Node)) parts.hover(deps, null); });
-  pick(at);
-  return sec;
-}
-
-/** The picked box: where it sits (a path back up), its size, words and reading lists. */
-function detail(panel: HTMLElement, d: TopicMap, a: At, deps: Deps, parts: Parts, pick: (a: At, scroll?: boolean) => void) {
-  panel.replaceChildren();
-  const g = a.g == null ? null : d.groups.find((x) => x.id === a.g)!;
-  const s = g && a.s != null ? g.subgroups!.find((x) => x.id === a.s)! : null;
-  const whole = d.parent ? `All of group ${d.parent.group}` : d.mode === "field" ? "The whole field" : "The whole topic";
-  // the path: The whole field › Group 3 › 3.2
-  const path = panel.appendChild(document.createElement("p"));
-  path.className = "tov-path";
-  const step = (label: string, to: At | null) => {
-    if (path.childNodes.length) path.append(" › ");
-    if (!to) { const b = document.createElement("b"); b.textContent = label; path.append(b); return; }
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "linklike"; b.textContent = label;
-    b.onclick = () => pick(to);
-    path.append(b);
-  };
-  if (!g) path.hidden = true;                          // at the top: nothing to go back to
-  if (d.overall) step(whole, g ? { g: null, s: null } : null);
-  if (g) step(`Group ${g.id}`, s ? { g: g.id, s: null } : null);
-  if (s) step(`Subgroup ${g!.id}.${s.id}`, null);
-
-  const it = s ?? g ?? d.overall!;
-  const title = s ? s.name : g ? g.name : whole;
-  const unit = s ? "subgroup" : g ? "group" : d.mode === "field" ? "field" : "topic";
-  const h = panel.appendChild(document.createElement("h3"));
-  h.className = "tov-h" + (g ? ` g${((g.id - 1) % 9) + 1}` : "");
-  h.innerHTML = (g ? `<span class="tg-chip" aria-hidden="true"></span>` : "") + esc(title);
-  const subs = !s && g ? g.subgroups ?? [] : [];
-  const meta = [`${it.size.toLocaleString()} studies`, parts.span(it.years),
-    subs.length ? `${subs.length} subgroups` : "", !g && d.groups.length ? `${d.groups.length} groups` : ""].filter(Boolean).join(" · ");
-  panel.insertAdjacentHTML("beforeend", (s || g ? about(it as Sub) : "") + `<p class="tg-meta">${meta}</p>`);
-  const vs = s ? `the rest of group ${g!.id}` : g ? "the other groups" : "all of science";
-  if (it.cloud?.length) panel.append(parts.cloud(it.cloud, 30, vs, legend(vs)));
-  const names = new Map((s ? g!.subgroups! : d.groups).map((x) => [x.id, x.name]));
-  if (Object.values(it.lenses ?? {}).some((l) => l.length))
-    parts.lists(panel, `o${atStr(a) || 0}`, it.lenses, unit, names, deps);
-  if (subs.length) {                                  // a group's subgroups, also as a list (boxes can be too small to read)
-    const ul = document.createElement("ul");
-    ul.className = "tov-subs";
-    for (const x of subs) {
-      const li = ul.appendChild(document.createElement("li"));
-      const b = li.appendChild(document.createElement("button"));
-      b.type = "button"; b.className = "linklike";
-      b.textContent = `${g!.id}.${x.id} ${x.name}`;
-      b.onclick = () => pick({ g: g!.id, s: x.id });
-      li.append(` · ${x.size.toLocaleString()} studies`);
+    for (const s of subs) {
+      const k = inner.appendChild(document.createElement("button"));
+      k.type = "button";
+      k.className = "tov-s";
+      k.innerHTML = `<span class="tov-name">${esc(s.name)}</span> <span class="tov-n">${s.size.toLocaleString()}</span>`;
+      k.title = `${g.id}.${s.id}: ${s.name} · ${s.size.toLocaleString()} studies`;
+      k.setAttribute("aria-label", `Subgroup ${g.id}.${s.id} of group ${g.id}: ${s.name}, ${s.size.toLocaleString()} studies`);
+      k.onclick = () => pick({ g: g.id, s: s.id });
+      k.onpointerenter = () => preview({ g: g.id, s: s.id });
+      k.onpointerleave = () => preview({ g: g.id, s: null });
+      k.onfocus = () => preview({ g: g.id, s: s.id });
+      pressable.set(`${g.id}.${s.id}`, k);
+      t.kids.push({ s, size: s.size, el: k });
     }
-    panel.insertAdjacentHTML("beforeend", `<p class="tg-help">It divides into:</p>`);
-    panel.append(ul);
+    if (g.subgroups_other) {
+      const k = inner.appendChild(document.createElement("div"));
+      k.className = "tov-s tov-none";
+      k.title = `${g.subgroups_other.toLocaleString()} studies of group ${g.id} in no clear subgroup`;
+      k.innerHTML = `<span class="tov-name">no clear subgroup</span>`;
+      t.kids.push({ s: null, size: g.subgroups_other, el: k });
+    }
   }
-  if (g && !d.parent) {
-    const a2 = panel.appendChild(document.createElement("a"));
-    a2.className = "tg-split";
-    a2.href = deps.url({ group: g.id });
-    a2.textContent = subs.length ? `Open group ${g.id} as its own map →` : `Split group ${g.id} into smaller ones →`;
-    a2.onclick = (e) => { e.preventDefault(); deps.go(a2.getAttribute("href")!); };
-  }
+
+  /** Every box where it belongs: the field's boxes, or the zoomed group filling the space with its subgroups. */
+  let settle = 0;
+  const layout = (animate: boolean) => {
+    const W = tm.clientWidth, H = tm.clientHeight;
+    if (!W || !H) return;
+    if (animate && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      tm.classList.add("anim");
+      clearTimeout(settle);
+      settle = window.setTimeout(() => tm.classList.remove("anim"), ANIM + 60);
+    }
+    tm.classList.toggle("zoomed", zoom != null);
+    const outer = squarify(tiles.map((t) => t.size), { x: 0, y: 0, w: W, h: H });
+    tiles.forEach((t, i) => {
+      const z = t.g != null && t.g.id === zoom, gone = zoom != null && !z;
+      const r = z ? { x: 0, y: 0, w: W, h: H } : outer[i];
+      place(t.box, r, W, H);
+      t.box.classList.toggle("z", z);
+      t.box.classList.toggle("gone", gone);
+      t.box.inert = gone;
+      t.box.classList.toggle("tiny", !z && (r.w < 90 || r.h < 34));
+      if (!t.inner) { if (t.head) clamp(t.head, r.h - 10 - LINE); return; }
+      const head = z ? HEAD_Z : HEAD;
+      const iw = Math.max(1, r.w - 4), ih = Math.max(1, r.h - head - 3);
+      t.box.classList.toggle("cramped", !z && (r.h < HEAD + 24 || r.w < 40));
+      const rects = squarify(t.kids.map((k) => k.size), { x: 0, y: 0, w: iw, h: ih });
+      t.kids.forEach((k, j) => {
+        const rr = rects[j];
+        place(k.el, rr, iw, ih);
+        k.el.classList.toggle("tiny", rr.w < (z ? 56 : 64) || rr.h < (z ? 26 : 30));
+        clamp(k.el, rr.h - (z ? 12 + LINE_Z : 8 + LINE), z ? LINE_Z : LINE);
+      });
+    });
+  };
+
+  // ------------------------------------------------------------------ pointing, picking, zooming
+  /** The unit shown under the globe and lit on it: the one pointed at, else the one picked. Leaving a box waits a
+   *  moment before going back, so sliding across the gap between two boxes doesn't flash the picked one. */
+  let shown: At | null = null, back = 0;
+  const preview = (a: At | null) => {
+    clearTimeout(back);
+    if (a) show(a); else back = window.setTimeout(() => show(sel), 140);
+  };
+  const show = (a: At) => {
+    if (shown && same(a, shown)) return;
+    shown = a;
+    deps.focusGroup(a.g, a.s);
+    aboutBox.replaceChildren(aboutOf(a));
+  };
+  tm.onpointerleave = () => preview(null);
+  tm.addEventListener("focusout", (e) => { if (!tm.contains(e.relatedTarget as Node)) preview(null); });
+
+  const pick = (a: At) => {
+    sel = a;
+    const z = a.g != null && hasSubs(a.g) ? a.g : null;
+    if (z !== zoom) { zoom = z; layout(true); }
+    tv.dataset.touched = "1";              // a late refresh of this map (topics.ts) leaves it alone now
+    deps.select?.(atStr(a));
+    draw();
+    show(a);
+  };
+  const up = () => pick(d.overall ? { g: null, s: null } : { g: zoom ?? sel.g, s: null });
+
+  /** The pressed box, the path back up, the reading lists. */
+  const draw = () => {
+    for (const [k, b] of pressable) b.setAttribute("aria-pressed", String(k === atStr(sel)));
+    path.replaceChildren();
+    const g = sel.g == null ? null : d.groups.find((x) => x.id === sel.g)!;
+    const s = g && sel.s != null ? g.subgroups!.find((x) => x.id === sel.s)! : null;
+    const step = (label: string, to: At | null, cls = "") => {
+      if (path.childNodes.length) path.append(Object.assign(document.createElement("span"), { className: "tov-sep", textContent: "›" }));
+      const el = document.createElement(to ? "button" : "b");
+      el.textContent = label;
+      el.className = cls;
+      if (to) { (el as HTMLButtonElement).type = "button"; el.onclick = () => pick(to); }
+      if (!to) el.setAttribute("aria-current", "location");
+      path.append(el);
+    };
+    if (g || zoom != null) {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "tov-up"; b.innerHTML = `<span aria-hidden="true">↑</span> ${esc(whole)}`;
+      b.title = "Back to the whole map (Esc)";
+      b.onclick = up;
+      if (!d.overall && zoom == null) { step(whole, null); } else path.append(b);
+    } else step(whole, null);
+    if (g) step(`${g.id} · ${g.name}`, s ? { g: g.id, s: null } : null, "tov-crumb");
+    if (s) step(`${g!.id}.${s.id} · ${s.name}`, null, "tov-crumb");
+    readingLists();
+  };
+
+  const readingLists = () => {
+    read.replaceChildren();
+    const g = sel.g == null ? null : d.groups.find((x) => x.id === sel.g)!;
+    const s = g && sel.s != null ? g.subgroups!.find((x) => x.id === sel.s)! : null;
+    const it = s ?? g ?? d.overall;
+    if (!it) return;
+    const unit = s ? "subgroup" : g ? "group" : d.mode === "field" ? "field" : "topic";
+    const name = s ? s.name : g ? g.name : d.question;
+    read.insertAdjacentHTML("beforeend", `<h3 class="tv-read-h">${g ? `<span class="tg-chip ${colour(g.id)}" aria-hidden="true"></span>` : ""}` +
+      `<span>What to read in <b>${esc(name)}</b></span></h3>`);
+    const names = new Map((s ? g!.subgroups! : d.groups).map((x) => [x.id, x.name]));
+    if (Object.values(it.lenses ?? {}).some((l) => l.length))
+      parts.lists(read, `o${atStr(sel) || 0}`, it.lenses, unit, names, deps, lens, (k) => { lens = k; });
+    else read.insertAdjacentHTML("beforeend", `<p class="tg-help">No reading lists for this one.</p>`);
+  };
+
+  /** Under the globe: a unit's name, size, description and word cloud (made once each, kept). */
+  const made = new Map<string, HTMLElement>();
+  const aboutOf = (a: At): HTMLElement => {
+    const key = atStr(a);
+    const had = made.get(key);
+    if (had) return had;
+    const g = a.g == null ? null : d.groups.find((x) => x.id === a.g)!;
+    const s = g && a.s != null ? g.subgroups!.find((x) => x.id === a.s)! : null;
+    const it = s ?? g ?? d.overall ?? { size: d.coverage.papers, years: null, cloud: undefined };
+    const div = document.createElement("div");
+    const title = s ? s.name : g ? g.name : d.question[0].toUpperCase() + d.question.slice(1);
+    const where = s ? `Subgroup ${g!.id}.${s.id}` : g ? `Group ${g.id}` : d.parent ? `Group ${d.parent.group}, grouped again` :
+      d.mode === "field" ? "The whole field" : "The closest studies";
+    const subs = !s && g ? g.subgroups?.length ?? 0 : 0;
+    const meta = [where, `${it.size.toLocaleString()} studies`, parts.span(it.years),
+      subs ? `${subs} subgroups` : "", !g ? `${d.groups.length} groups` : ""].filter(Boolean).join(" · ");
+    div.innerHTML = `<h3 class="tv-h">${g ? `<span class="tg-chip ${colour(g.id)}" aria-hidden="true"></span>` : ""}${esc(title)}</h3>` +
+      `<p class="tg-meta">${esc(meta)}</p>` +
+      ((s ?? g)?.label?.about ? `<p class="tg-about">${esc((s ?? g)!.label!.about!)}</p>` : "");
+    const vs = s ? `the rest of group ${g!.id}` : g ? "the other groups" : "all of science";
+    if (it.cloud?.length) {
+      div.append(parts.cloud(it.cloud, 30, vs));
+      div.insertAdjacentHTML("beforeend", `<p class="tv-legend"><span class="cl-up">blue</span>: used more than in ${vs} · ` +
+        `<span class="cl-down">red</span>: less · bigger: in more of its studies</p>`);
+    }
+    if (g && !s && !d.parent && g.size >= parts.splitFrom) {
+      const l = div.appendChild(document.createElement("a"));
+      l.className = "tg-split";
+      l.href = deps.url({ group: g.id });
+      l.textContent = subs ? `Map group ${g.id} on its own →` : `Split group ${g.id} into smaller ones →`;
+      l.onclick = (e) => { e.preventDefault(); deps.go(l.getAttribute("href")!); };
+    }
+    made.set(key, div);
+    return div;
+  };
+
+  // ------------------------------------------------------------------ "?"
+  const open = (on: boolean) => {
+    info.hidden = !on;
+    q.setAttribute("aria-expanded", String(on));
+  };
+  q.onclick = () => open(info.hasAttribute("hidden"));
+  const outside = (e: PointerEvent) => { if (!info.hidden && !info.contains(e.target as Node) && e.target !== q) open(false); };
+  document.addEventListener("pointerdown", outside);
+  tv.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (!info.hidden) { open(false); q.focus(); } else if (zoom != null || sel.g != null) up();
+  });
+
+  // ------------------------------------------------------------------ the globe over its slot, the screen's height
+  document.body.classList.add("topics-dash");
+  const fit = () => {
+    if (!tv.isConnected) return stop?.();
+    tv.style.setProperty("--tv-top", `${Math.round(tv.getBoundingClientRect().top + scrollY)}px`);
+    const r = slot.getBoundingClientRect();
+    if (r.width) for (const [k, v] of [["--tv-x", r.left], ["--tv-y", r.top], ["--tv-s", r.width]] as const)
+      document.body.style.setProperty(k, `${Math.round(v)}px`);
+  };
+  const ro = new ResizeObserver(() => { if (!tv.isConnected) return stop?.(); fit(); layout(false); });
+  ro.observe(tm); ro.observe(slot);
+  addEventListener("resize", fit);
+  stop = () => {
+    ro.disconnect(); removeEventListener("resize", fit); document.removeEventListener("pointerdown", outside);
+    clearTimeout(back); clearTimeout(settle); stop = null;
+  };
+
+  fit();
+  layout(false);
+  draw();
+  show(sel);
 }
