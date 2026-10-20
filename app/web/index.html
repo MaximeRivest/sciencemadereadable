@@ -240,7 +240,8 @@ for p in r.json()["results"]:
     <li><b>Be gentle:</b> 30 requests (or MCP tool calls) a minute per address (reading the guide doesn't count). Ask for up to 100 results
       in one search rather than many small ones. Go over and the answer says how many seconds to wait.</li>
     <li><b>Need more?</b> <a href="?account" id="api-account">Make an account</a> for an API key: 60 requests a minute for
-      your programs wherever they run, free, or 300 a minute with the paid plan. Without a key, nothing changes.</li>
+      your programs wherever they run, free, or 300 a minute (up to 100,000 a month) with the paid plan, $10 a month,
+      cancel at any time. Without a key, nothing changes.</li>
     <li><b>What it covers:</b> English titles and abstracts from OpenAlex, not full texts. New papers arrive with each
       data update, so the very latest may be missing. The <a href="https://api.sciencemadereadable.com/api/data/llms.txt" target="_blank" rel="noopener">guide</a>
       gives today's exact numbers.</li>
@@ -254,12 +255,13 @@ for p in r.json()["results"]:
   </ul>
 </main>
 
-<!-- Support: what the money keeps running (both services), then the amounts. Voluntary support only. -->
+<!-- Support: what the money keeps running (both services), then the amounts. Voluntary support goes through GitHub
+     Sponsors only: Stripe (2026-10-20) does not take donation-style payments on this account; it bills the paid API plan. -->
 <main id="support-view" class="view">
   <h1 class="lib-title">Support ScienceMadeReadable</h1>
   <p class="sup-lead">Hi, I'm Maxime. I built this on my own so that anyone, people and their AI agents alike, can
-    find and understand real science. It's free: no ads, no accounts, no paywall, no API key. If it's useful to you,
-    you can help keep it running.</p>
+    find and understand real science. Searching and reading are free, with no ads and no account needed. If it's useful
+    to you, you can help keep it running.</p>
 
   <div class="sup-what">
     <a class="sup-card" id="sup-read" href="./">
@@ -275,6 +277,10 @@ for p in r.json()["results"]:
       <span class="sup-more">Connect your agent →</span>
     </a>
   </div>
+
+  <p>Programs and agents that need more than the free limits can use the
+    <a href="?account" id="sup-plan">paid API plan</a>: 300 requests a minute (up to 100,000 a month) for
+    $10 a month, cancel at any time.</p>
 
   <h2>Where your support goes</h2>
   <p>Both run on one server in my home: graphics cards for the rewriting models, and enough memory and disk to keep
@@ -306,8 +312,9 @@ for p in r.json()["results"]:
     <a class="chip" href="https://github.com/MaximeRivest/sciencemadereadable" target="_blank" rel="noopener">This site's code</a>
   </p>
 
-  <p class="quiet small sup-fine">This is voluntary support for an independent project, not a donation to a charity:
-    there is no tax receipt. Both services stay free for everyone, whether you chip in or not.</p>
+  <p class="quiet small sup-fine">Voluntary support goes through GitHub Sponsors. It supports an independent project and
+    is not a donation to a charity: there is no tax receipt. Both services stay free for everyone, whether you chip in
+    or not.</p>
 </main>
 
 <main id="results-view" class="view">

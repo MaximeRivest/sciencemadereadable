@@ -1255,6 +1255,9 @@ for (const [btn, dlg] of [["#open-settings", "#settings"], ["#open-about", "#abo
 // (support.json) or config.js, when the queue can't be reached.
 // Voluntary support only (2026-10-12): no funding meter, no cost-per-hour pitch, no paid "sponsor a day".
 // Those read as crowdfunding to Stripe, which restricts it.
+// Since 2026-10-20 the Stripe support links are off (Stripe's review: no donation-style payments on this account;
+// Stripe bills only the paid API plan), so support.json has no "stripe" amounts and GitHub Sponsors is the button.
+// The Stripe branch below stays for a payment provider that accepts it.
 const SPONSORS = (window.SRL_CONFIG?.support?.github ?? "https://github.com/sponsors/MaximeRivest").replace(/\/$/, "");
 const githubLink = (amount: number, frequency: "one-time" | "recurring") =>
   `${SPONSORS}/sponsorships?preview=false&frequency=${frequency}` + (amount ? `&amount=${amount}` : "");
@@ -1293,6 +1296,7 @@ for (const id of ["#open-support", "#open-support-2", "#open-support-3"])
   $(id).onclick = (e) => { e.preventDefault(); supportFrom = id.slice(1); go("?support"); };
 $("#sup-read").onclick = (e) => { e.preventDefault(); go(""); };
 $("#sup-api").onclick = (e) => { e.preventDefault(); go("?api"); };
+$("#sup-plan").onclick = (e) => { e.preventDefault(); go("?account"); };
 
 async function openSupport() {
   track("support", { src: supportFrom });
